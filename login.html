@@ -9,46 +9,80 @@
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
-  background:#F5F1EC;min-height:100vh;min-height:100dvh;display:flex;align-items:center;justify-content:center;
-  padding:32px 18px;color:#201C2E}
+  min-height:100vh;min-height:100dvh;color:#201C2E;background:#F5F1EC;
+  display:grid;grid-template-columns:1fr;overflow-x:hidden}
+@media(min-width:900px){body{grid-template-columns:1.15fr 1fr}}
+
+.hero{display:none;position:relative;overflow:hidden;padding:64px;flex-direction:column;justify-content:space-between;
+  background:
+    radial-gradient(900px 520px at 10% 0%, rgba(255,255,255,.12), transparent 55%),
+    radial-gradient(700px 460px at 100% 100%, rgba(217,164,65,.35), transparent 60%),
+    linear-gradient(155deg,#4A3FA0,#241F5C 70%)}
+@media(min-width:900px){.hero{display:flex}}
+.hero-brand{color:#fff;font-size:15px;font-weight:800;letter-spacing:.02em;display:flex;align-items:center;gap:10px}
+.hero-brand .dot{width:9px;height:9px;border-radius:50%;background:#D9A441}
+.hero-title{color:#fff;font-size:clamp(34px,3.6vw,52px);font-weight:900;letter-spacing:-.03em;line-height:1.08;max-width:560px}
+.hero-sub{color:rgba(255,255,255,.72);font-size:16px;line-height:1.6;margin-top:18px;max-width:460px;font-weight:500}
+.hero-flags{display:flex;gap:10px;margin-top:34px;flex-wrap:wrap}
+.hero-flags span{font-size:26px;background:rgba(255,255,255,.12);border-radius:14px;padding:10px 12px;
+  backdrop-filter:blur(6px)}
+.hero-foot{color:rgba(255,255,255,.5);font-size:12.5px;font-weight:600}
+
+.form-side{display:flex;align-items:center;justify-content:center;padding:40px 24px}
 .auth-wrap{width:100%;max-width:380px}
 .auth-header{text-align:center;margin-bottom:22px}
+.auth-header .mobile-brand{display:block;font-size:20px;font-weight:900;letter-spacing:-.02em;margin-bottom:14px}
+@media(min-width:900px){.auth-header .mobile-brand{display:none}}
 .auth-title{font-size:26px;font-weight:900;letter-spacing:-.02em}
 .auth-subtitle{font-size:13.5px;color:#726C8A;margin-top:6px;font-weight:600}
-.auth-card{background:#FFFFFF;border-radius:22px;padding:22px;
+.auth-card{background:#FFFFFF;border-radius:22px;padding:26px;
   box-shadow:0 10px 28px -8px rgba(23,26,24,.16),0 2px 8px rgba(23,26,24,.06);
+  border:1px solid rgba(32,28,46,.06);
   display:flex;flex-direction:column;gap:14px}
 .field-group{display:flex;flex-direction:column;gap:6px}
 .auth-label{font-size:12px;font-weight:700;color:#726C8A}
-.auth-input{border:1.5px solid rgba(32,28,46,.12);border-radius:12px;padding:11px 13px;
+.auth-input{border:1.5px solid rgba(32,28,46,.12);border-radius:12px;padding:12px 13px;
   font-size:14.5px;font-family:inherit;background:#F9F7F4;color:#201C2E;outline:none;
   transition:border-color .15s ease}
 .auth-input:focus{border-color:#3D348B}
 .auth-error{background:#FBE2E0;color:#A8362F;border-radius:10px;padding:9px 12px;font-size:12.5px;font-weight:600}
-.btn-auth-primary{background:#3D348B;color:#fff;border:none;border-radius:12px;padding:13px;
+.btn-auth-primary{background:#3D348B;color:#fff;border:none;border-radius:12px;padding:14px;
   font-size:14.5px;font-weight:800;cursor:pointer;transition:transform .15s cubic-bezier(.34,1.4,.64,1),background .15s}
+.btn-auth-primary:hover{background:#241F5C}
 .btn-auth-primary:active{transform:scale(.97)}
 .btn-auth-primary:disabled{opacity:.6;cursor:default}
 .btn-auth-link{background:none;border:none;color:#3D348B;font-size:12.5px;font-weight:700;
   cursor:pointer;text-align:center;padding:4px}
 .auth-note{font-size:11px;color:#AEA8C4;text-align:center;line-height:1.5}
 @media (prefers-color-scheme: dark){
-  body{background:#171426;color:#EDEAF5}
+  body{background:#181521;color:#EDEAF5}
   .auth-subtitle{color:#9E97B8}
-  .auth-card{background:#211D36;box-shadow:0 10px 28px -8px rgba(0,0,0,.5),0 2px 8px rgba(0,0,0,.3)}
+  .auth-card{background:#211D36;box-shadow:0 10px 28px -8px rgba(0,0,0,.5),0 2px 8px rgba(0,0,0,.3);border-color:rgba(255,255,255,.06)}
   .auth-input{background:#171426;border-color:rgba(237,234,245,.14);color:#EDEAF5}
   .auth-input:focus{border-color:#8A7CF0}
   .auth-error{background:#341C1C;color:#F0776E}
   .btn-auth-primary{background:#8A7CF0;color:#171426}
+  .btn-auth-primary:hover{background:#A398FF}
   .btn-auth-link{color:#B3A8FF}
   .auth-note{color:#6E6790}
 }
 </style>
 </head>
 <body>
+<div class="hero">
+  <div class="hero-brand"><span class="dot"></span>Mes langues</div>
+  <div>
+    <div class="hero-title">Apprends une langue, à ton rythme.</div>
+    <div class="hero-sub">Hébreu, espagnol, anglais, italien — et bientôt chinois mandarin, portugais, russe, allemand et japonais. Vocabulaire, grammaire, exercices et lecture, tout au même endroit.</div>
+    <div class="hero-flags"><span>🇮🇱</span><span>🇪🇸</span><span>🇬🇧</span><span>🇮🇹</span><span>🇨🇳</span><span>🇵🇹</span><span>🇷🇺</span><span>🇩🇪</span><span>🇯🇵</span></div>
+  </div>
+  <div class="hero-foot">Tes données sont stockées de façon sécurisée sur notre serveur.</div>
+</div>
+<div class="form-side">
 <div class="auth-wrap">
   <div class="auth-header">
-    <div class="auth-title">Mes langues</div>
+    <div class="mobile-brand">Mes langues</div>
+    <div class="auth-title" id="authTitle">Bon retour</div>
     <div class="auth-subtitle" id="authSubtitle">Connecte-toi pour accéder à l'application</div>
   </div>
   <form id="authForm" class="auth-card" onsubmit="return false;">
@@ -74,6 +108,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Ar
     <div class="auth-note">Tes données de compte sont stockées de façon sécurisée sur notre serveur (mot de passe chiffré, jamais en clair).</div>
   </form>
 </div>
+</div>
 <script>
 var authMode = 'login';
 
@@ -91,7 +126,8 @@ function authToggleMode(){
   document.getElementById('authNameGroup').style.display = authMode === 'signup' ? 'block' : 'none';
   document.getElementById('authConfirmGroup').style.display = authMode === 'signup' ? 'block' : 'none';
   document.getElementById('authSubmitBtn').textContent = authMode === 'signup' ? 'Créer mon compte' : 'Se connecter';
-  document.getElementById('authToggleBtn').textContent = authMode === 'signup' ? 'Déjà un compte ? Se connecter' : "Pas encore de compte ? Créer un compte";
+  document.getElementById('authToggleBtn').textContent = authMode === 'signup' ? 'Déjà un compte ? Se connecter' : "Pas encore de compte ? Créer un compte";
+  document.getElementById('authTitle').textContent = authMode === 'signup' ? "Crée ton compte" : "Bon retour";
   document.getElementById('authSubtitle').textContent = authMode === 'signup' ? "Crée ton compte pour accéder à l'application" : "Connecte-toi pour accéder à l'application";
 }
 
