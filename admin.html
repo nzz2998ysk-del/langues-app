@@ -5,39 +5,63 @@
 <title>Mes langues — Administration</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}
-:root{--ink:#201C2E;--muted:#726C8A;--bg:#F5F1EC;--surface:#fff;--primary:#3D348B;--line:rgba(32,28,46,.09);--green:#2E9E6D;--green-soft:#DFF3EA}
+:root{--ink:#201C2E;--muted:#726C8A;--bg:#F5F1EC;--surface:#fff;--primary:#3D348B;--line:rgba(32,28,46,.09);--green:#2E9E6D;--green-soft:#DFF3EA;--gold:#D9A441}
 @media (prefers-color-scheme: dark){:root{--ink:#F0EDF7;--muted:#A39CC4;--bg:#181521;--surface:#221E30;--line:rgba(255,255,255,.08)}}
 body{background:
     radial-gradient(1000px 480px at 10% -10%, rgba(61,52,139,.08), transparent 60%),
     var(--bg);
   color:var(--ink);min-height:100vh;padding:40px 24px 80px}
-.wrap{max-width:1080px;margin:0 auto}
-.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;flex-wrap:wrap;gap:12px}
+.wrap{max-width:1180px;margin:0 auto}
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;flex-wrap:wrap;gap:12px}
 a.back{color:var(--primary);font-weight:700;text-decoration:none;font-size:13.5px}
 h1{font-size:clamp(26px,2.4vw,34px);font-weight:900;letter-spacing:-.02em}
-.sub{color:var(--muted);font-size:14px;margin-top:4px}
+.sub{color:var(--muted);font-size:14px;margin-top:4px;max-width:640px;line-height:1.5}
 .layout{display:grid;grid-template-columns:1fr;gap:24px}
-@media(min-width:880px){.layout{grid-template-columns:280px 1fr}}
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;align-content:start}
-@media(min-width:880px){.stats{grid-template-columns:1fr}}
-.stat{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:20px;text-align:center}
-@media(min-width:880px){.stat{text-align:left}}
-.stat b{display:block;font-size:26px;color:var(--primary)}
-.stat span{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:700}
-.card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:8px 22px}
-.card h2{font-size:15px;padding:16px 0 10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:800}
-.row{display:flex;align-items:center;justify-content:space-between;padding:16px 0;border-bottom:1px solid var(--line)}
-.row:last-child{border-bottom:none}
-.row .label{font-size:15.5px;font-weight:700}
-.row .cat{font-size:11.5px;color:var(--muted)}
-.toggle{position:relative;width:46px;height:27px;flex:none}
+@media(min-width:960px){.layout{grid-template-columns:260px 1fr}}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;align-content:start}
+@media(min-width:960px){.stats{grid-template-columns:1fr}}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px;text-align:center}
+@media(min-width:960px){.stat{text-align:left}}
+.stat b{display:block;font-size:24px;color:var(--primary)}
+.stat span{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:700}
+.panel-title{font-size:13px;padding:14px 0 4px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:800}
+
+.toolbar{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px 18px;margin-bottom:16px}
+.toolbar-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.toolbar-row + .toolbar-row{margin-top:12px}
+input[type=search]{flex:1;min-width:160px;background:var(--bg);border:1px solid var(--line);border-radius:10px;
+  padding:9px 12px;font-size:13.5px;color:var(--ink)}
+select{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:9px 10px;font-size:13px;color:var(--ink)}
+.btn{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:9px 13px;font-size:12.5px;
+  font-weight:700;color:var(--ink);cursor:pointer;white-space:nowrap}
+.btn:hover{border-color:var(--primary)}
+.btn.primary{background:var(--primary);border-color:var(--primary);color:#fff}
+.btn.primary:hover{background:#2c2569}
+.btn.gold{background:var(--gold);border-color:var(--gold);color:#fff}
+.tb-label{font-size:11.5px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:4px 8px}
+.lang-row{border-bottom:1px solid var(--line)}
+.lang-row:last-child{border-bottom:none}
+.lang-head{display:flex;align-items:center;gap:12px;padding:14px 14px}
+.lang-head .flag{font-size:22px}
+.lang-head .name{font-weight:800;font-size:14.5px;flex:1}
+.lang-head .code{font-size:10.5px;color:var(--muted);text-transform:uppercase;font-weight:700;background:var(--bg);
+  border-radius:6px;padding:2px 7px}
+.lang-head .all-free{font-size:11px;color:var(--green);font-weight:700}
+.lang-head .all-premium{font-size:11px;color:var(--gold);font-weight:700}
+.modules{display:flex;gap:18px;flex-wrap:wrap;padding:0 14px 14px 48px}
+.mod{display:flex;align-items:center;gap:8px}
+.mod .mlabel{font-size:12.5px;color:var(--muted);font-weight:600}
+.toggle{position:relative;width:40px;height:24px;flex:none}
 .toggle input{opacity:0;width:0;height:0}
 .slider{position:absolute;inset:0;background:#ccc;border-radius:999px;cursor:pointer;transition:.2s}
-.slider:before{content:"";position:absolute;width:21px;height:21px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s}
+.slider:before{content:"";position:absolute;width:18px;height:18px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s}
 input:checked + .slider{background:var(--primary)}
-input:checked + .slider:before{transform:translateX(19px)}
-.hint{font-size:13px;color:var(--muted);margin:-4px 0 20px}
-.save-msg{font-size:12.5px;color:var(--green);height:16px;margin-top:8px}
+input:checked + .slider:before{transform:translateX(16px)}
+.save-msg{font-size:12.5px;color:var(--green);height:18px;margin-top:10px}
+.empty{padding:20px 14px;color:var(--muted);font-size:13.5px}
+.count-badge{font-size:11.5px;color:var(--muted);margin-bottom:10px}
 </style>
 </head>
 <body>
@@ -46,19 +70,42 @@ input:checked + .slider:before{transform:translateX(19px)}
     <div>
       <a class="back" href="/">‹ Retour à l'application</a>
       <h1>Administration</h1>
-      <div class="sub">Toutes les langues sont gratuites pour tout le monde. Coche ici les fonctionnalités avancées (feedback, leçons, exercices) réservées au Premium — décoché = gratuit pour tout le monde.</div>
+      <div class="sub">Toutes les langues sont gratuites au niveau de base. Coche ici, langue par langue et module par
+        module, ce qui doit rester réservé au Premium (feedback avancé, leçons avancées, exercices avancés).</div>
     </div>
   </div>
 
   <div class="layout">
-    <div class="stats" id="stats"></div>
     <div>
-      <div class="card" id="featuresList"><div style="padding:16px 0;color:var(--muted);font-size:13.5px">Chargement…</div></div>
+      <div class="panel-title">Statistiques</div>
+      <div class="stats" id="stats"></div>
+    </div>
+    <div>
+      <div class="toolbar">
+        <div class="toolbar-row">
+          <input type="search" id="search" placeholder="Filtrer par langue…" oninput="renderList()">
+          <select id="filterMode" onchange="renderList()">
+            <option value="all">Toutes les langues</option>
+            <option value="mixed">Partiellement premium</option>
+            <option value="all-premium">100% premium</option>
+            <option value="all-free">100% gratuites</option>
+          </select>
+        </div>
+        <div class="toolbar-row">
+          <span class="tb-label">Actions groupées</span>
+          <button class="btn primary" onclick="bulk({all:true}, true)">🔒 Tout premium</button>
+          <button class="btn" onclick="bulk({all:true}, false)">🔓 Tout gratuit</button>
+        </div>
+        <div class="toolbar-row" id="moduleBulkRow"></div>
+      </div>
+      <div class="card" id="featuresList"><div class="empty">Chargement…</div></div>
       <div class="save-msg" id="saveMsg"></div>
     </div>
   </div>
 </div>
 <script>
+var STATE = { features: [], modules: [], langMeta: {}, langOrder: [] };
+
 async function loadStats(){
   var r = await fetch('/api/admin/stats');
   if (!r.ok) return;
@@ -66,24 +113,80 @@ async function loadStats(){
   document.getElementById('stats').innerHTML =
     '<div class="stat"><b>'+s.totalUsers+'</b><span>Comptes</span></div>' +
     '<div class="stat"><b>'+s.subscribedUsers+'</b><span>Premium</span></div>' +
-    '<div class="stat"><b>'+(s.totalRevenueCents/100).toFixed(2)+' €</b><span>Encaissé</span></div>';
+    '<div class="stat"><b>'+(s.totalRevenueCents/100).toFixed(2)+' €</b><span>Encaissé</span></div>' +
+    '<div class="stat"><b>'+s.totalPayments+'</b><span>Paiements</span></div>';
 }
+
 async function loadFeatures(){
   var r = await fetch('/api/admin/features');
   if (!r.ok){
-    document.getElementById('featuresList').innerHTML = '<div style="padding:16px 0">Accès refusé.</div>';
+    document.getElementById('featuresList').innerHTML = '<div class="empty">Accès refusé.</div>';
     return;
   }
   var data = await r.json();
-  var html = '<h2>Fonctionnalités</h2>' + data.features.map(function(f){
-    return '<div class="row">' +
-      '<div><div class="label">'+f.label+'</div><div class="cat">'+f.category+'</div></div>' +
-      '<label class="toggle"><input type="checkbox" data-key="'+f.key+'" '+(f.is_premium?'checked':'')+' onchange="toggleFeature(this)">' +
-      '<span class="slider"></span></label>' +
-    '</div>';
-  }).join('');
-  document.getElementById('featuresList').innerHTML = html;
+  STATE.features = data.features;
+  STATE.modules = data.modules;
+  STATE.langMeta = data.langMeta;
+  STATE.langOrder = data.langOrder;
+
+  document.getElementById('moduleBulkRow').innerHTML = '<span class="tb-label">Par module</span>' +
+    STATE.modules.map(function(m){
+      return '<button class="btn gold" onclick="bulk({module:\''+m.key+'\'}, true)">🔒 '+m.label+'</button>' +
+             '<button class="btn" onclick="bulk({module:\''+m.key+'\'}, false)">🔓 '+m.label+'</button>';
+    }).join('');
+
+  renderList();
 }
+
+function featuresByLang(code){
+  return STATE.features.filter(function(f){ return f.lang_code === code; });
+}
+
+function renderList(){
+  var q = (document.getElementById('search').value || '').trim().toLowerCase();
+  var mode = document.getElementById('filterMode').value;
+  var container = document.getElementById('featuresList');
+
+  var langs = STATE.langOrder.filter(function(code){
+    var meta = STATE.langMeta[code];
+    if (q && meta.name.toLowerCase().indexOf(q) === -1 && code.indexOf(q) === -1) return false;
+    var fs = featuresByLang(code);
+    var premiumCount = fs.filter(function(f){ return f.is_premium; }).length;
+    if (mode === 'all-premium' && premiumCount !== fs.length) return false;
+    if (mode === 'all-free' && premiumCount !== 0) return false;
+    if (mode === 'mixed' && (premiumCount === 0 || premiumCount === fs.length)) return false;
+    return true;
+  });
+
+  if (langs.length === 0){
+    container.innerHTML = '<div class="empty">Aucune langue ne correspond au filtre.</div>';
+    return;
+  }
+
+  container.innerHTML = '<div class="count-badge" style="padding:12px 14px 0">'+langs.length+' langue(s)</div>' +
+    langs.map(function(code){
+      var meta = STATE.langMeta[code];
+      var fs = featuresByLang(code);
+      var premiumCount = fs.filter(function(f){ return f.is_premium; }).length;
+      var statusHtml = premiumCount === fs.length
+        ? '<span class="all-premium">Tout premium</span>'
+        : (premiumCount === 0 ? '<span class="all-free">Tout gratuit</span>' : '');
+      var modulesHtml = fs.map(function(f){
+        var modLabel = f.label.split(' — ').slice(1).join(' — ') || f.module;
+        return '<div class="mod"><label class="toggle"><input type="checkbox" data-key="'+f.key+'" '+(f.is_premium?'checked':'')+
+          ' onchange="toggleFeature(this)"><span class="slider"></span></label><span class="mlabel">'+modLabel+'</span></div>';
+      }).join('');
+      return '<div class="lang-row">' +
+        '<div class="lang-head"><span class="flag">'+meta.flag+'</span><span class="name">'+meta.name+'</span>' +
+        '<span class="code">'+code+'</span>'+statusHtml+
+        '<button class="btn" onclick="bulk({lang_code:\''+code+'\'}, true)">🔒</button>' +
+        '<button class="btn" onclick="bulk({lang_code:\''+code+'\'}, false)">🔓</button>' +
+        '</div>' +
+        '<div class="modules">'+modulesHtml+'</div>' +
+      '</div>';
+    }).join('');
+}
+
 async function toggleFeature(el){
   var key = el.getAttribute('data-key');
   var msg = document.getElementById('saveMsg');
@@ -93,6 +196,8 @@ async function toggleFeature(el){
     body: JSON.stringify({is_premium: el.checked})
   });
   if (r.ok){
+    var f = STATE.features.find(function(x){ return x.key === key; });
+    if (f) f.is_premium = el.checked;
     msg.textContent = 'Enregistré ✓';
     setTimeout(function(){ msg.textContent=''; }, 1500);
   } else {
@@ -100,6 +205,25 @@ async function toggleFeature(el){
     el.checked = !el.checked;
   }
 }
+
+async function bulk(payload, isPremium){
+  var msg = document.getElementById('saveMsg');
+  payload = Object.assign({is_premium: isPremium}, payload);
+  var r = await fetch('/api/admin/features/bulk', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify(payload)
+  });
+  if (r.ok){
+    var data = await r.json();
+    msg.textContent = data.updated+' fonctionnalité(s) mise(s) à jour ✓';
+    setTimeout(function(){ msg.textContent=''; }, 2000);
+    await loadFeatures();
+  } else {
+    msg.textContent = 'Erreur lors de la sauvegarde';
+  }
+}
+
 loadStats();
 loadFeatures();
 </script>

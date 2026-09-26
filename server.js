@@ -4,7 +4,7 @@ const cookieParser = require("cookie-parser");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { Pool } = require("pg");
-const { sendEmail, welcomeEmailHtml, invoiceEmailHtml } = require("./lib/email");
+const { sendEmail, welcomeEmailHtml, invoiceEmailHtml, suggestionsDigestHtml } = require("./lib/email");
 const stripeLib = require("./lib/stripe");
 
 const PORT = process.env.PORT || 3000;
@@ -14,6 +14,66 @@ const COOKIE_NAME = "langues_session";
 const isProd = process.env.NODE_ENV === "production";
 const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || "raphael.sanguinetti@icloud.com").toLowerCase();
 const BUSINESS_NAME = process.env.BUSINESS_NAME || "Mes langues";
+// Where the daily "boîte à idées" digest is sent. Defaults to the admin account.
+const DIGEST_EMAIL = (process.env.DIGEST_EMAIL || ADMIN_EMAIL).toLowerCase();
+// Local hour (Europe/Paris) after which the in-process scheduler sends the digest.
+const DIGEST_HOUR_LOCAL = parseInt(process.env.DIGEST_HOUR_LOCAL || "22", 10);
+// Optional shared secret so an external scheduler (e.g. a Render Cron Job) can trigger
+// the digest reliably via POST /api/internal/send-digest, since Render's free tier can
+// spin a web service down after inactivity, making an in-process setInterval alone
+// unreliable as the only delivery mechanism.
+const DIGEST_CRON_SECRET = process.env.DIGEST_CRON_SECRET || "";
+
+// All 39 languages the app teaches, with display metadata — mirrors app.html's
+// LANG_META exactly, and is the source of truth for the per-language admin toggles.
+const LANG_META = {
+  en: { flag: "🇬🇧", name: "English" },
+  es: { flag: "🇪🇸", name: "Español" },
+  it: { flag: "🇮🇹", name: "Italiano" },
+  he: { flag: "🇮🇱", name: "Hébreu" },
+  zh: { flag: "🇨🇳", name: "中文" },
+  pt: { flag: "🇵🇹", name: "Português" },
+  ru: { flag: "🇷🇺", name: "Русский" },
+  de: { flag: "🇩🇪", name: "Deutsch" },
+  ja: { flag: "🇯🇵", name: "日本語" },
+  fr: { flag: "🇫🇷", name: "Français" },
+  hi: { flag: "🇮🇳", name: "हिन्दी" },
+  ko: { flag: "🇰🇷", name: "한국어" },
+  ar: { flag: "🇸🇦", name: "العربية" },
+  tr: { flag: "🇹🇷", name: "Türkçe" },
+  nl: { flag: "🇳🇱", name: "Nederlands" },
+  el: { flag: "🇬🇷", name: "Ελληνικά" },
+  pl: { flag: "🇵🇱", name: "Polski" },
+  sv: { flag: "🇸🇪", name: "Svenska" },
+  vi: { flag: "🇻🇳", name: "Tiếng Việt" },
+  la: { flag: "📜", name: "Latina" },
+  nb: { flag: "🇳🇴", name: "Norsk bokmål" },
+  ga: { flag: "🇮🇪", name: "Gaeilge" },
+  id: { flag: "🇮🇩", name: "Bahasa Indonesia" },
+  val: { flag: "🐉", name: "High Valyrian" },
+  uk: { flag: "🇺🇦", name: "Українська" },
+  fi: { flag: "🇫🇮", name: "Suomi" },
+  da: { flag: "🇩🇰", name: "Dansk" },
+  ro: { flag: "🇷🇴", name: "Română" },
+  cs: { flag: "🇨🇿", name: "Čeština" },
+  zu: { flag: "🇿🇦", name: "isiZulu" },
+  haw: { flag: "🌺", name: "ʻŌlelo Hawaiʻi" },
+  sw: { flag: "🌍", name: "Kiswahili" },
+  cy: { flag: "🏴", name: "Cymraeg" },
+  hu: { flag: "🇭🇺", name: "Magyar" },
+  gd: { flag: "🏴", name: "Gàidhlig" },
+  ht: { flag: "🇭🇹", name: "Kreyòl ayisyen" },
+  eo: { flag: "🌐", name: "Esperanto" },
+  tlh: { flag: "🖖", name: "tlhIngan Hol" },
+  nv: { flag: "🪶", name: "Diné bizaad" },
+};
+
+// The 3 kinds of "advanced content" the Premium subscription unlocks, per language.
+const MODULES = [
+  { key: "feedback-avance", label: "Feedback avancé" },
+  { key: "lecons-avancees", label: "Leçons avancées" },
+  { key: "exercices-avances", label: "Exercices avancés" },
+];
 
 if (!JWT_SECRET) {
   console.error("FATAL: JWT_SECRET environment variable is not set.");
@@ -31,13 +91,28 @@ const pool = new Pool({
 
 // Access model: every language is free at a basic level for every account.
 // What the admin can toggle free <-> premium here is no longer "which
-// language" but "which kind of deeper content" (feedback, lessons, exercises),
-// applied across all languages.
-const DEFAULT_FEATURES = [
-  { key: "feedback-avance", label: "Feedback avancé", category: "premium", is_premium: true, sort_order: 1 },
-  { key: "lecons-avancees", label: "Leçons avancées", category: "premium", is_premium: true, sort_order: 2 },
-  { key: "exercices-avances", label: "Exercices avancés", category: "premium", is_premium: true, sort_order: 3 },
-];
+// language" but "which kind of deeper content, in which language" (feedback,
+// lessons, exercises) — one switch per language per module, so the admin can
+// e.g. keep English's advanced feedback free while charging for Korean's.
+function buildDefaultFeatures() {
+  const rows = [];
+  let sort = 1;
+  for (const code of Object.keys(LANG_META)) {
+    for (const mod of MODULES) {
+      rows.push({
+        key: `${code}:${mod.key}`,
+        label: `${LANG_META[code].name} — ${mod.label}`,
+        category: "module",
+        lang_code: code,
+        module: mod.key,
+        is_premium: true,
+        sort_order: sort++,
+      });
+    }
+  }
+  return rows;
+}
+const DEFAULT_FEATURES = buildDefaultFeatures();
 
 async function initDb() {
   await pool.query(`
@@ -65,18 +140,31 @@ async function initDb() {
       sort_order INT NOT NULL DEFAULT 0
     );
   `);
-  // Old model: per-language premium flags (he/es/en/it free, zh/pt/ru/de/ja premium).
-  // New model: every language is free; these rows no longer gate anything, so
-  // drop them in favor of the 3 global "advanced content" toggles below.
-  await pool.query(`DELETE FROM features WHERE category = 'language'`);
+  await pool.query(`ALTER TABLE features ADD COLUMN IF NOT EXISTS lang_code TEXT;`);
+  await pool.query(`ALTER TABLE features ADD COLUMN IF NOT EXISTS module TEXT;`);
+  // Old models: per-language premium flags (category 'language'), then 3 global
+  // "advanced content" toggles applied uniformly (category 'premium'). Both are
+  // superseded by one row per language per module (category 'module') below, so
+  // the admin can set premium/free per language and per module independently.
+  await pool.query(`DELETE FROM features WHERE category IN ('language', 'premium')`);
   for (const f of DEFAULT_FEATURES) {
     await pool.query(
-      `INSERT INTO features (key, label, category, is_premium, sort_order)
-       VALUES ($1, $2, $3, $4, $5)
+      `INSERT INTO features (key, label, category, lang_code, module, is_premium, sort_order)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)
        ON CONFLICT (key) DO NOTHING`,
-      [f.key, f.label, f.category, f.is_premium, f.sort_order]
+      [f.key, f.label, f.category, f.lang_code, f.module, f.is_premium, f.sort_order]
     );
   }
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS suggestions (
+      id SERIAL PRIMARY KEY,
+      user_id INTEGER REFERENCES users(id),
+      message TEXT NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      sent_at TIMESTAMPTZ
+    );
+  `);
 
   await pool.query(`
     CREATE TABLE IF NOT EXISTS payments (
@@ -93,7 +181,7 @@ async function initDb() {
   // Make sure the designated admin account is always an admin, if it already signed up.
   await pool.query(`UPDATE users SET is_admin = TRUE WHERE email = $1`, [ADMIN_EMAIL]);
 
-  console.log("Database ready (users, features, payments tables ok).");
+  console.log("Database ready (users, features, payments, suggestions tables ok).");
 }
 
 const app = express();
@@ -155,6 +243,19 @@ app.post("/api/webhooks/stripe", express.raw({ type: "application/json" }), asyn
 app.use(express.json({ limit: "200kb" }));
 app.use(cookieParser());
 
+// ---- baseline security headers (A05: Security Misconfiguration) ----
+app.disable("x-powered-by");
+app.use((req, res, next) => {
+  res.setHeader("X-Frame-Options", "SAMEORIGIN");
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+  res.setHeader("Permissions-Policy", "geolocation=(), microphone=(), camera=()");
+  if (isProd) {
+    res.setHeader("Strict-Transport-Security", "max-age=15552000; includeSubDomains");
+  }
+  next();
+});
+
 // ---- very small in-memory rate limiter for auth endpoints (per IP) ----
 const attempts = new Map();
 function rateLimited(ip, max, windowMs) {
@@ -176,14 +277,14 @@ setInterval(() => {
 }, 60000).unref();
 
 function signSession(user) {
-  return jwt.sign({ uid: user.id, email: user.email }, JWT_SECRET, { expiresIn: "30d" });
+  return jwt.sign({ uid: user.id, email: user.email }, JWT_SECRET, { expiresIn: "30d", algorithm: "HS256" });
 }
 
 function authMiddleware(req, res, next) {
   const token = req.cookies[COOKIE_NAME];
   if (!token) return next();
   try {
-    const payload = jwt.verify(token, JWT_SECRET);
+    const payload = jwt.verify(token, JWT_SECRET, { algorithms: ["HS256"] });
     req.userId = payload.uid;
     req.userEmail = payload.email;
   } catch (e) {
@@ -207,7 +308,10 @@ async function requireAdmin(req, res, next) {
   }
 }
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+// Excludes characters that could break out of HTML attribute/text context if an
+// address were ever interpolated unescaped somewhere (defense in depth: email
+// templates now escape their inputs too, see lib/email.js's escapeHtml).
+const EMAIL_RE = /^[^\s@<>"'&]+@[^\s@<>"'&]+\.[^\s@<>"'&]+$/;
 
 app.post("/api/signup", async (req, res) => {
   try {
@@ -343,6 +447,9 @@ app.get("/api/me", async (req, res) => {
 // ---- per-account custom ordering of the language cards on the hub ----
 app.put("/api/lang-order", async (req, res) => {
   if (!req.userId) return res.status(401).json({ error: "Connecte-toi d'abord." });
+  if (rateLimited("lang-order:" + req.userId, 60, 15 * 60 * 1000)) {
+    return res.status(429).json({ error: "Trop de requêtes. Réessaie dans quelques minutes." });
+  }
   const order = req.body && req.body.order;
   if (!Array.isArray(order) || order.length === 0 || order.length > 200) {
     return res.status(400).json({ error: "Ordre invalide." });
@@ -382,9 +489,18 @@ app.get("/api/features", async (req, res) => {
   }
 });
 
+// Full per-language × per-module grid, plus the language metadata (flag/name)
+// admin.html needs to render it without hard-coding 39 languages itself.
 app.get("/api/admin/features", requireAdmin, async (req, res) => {
-  const result = await pool.query("SELECT key, label, category, is_premium, sort_order FROM features ORDER BY sort_order");
-  return res.json({ features: result.rows });
+  const result = await pool.query(
+    "SELECT key, label, category, lang_code, module, is_premium, sort_order FROM features ORDER BY sort_order"
+  );
+  return res.json({
+    features: result.rows,
+    modules: MODULES,
+    langMeta: LANG_META,
+    langOrder: Object.keys(LANG_META),
+  });
 });
 
 app.patch("/api/admin/features/:key", requireAdmin, async (req, res) => {
@@ -396,6 +512,41 @@ app.patch("/api/admin/features/:key", requireAdmin, async (req, res) => {
   );
   if (!result.rows[0]) return res.status(404).json({ error: "Fonctionnalité introuvable." });
   return res.json({ feature: result.rows[0] });
+});
+
+// Bulk toggles, so the admin isn't stuck clicking 117 checkboxes one at a time:
+// by explicit key list, by whole language (all 3 modules), by module across
+// every language, or absolutely everything at once.
+app.post("/api/admin/features/bulk", requireAdmin, async (req, res) => {
+  const body = req.body || {};
+  const isPremium = Boolean(body.is_premium);
+  let keys = null;
+
+  if (Array.isArray(body.keys)) {
+    keys = body.keys.filter((k) => typeof k === "string").slice(0, 500);
+  } else if (typeof body.lang_code === "string") {
+    if (!LANG_META[body.lang_code]) return res.status(400).json({ error: "Langue inconnue." });
+    keys = MODULES.map((m) => `${body.lang_code}:${m.key}`);
+  } else if (typeof body.module === "string") {
+    if (!MODULES.some((m) => m.key === body.module)) return res.status(400).json({ error: "Module inconnu." });
+    keys = Object.keys(LANG_META).map((code) => `${code}:${body.module}`);
+  } else if (body.all === true) {
+    keys = DEFAULT_FEATURES.map((f) => f.key);
+  }
+
+  if (!keys || keys.length === 0) {
+    return res.status(400).json({ error: "Précise keys, lang_code, module ou all." });
+  }
+  try {
+    const result = await pool.query(
+      "UPDATE features SET is_premium = $1 WHERE key = ANY($2::text[]) RETURNING key, is_premium",
+      [isPremium, keys]
+    );
+    return res.json({ ok: true, updated: result.rows.length });
+  } catch (err) {
+    console.error("features bulk error:", err);
+    return res.status(500).json({ error: "Erreur serveur." });
+  }
 });
 
 app.get("/api/admin/stats", requireAdmin, async (req, res) => {
@@ -412,6 +563,9 @@ app.get("/api/admin/stats", requireAdmin, async (req, res) => {
 // ---- payment (Stripe Checkout) ----
 app.post("/api/checkout", async (req, res) => {
   if (!req.userId) return res.status(401).json({ error: "Connecte-toi d'abord." });
+  if (rateLimited("checkout:" + req.userId, 10, 15 * 60 * 1000)) {
+    return res.status(429).json({ error: "Trop de tentatives. Réessaie dans quelques minutes." });
+  }
   if (!stripeLib.isConfigured()) {
     return res.status(501).json({ error: "Le paiement n'est pas encore configuré côté serveur." });
   }
@@ -430,6 +584,80 @@ app.post("/api/checkout", async (req, res) => {
   }
 });
 
+// ---- boîte à idées: users submit suggestions, admin gets a daily email digest ----
+app.post("/api/suggestions", async (req, res) => {
+  if (!req.userId) return res.status(401).json({ error: "Connecte-toi d'abord." });
+  if (rateLimited("suggestion:" + req.userId, 20, 60 * 60 * 1000)) {
+    return res.status(429).json({ error: "Trop d'idées envoyées. Réessaie plus tard." });
+  }
+  const message = String((req.body && req.body.message) || "").trim().slice(0, 2000);
+  if (message.length < 3) {
+    return res.status(400).json({ error: "Décris un peu plus ton idée." });
+  }
+  try {
+    await pool.query("INSERT INTO suggestions (user_id, message) VALUES ($1, $2)", [req.userId, message]);
+    return res.status(201).json({ ok: true });
+  } catch (err) {
+    console.error("suggestions error:", err);
+    return res.status(500).json({ error: "Erreur serveur." });
+  }
+});
+
+// Sends one digest email with every suggestion submitted since the last digest,
+// and marks them sent so the same idea is never emailed twice. Returns the count
+// sent (0 if there was nothing new). Shared by the in-process scheduler below and
+// by the external-trigger endpoint (POST /api/internal/send-digest).
+async function sendSuggestionsDigest() {
+  const pending = await pool.query(
+    `SELECT s.id, s.message, s.created_at, u.email AS user_email
+     FROM suggestions s LEFT JOIN users u ON u.id = s.user_id
+     WHERE s.sent_at IS NULL ORDER BY s.created_at ASC LIMIT 500`
+  );
+  if (pending.rows.length === 0) return 0;
+  const result = await sendEmail({
+    to: DIGEST_EMAIL,
+    subject: `💡 Boîte à idées — ${pending.rows.length} nouvelle${pending.rows.length > 1 ? "s" : ""} suggestion${pending.rows.length > 1 ? "s" : ""}`,
+    html: suggestionsDigestHtml(pending.rows),
+  });
+  if (result && result.ok === false) {
+    // Sending failed (Resend error/network issue): leave sent_at NULL so these
+    // suggestions are retried on the next check instead of being silently lost.
+    return 0;
+  }
+  await pool.query(
+    "UPDATE suggestions SET sent_at = NOW() WHERE id = ANY($1::int[])",
+    [pending.rows.map((r) => r.id)]
+  );
+  return pending.rows.length;
+}
+
+// External trigger (e.g. a Render Cron Job hitting this once a day), since a
+// free-tier web service can spin down between requests and silently skip the
+// in-process scheduler below.
+app.post("/api/internal/send-digest", async (req, res) => {
+  if (!DIGEST_CRON_SECRET || req.headers["x-digest-secret"] !== DIGEST_CRON_SECRET) {
+    return res.status(403).json({ error: "Non autorisé." });
+  }
+  try {
+    const sent = await sendSuggestionsDigest();
+    return res.json({ ok: true, sent });
+  } catch (err) {
+    console.error("send-digest error:", err);
+    return res.status(500).json({ error: "Erreur serveur." });
+  }
+});
+
+// In-process fallback: once the local (Europe/Paris) hour reaches DIGEST_HOUR_LOCAL,
+// send whatever is pending. Checking every 15 min and relying on sent_at as the
+// durable "already sent" marker means this is safe to run alongside the external
+// trigger above without double-sending, and safe across restarts.
+const PARIS_HOUR_FMT = new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/Paris", hour: "2-digit", hourCycle: "h23" });
+setInterval(() => {
+  const hour = parseInt(PARIS_HOUR_FMT.format(new Date()), 10);
+  if (hour < DIGEST_HOUR_LOCAL) return;
+  sendSuggestionsDigest().catch((err) => console.error("scheduled digest error:", err));
+}, 15 * 60 * 1000).unref();
+
 // ---- gate: serve the app only to authenticated users, else the login page ----
 app.get("/", (req, res) => {
   if (req.userId) {
@@ -437,6 +665,11 @@ app.get("/", (req, res) => {
   } else {
     res.sendFile(path.join(__dirname, "login.html"));
   }
+});
+
+app.get("/ideas", (req, res) => {
+  if (!req.userId) return res.redirect("/");
+  res.sendFile(path.join(__dirname, "ideas.html"));
 });
 
 app.get("/subscribe", (req, res) => {

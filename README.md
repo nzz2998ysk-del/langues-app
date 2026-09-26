@@ -14,11 +14,28 @@ abonnement (Stripe) et facture envoyée par email.
 
 Toutes les langues sont accessibles gratuitement à tout le monde, au niveau de
 base (vocabulaire, grammaire, exercices, lecture). L'abonnement Premium
-débloque, langue par langue, du feedback plus poussé, des leçons et des
-exercices avancés — géré depuis `/admin` avec 3 fonctionnalités à cocher
-(Feedback avancé / Leçons avancées / Exercices avancés). Chaque compte peut
-aussi réorganiser librement l'ordre des cartes de langues sur l'accueil (bouton
-« ↕️ Réorganiser », glisser-déposer, ordre sauvegardé par compte).
+débloque du feedback plus poussé, des leçons et des exercices avancés —
+**langue par langue et module par module** : `/admin` expose une grille de
+39 langues × 3 modules (Feedback avancé / Leçons avancées / Exercices avancés),
+soit 117 interrupteurs indépendants, avec un filtre/recherche par langue et des
+actions groupées (tout premium / tout gratuit, par langue entière, par module
+sur toutes les langues à la fois). Chaque compte peut aussi réorganiser
+librement l'ordre des cartes de langues sur l'accueil (bouton « ↕️
+Réorganiser », glisser-déposer, ordre sauvegardé par compte).
+
+## Boîte à idées
+
+Chaque compte peut soumettre une suggestion depuis `/ideas` (lien « 💡 Idées »
+sur l'accueil). Les suggestions sont regroupées et envoyées en une seule fois
+par email (à `DIGEST_EMAIL`, ou à `ADMIN_EMAIL` par défaut) une fois par jour,
+en fin de journée (heure de Paris, configurable via `DIGEST_HOUR_LOCAL`,
+22h par défaut). Deux mécanismes d'envoi coexistent pour rester fiables même
+si le service se met en veille (plan gratuit Render) :
+- un vérificateur interne toutes les 15 minutes (tant que le service tourne) ;
+- `POST /api/internal/send-digest` (protégé par l'en-tête `X-Digest-Secret`,
+  à faire correspondre à la variable `DIGEST_CRON_SECRET`), pensé pour être
+  appelé une fois par jour par un Render Cron Job externe.
+Chaque suggestion n'est envoyée qu'une seule fois (marquée `sent_at` en base).
 
 ## Développement local
 
@@ -40,9 +57,24 @@ PostgreSQL gratuite, avec `JWT_SECRET`/`DATABASE_URL` déjà câblés.
 Le compte dont l'email correspond à la variable `ADMIN_EMAIL` (par défaut
 `raphael.sanguinetti@icloud.com`) devient automatiquement administrateur à
 l'inscription ou à la connexion. Un lien "⚙️ Admin" apparaît alors sur l'accueil,
-menant vers `/admin` : une page à cocher pour choisir quelles langues (ou autres
-fonctionnalités) sont payantes. Décoché = gratuit pour tout le monde. Un compte
-admin a toujours accès à tout, y compris le contenu payant.
+menant vers `/admin` : la grille des 117 interrupteurs premium/gratuit décrite
+ci-dessus, plus les statistiques (comptes, abonnés, revenu encaissé). Décoché =
+gratuit pour tout le monde. Un compte admin a toujours accès à tout, y compris
+le contenu payant.
+
+## Sécurité
+
+Un audit manuel (OWASP Top 10) a été fait sur le code ; corrections appliquées :
+en-têtes de sécurité (`X-Frame-Options`, `X-Content-Type-Options`,
+`Referrer-Policy`, `Permissions-Policy`, HSTS en production), algorithme JWT
+explicitement restreint à `HS256`, validation email resserrée (rejette les
+caractères pouvant casser du HTML), échappement HTML systématique des valeurs
+utilisateur dans les emails (nom, email, message de suggestion), limitation de
+débit sur les endpoints sensibles (`/api/checkout`, `/api/lang-order`,
+`/api/suggestions`), et vérification d'origine sur les messages `postMessage`
+entre l'accueil et les iframes de langue. La vérification de signature des
+webhooks Stripe (HMAC + comparaison à temps constant) était déjà correcte.
+`npm audit` ne remonte aucune vulnérabilité connue dans les dépendances.
 
 ## Emails transactionnels (Resend)
 
