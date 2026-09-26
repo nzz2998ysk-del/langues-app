@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mes langues — Administration</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}
+:root{--ink:#201C2E;--muted:#726C8A;--bg:#F5F1EC;--surface:#fff;--primary:#3D348B;--line:rgba(32,28,46,.09);--green:#2E9E6D;--green-soft:#DFF3EA}
+@media (prefers-color-scheme: dark){:root{--ink:#F0EDF7;--muted:#A39CC4;--bg:#181521;--surface:#221E30;--line:rgba(255,255,255,.08)}}
+body{background:var(--bg);color:var(--ink);min-height:100vh;padding:24px 16px 60px}
+.wrap{max-width:640px;margin:0 auto}
+h1{font-size:22px;margin-bottom:4px}
+.sub{color:var(--muted);font-size:13.5px;margin-bottom:24px}
+a.back{display:inline-block;margin-bottom:18px;color:var(--primary);font-weight:700;text-decoration:none;font-size:13.5px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:28px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;text-align:center}
+.stat b{display:block;font-size:20px;color:var(--primary)}
+.stat span{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:6px 16px;margin-bottom:24px}
+.row{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--line)}
+.row:last-child{border-bottom:none}
+.row .label{font-size:14.5px;font-weight:600}
+.row .cat{font-size:11px;color:var(--muted)}
+.toggle{position:relative;width:44px;height:26px;flex:none}
+.toggle input{opacity:0;width:0;height:0}
+.slider{position:absolute;inset:0;background:#ccc;border-radius:999px;cursor:pointer;transition:.2s}
+.slider:before{content:"";position:absolute;width:20px;height:20px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s}
+input:checked + .slider{background:var(--primary)}
+input:checked + .slider:before{transform:translateX(18px)}
+.hint{font-size:12px;color:var(--muted);margin-top:-8px;margin-bottom:24px}
+.save-msg{font-size:12.5px;color:var(--green);height:16px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="/">‹ Retour à l'application</a>
+  <h1>Administration</h1>
+  <div class="sub">Coche ce qui doit être payant. Décoché = accès gratuit pour tout le monde.</div>
+
+  <div class="stats" id="stats"></div>
+
+  <div class="card" id="featuresList"><div style="padding:16px 0;color:var(--muted);font-size:13.5px">Chargement…</div></div>
+  <div class="save-msg" id="saveMsg"></div>
+</div>
+<script>
+async function loadStats(){
+  var r = await fetch('/api/admin/stats');
+  if (!r.ok) return;
+  var s = await r.json();
+  document.getElementById('stats').innerHTML =
+    '<div class="stat"><b>'+s.totalUsers+'</b><span>Comptes</span></div>' +
+    '<div class="stat"><b>'+s.subscribedUsers+'</b><span>Premium</span></div>' +
+    '<div class="stat"><b>'+(s.totalRevenueCents/100).toFixed(2)+' €</b><span>Encaissé</span></div>';
+}
+async function loadFeatures(){
+  var r = await fetch('/api/admin/features');
+  if (!r.ok){
+    document.getElementById('featuresList').innerHTML = '<div style="padding:16px 0">Accès refusé.</div>';
+    return;
+  }
+  var data = await r.json();
+  var html = data.features.map(function(f){
+    return '<div class="row">' +
+      '<div><div class="label">'+f.label+'</div><div class="cat">'+f.category+'</div></div>' +
+      '<label class="toggle"><input type="checkbox" data-key="'+f.key+'" '+(f.is_premium?'checked':'')+' onchange="toggleFeature(this)">' +
+      '<span class="slider"></span></label>' +
+    '</div>';
+  }).join('');
+  document.getElementById('featuresList').innerHTML = html;
+}
+async function toggleFeature(el){
+  var key = el.getAttribute('data-key');
+  var msg = document.getElementById('saveMsg');
+  var r = await fetch('/api/admin/features/'+encodeURIComponent(key), {
+    method:'PATCH',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({is_premium: el.checked})
+  });
+  if (r.ok){
+    msg.textContent = 'Enregistré ✓';
+    setTimeout(function(){ msg.textContent=''; }, 1500);
+  } else {
+    msg.textContent = 'Erreur lors de la sauvegarde';
+    el.checked = !el.checked;
+  }
+}
+loadStats();
+loadFeatures();
+</script>
+</body>
+</html>

@@ -15,6 +15,20 @@ services:
         fromDatabase:
           name: langues-app-db
           property: connectionString
+      - key: ADMIN_EMAIL
+        value: raphael.sanguinetti@icloud.com
+      - key: BUSINESS_NAME
+        value: Mes langues
+      - key: EMAIL_FROM
+        value: "Mes langues <onboarding@resend.dev>"
+      - key: RESEND_API_KEY
+        sync: false
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_PRICE_ID
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
 
 databases:
   - name: langues-app-db
