@@ -34,11 +34,20 @@ body:not(.in-lang) #tabbar{display:none !important}
 body.in-lang > .themeToggle{display:none !important}
 body.in-lang #homeHub{display:none !important}
 
-#homeHub{min-height:100vh;min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:32px 18px}
-.hub-wrap{width:100%;max-width:560px}
-.hub-header{text-align:center;margin-bottom:26px}
-.hub-title{font-size:26px;font-weight:900;color:#201C2E;letter-spacing:-.02em}
-.hub-subtitle{font-size:13.5px;color:#726C8A;margin-top:6px;font-weight:600}
+#homeHub{min-height:100vh;min-height:100dvh;display:flex;align-items:center;justify-content:center;
+  padding:56px 40px;background:
+    radial-gradient(1100px 520px at 12% -10%, rgba(61,52,139,.10), transparent 60%),
+    radial-gradient(900px 480px at 105% 8%, rgba(239,138,46,.10), transparent 55%),
+    #F5F1EC}
+:root[data-theme="dark"] #homeHub{background:
+    radial-gradient(1100px 520px at 12% -10%, rgba(91,79,196,.18), transparent 60%),
+    radial-gradient(900px 480px at 105% 8%, rgba(239,138,46,.10), transparent 55%),
+    #181521}
+.hub-wrap{width:100%;max-width:1360px}
+.hub-header{text-align:center;margin-bottom:44px}
+.hub-title{font-size:clamp(32px,4.2vw,54px);font-weight:900;color:#201C2E;letter-spacing:-.03em;line-height:1.05}
+:root[data-theme="dark"] .hub-title{color:#F0EDF7}
+.hub-subtitle{font-size:clamp(14px,1.1vw,17px);color:#726C8A;margin-top:12px;font-weight:600}
 .hub-logout{margin-top:10px;background:none;border:none;color:#9992AE;font-size:12px;font-weight:700;
   cursor:pointer;text-decoration:underline;padding:4px}
 .hub-header-actions{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:10px}
@@ -50,17 +59,19 @@ body.in-lang #homeHub{display:none !important}
 .hub-premium-cta{grid-column:1/-1;text-align:center;margin-top:18px}
 .hub-premium-cta a{display:inline-block;background:#D9A441;color:#fff;font-weight:800;font-size:13.5px;
   padding:10px 18px;border-radius:999px;text-decoration:none}
-.hub-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-.hub-card{aspect-ratio:1/1;border:none;border-radius:26px;padding:18px;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;gap:8px;cursor:pointer;position:relative;overflow:hidden;
+.hub-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+@media(min-width:720px){.hub-grid{grid-template-columns:repeat(3,1fr);gap:22px}}
+@media(min-width:1100px){.hub-grid{grid-template-columns:repeat(5,1fr);gap:24px}}
+.hub-card{aspect-ratio:1/1;border:none;border-radius:28px;padding:18px;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:10px;cursor:pointer;position:relative;overflow:hidden;
   background:linear-gradient(155deg,var(--card-color-light),var(--card-color) 65%);
-  box-shadow:0 10px 24px -8px color-mix(in srgb, var(--card-color) 55%, transparent);
-  transition:transform .18s cubic-bezier(.22,.8,.2,1),box-shadow .18s cubic-bezier(.22,.8,.2,1)}
+  box-shadow:0 14px 32px -10px color-mix(in srgb, var(--card-color) 55%, transparent);
+  transition:transform .22s cubic-bezier(.22,.8,.2,1),box-shadow .22s cubic-bezier(.22,.8,.2,1)}
 .hub-card:active{transform:scale(.96)}
-@media(hover:hover){.hub-card:hover{transform:translateY(-3px) scale(1.02);
-  box-shadow:0 16px 30px -8px color-mix(in srgb, var(--card-color) 60%, transparent)}}
-.hub-flag{font-size:38px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.15))}
-.hub-name{font-size:16px;font-weight:800;color:#fff;letter-spacing:-.01em}
+@media(hover:hover){.hub-card:hover{transform:translateY(-5px) scale(1.03);
+  box-shadow:0 22px 40px -10px color-mix(in srgb, var(--card-color) 60%, transparent)}}
+.hub-flag{font-size:clamp(34px,3vw,46px);filter:drop-shadow(0 2px 4px rgba(0,0,0,.15))}
+.hub-name{font-size:clamp(15px,1.1vw,18px);font-weight:800;color:#fff;letter-spacing:-.01em}
 .hub-sub{font-size:11px;font-weight:700;color:rgba(255,255,255,.78);text-transform:uppercase;letter-spacing:.04em}
 .hub-card::after{content:"";position:absolute;top:-40%;right:-30%;width:70%;height:70%;border-radius:50%;
   background:rgba(255,255,255,.10);pointer-events:none}
