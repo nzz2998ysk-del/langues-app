@@ -1,10 +1,24 @@
-# Mes langues — app d'apprentissage (9 langues)
+# Mes langues — app d'apprentissage (39 langues)
 
-Application web d'apprentissage des langues (hébreu, espagnol, anglais, italien
-+ chinois mandarin, portugais, russe, allemand, japonais en v1) avec inscription
-par email + mot de passe (comptes sur PostgreSQL, mots de passe hachés bcrypt),
-compte administrateur, gestion des fonctionnalités gratuites/payantes, paiement
-par abonnement (Stripe) et facture envoyée par email.
+Application web d'apprentissage des langues : anglais, espagnol, italien, hébreu,
+chinois mandarin, portugais, russe, allemand, japonais, plus 30 langues
+supplémentaires en module « débutant » (français, hindi, coréen, arabe, turc,
+néerlandais, grec, polonais, suédois, vietnamien, latin, norvégien, irlandais,
+indonésien, haut valyrien, ukrainien, finnois, danois, roumain, tchèque, zoulou,
+hawaïen, swahili, gallois, hongrois, gaélique écossais, créole haïtien,
+espéranto, klingon, navajo). Inscription par email + mot de passe (comptes sur
+PostgreSQL, mots de passe hachés bcrypt), compte administrateur, paiement par
+abonnement (Stripe) et facture envoyée par email.
+
+## Modèle d'accès
+
+Toutes les langues sont accessibles gratuitement à tout le monde, au niveau de
+base (vocabulaire, grammaire, exercices, lecture). L'abonnement Premium
+débloque, langue par langue, du feedback plus poussé, des leçons et des
+exercices avancés — géré depuis `/admin` avec 3 fonctionnalités à cocher
+(Feedback avancé / Leçons avancées / Exercices avancés). Chaque compte peut
+aussi réorganiser librement l'ordre des cartes de langues sur l'accueil (bouton
+« ↕️ Réorganiser », glisser-déposer, ordre sauvegardé par compte).
 
 ## Développement local
 
@@ -59,10 +73,21 @@ vers le compte bancaire renseigné dans ton Dashboard Stripe (Paramètres →
 Comptes bancaires / Payouts). Cette app ne touche jamais à tes coordonnées
 bancaires — c'est à faire une seule fois, directement dans Stripe.
 
-## Contenu "v1" des 5 nouvelles langues
+## Contenu "v1" / "débutant" des langues ajoutées
 
-Le chinois, portugais, russe, allemand et japonais ont un module de démarrage
-(vocabulaire par thèmes, grammaire de base, exercices interactifs, quelques
-lectures) — volontairement plus léger que les 4 langues historiques, qui
-représentent chacune plusieurs méga-octets de contenu accumulé. Le contenu de
-chaque nouvelle langue peut être approfondi langue par langue par la suite.
+- Chinois, portugais, russe, allemand, japonais : module « v1 » (8 thèmes de
+  vocabulaire, 6 points de grammaire, 4 lectures) — plus léger que les 4 langues
+  historiques (hébreu/espagnol/anglais/italien), qui représentent chacune
+  plusieurs méga-octets de contenu accumulé.
+- Les 30 langues suivantes (français, hindi, coréen, arabe, turc, néerlandais,
+  grec, polonais, suédois, vietnamien, latin, norvégien, irlandais, indonésien,
+  haut valyrien, ukrainien, finnois, danois, roumain, tchèque, zoulou, hawaïen,
+  swahili, gallois, hongrois, gaélique écossais, créole haïtien, espéranto,
+  klingon, navajo) ont un module encore plus resserré, volontairement : 3 thèmes
+  de vocabulaire (salutations, nombres, couleurs), 3 points de grammaire et une
+  courte lecture. Les traductions viennent des connaissances de Claude et n'ont
+  pas été relues par un locuteur natif — à vérifier avant un usage sérieux,
+  particulièrement pour les langues les moins courantes (haut valyrien, klingon,
+  navajo, zoulou, hawaïen, gaélique écossais...).
+
+Le contenu de chaque langue peut être approfondi une par une par la suite.

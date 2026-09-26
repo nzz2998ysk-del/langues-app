@@ -29,17 +29,14 @@ const pool = new Pool({
   ssl: DATABASE_URL.includes("localhost") ? false : { rejectUnauthorized: false },
 });
 
-// Every language/feature that can be toggled free <-> premium from the admin panel.
+// Access model: every language is free at a basic level for every account.
+// What the admin can toggle free <-> premium here is no longer "which
+// language" but "which kind of deeper content" (feedback, lessons, exercises),
+// applied across all languages.
 const DEFAULT_FEATURES = [
-  { key: "he", label: "Hébreu", category: "language", is_premium: false, sort_order: 1 },
-  { key: "es", label: "Español", category: "language", is_premium: false, sort_order: 2 },
-  { key: "en", label: "English", category: "language", is_premium: false, sort_order: 3 },
-  { key: "it", label: "Italiano", category: "language", is_premium: false, sort_order: 4 },
-  { key: "zh", label: "中文 (Mandarin)", category: "language", is_premium: true, sort_order: 5 },
-  { key: "pt", label: "Português", category: "language", is_premium: true, sort_order: 6 },
-  { key: "ru", label: "Русский", category: "language", is_premium: true, sort_order: 7 },
-  { key: "de", label: "Deutsch", category: "language", is_premium: true, sort_order: 8 },
-  { key: "ja", label: "日本語", category: "language", is_premium: true, sort_order: 9 },
+  { key: "feedback-avance", label: "Feedback avancé", category: "premium", is_premium: true, sort_order: 1 },
+  { key: "lecons-avancees", label: "Leçons avancées", category: "premium", is_premium: true, sort_order: 2 },
+  { key: "exercices-avances", label: "Exercices avancés", category: "premium", is_premium: true, sort_order: 3 },
 ];
 
 async function initDb() {
@@ -56,6 +53,8 @@ async function initDb() {
   `);
   // Backfill in case the column was added after the table already existed.
   await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS is_admin BOOLEAN NOT NULL DEFAULT FALSE;`);
+  // Per-account custom ordering of the language cards on the hub (JSON array of codes).
+  await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS lang_order TEXT;`);
 
   await pool.query(`
     CREATE TABLE IF NOT EXISTS features (
@@ -66,6 +65,10 @@ async function initDb() {
       sort_order INT NOT NULL DEFAULT 0
     );
   `);
+  // Old model: per-language premium flags (he/es/en/it free, zh/pt/ru/de/ja premium).
+  // New model: every language is free; these rows no longer gate anything, so
+  // drop them in favor of the 3 global "advanced content" toggles below.
+  await pool.query(`DELETE FROM features WHERE category = 'language'`);
   for (const f of DEFAULT_FEATURES) {
     await pool.query(
       `INSERT INTO features (key, label, category, is_premium, sort_order)
@@ -309,20 +312,49 @@ app.get("/api/me", async (req, res) => {
   if (!req.userId) return res.status(401).json({ authenticated: false });
   try {
     const result = await pool.query(
-      "SELECT id, email, name, subscribed, is_admin FROM users WHERE id = $1",
+      "SELECT id, email, name, subscribed, is_admin, lang_order FROM users WHERE id = $1",
       [req.userId]
     );
     const user = result.rows[0];
     if (!user) return res.status(401).json({ authenticated: false });
+    let langOrder = null;
+    if (user.lang_order) {
+      try {
+        const parsed = JSON.parse(user.lang_order);
+        if (Array.isArray(parsed)) langOrder = parsed;
+      } catch (e) {
+        // ignore malformed stored order
+      }
+    }
     return res.json({
       authenticated: true,
       email: user.email,
       name: user.name,
       subscribed: user.subscribed,
       isAdmin: user.is_admin,
+      langOrder,
     });
   } catch (err) {
     console.error("me error:", err);
+    return res.status(500).json({ error: "Erreur serveur." });
+  }
+});
+
+// ---- per-account custom ordering of the language cards on the hub ----
+app.put("/api/lang-order", async (req, res) => {
+  if (!req.userId) return res.status(401).json({ error: "Connecte-toi d'abord." });
+  const order = req.body && req.body.order;
+  if (!Array.isArray(order) || order.length === 0 || order.length > 200) {
+    return res.status(400).json({ error: "Ordre invalide." });
+  }
+  const cleaned = order
+    .filter((c) => typeof c === "string" && /^[a-z]{2,4}$/.test(c))
+    .slice(0, 200);
+  try {
+    await pool.query("UPDATE users SET lang_order = $1 WHERE id = $2", [JSON.stringify(cleaned), req.userId]);
+    return res.json({ ok: true });
+  } catch (err) {
+    console.error("lang-order error:", err);
     return res.status(500).json({ error: "Erreur serveur." });
   }
 });
