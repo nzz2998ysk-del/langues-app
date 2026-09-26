@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mes langues — Connexion</title>
+<meta name="theme-color" content="#F5F1EC">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  background:#F5F1EC;min-height:100vh;min-height:100dvh;display:flex;align-items:center;justify-content:center;
+  padding:32px 18px;color:#201C2E}
+.auth-wrap{width:100%;max-width:380px}
+.auth-header{text-align:center;margin-bottom:22px}
+.auth-title{font-size:26px;font-weight:900;letter-spacing:-.02em}
+.auth-subtitle{font-size:13.5px;color:#726C8A;margin-top:6px;font-weight:600}
+.auth-card{background:#FFFFFF;border-radius:22px;padding:22px;
+  box-shadow:0 10px 28px -8px rgba(23,26,24,.16),0 2px 8px rgba(23,26,24,.06);
+  display:flex;flex-direction:column;gap:14px}
+.field-group{display:flex;flex-direction:column;gap:6px}
+.auth-label{font-size:12px;font-weight:700;color:#726C8A}
+.auth-input{border:1.5px solid rgba(32,28,46,.12);border-radius:12px;padding:11px 13px;
+  font-size:14.5px;font-family:inherit;background:#F9F7F4;color:#201C2E;outline:none;
+  transition:border-color .15s ease}
+.auth-input:focus{border-color:#3D348B}
+.auth-error{background:#FBE2E0;color:#A8362F;border-radius:10px;padding:9px 12px;font-size:12.5px;font-weight:600}
+.btn-auth-primary{background:#3D348B;color:#fff;border:none;border-radius:12px;padding:13px;
+  font-size:14.5px;font-weight:800;cursor:pointer;transition:transform .15s cubic-bezier(.34,1.4,.64,1),background .15s}
+.btn-auth-primary:active{transform:scale(.97)}
+.btn-auth-primary:disabled{opacity:.6;cursor:default}
+.btn-auth-link{background:none;border:none;color:#3D348B;font-size:12.5px;font-weight:700;
+  cursor:pointer;text-align:center;padding:4px}
+.auth-note{font-size:11px;color:#AEA8C4;text-align:center;line-height:1.5}
+@media (prefers-color-scheme: dark){
+  body{background:#171426;color:#EDEAF5}
+  .auth-subtitle{color:#9E97B8}
+  .auth-card{background:#211D36;box-shadow:0 10px 28px -8px rgba(0,0,0,.5),0 2px 8px rgba(0,0,0,.3)}
+  .auth-input{background:#171426;border-color:rgba(237,234,245,.14);color:#EDEAF5}
+  .auth-input:focus{border-color:#8A7CF0}
+  .auth-error{background:#341C1C;color:#F0776E}
+  .btn-auth-primary{background:#8A7CF0;color:#171426}
+  .btn-auth-link{color:#B3A8FF}
+  .auth-note{color:#6E6790}
+}
+</style>
+</head>
+<body>
+<div class="auth-wrap">
+  <div class="auth-header">
+    <div class="auth-title">Mes langues</div>
+    <div class="auth-subtitle" id="authSubtitle">Connecte-toi pour accéder à l'application</div>
+  </div>
+  <form id="authForm" class="auth-card" onsubmit="return false;">
+    <div class="field-group" id="authNameGroup" style="display:none">
+      <label class="auth-label" for="authName">Prénom</label>
+      <input class="auth-input" id="authName" type="text" placeholder="Ton prénom" autocomplete="name">
+    </div>
+    <div class="field-group">
+      <label class="auth-label" for="authEmail">Email</label>
+      <input class="auth-input" id="authEmail" type="email" placeholder="toi@exemple.com" autocomplete="email">
+    </div>
+    <div class="field-group">
+      <label class="auth-label" for="authPassword">Mot de passe</label>
+      <input class="auth-input" id="authPassword" type="password" placeholder="••••••••" autocomplete="current-password">
+    </div>
+    <div class="field-group" id="authConfirmGroup" style="display:none">
+      <label class="auth-label" for="authConfirm">Confirme le mot de passe</label>
+      <input class="auth-input" id="authConfirm" type="password" placeholder="••••••••" autocomplete="new-password">
+    </div>
+    <div id="authError" class="auth-error" style="display:none"></div>
+    <button type="button" class="btn-auth-primary" id="authSubmitBtn" onclick="authSubmit()">Se connecter</button>
+    <button type="button" class="btn-auth-link" id="authToggleBtn" onclick="authToggleMode()">Pas encore de compte&nbsp;? Créer un compte</button>
+    <div class="auth-note">Tes données de compte sont stockées de façon sécurisée sur notre serveur (mot de passe chiffré, jamais en clair).</div>
+  </form>
+</div>
+<script>
+var authMode = 'login';
+
+function authClearError(){
+  var el = document.getElementById('authError');
+  el.style.display = 'none'; el.textContent = '';
+}
+function authShowError(msg){
+  var el = document.getElementById('authError');
+  el.textContent = msg; el.style.display = 'block';
+}
+function authToggleMode(){
+  authMode = (authMode === 'login') ? 'signup' : 'login';
+  authClearError();
+  document.getElementById('authNameGroup').style.display = authMode === 'signup' ? 'block' : 'none';
+  document.getElementById('authConfirmGroup').style.display = authMode === 'signup' ? 'block' : 'none';
+  document.getElementById('authSubmitBtn').textContent = authMode === 'signup' ? 'Créer mon compte' : 'Se connecter';
+  document.getElementById('authToggleBtn').textContent = authMode === 'signup' ? 'Déjà un compte ? Se connecter' : "Pas encore de compte ? Créer un compte";
+  document.getElementById('authSubtitle').textContent = authMode === 'signup' ? "Crée ton compte pour accéder à l'application" : "Connecte-toi pour accéder à l'application";
+}
+
+function authSubmit(){
+  authClearError();
+  var email = (document.getElementById('authEmail').value || '').trim().toLowerCase();
+  var pass = document.getElementById('authPassword').value || '';
+  var btn = document.getElementById('authSubmitBtn');
+
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ authShowError('Adresse email invalide.'); return; }
+  if (pass.length < 6){ authShowError('Le mot de passe doit contenir au moins 6 caractères.'); return; }
+
+  var body, url;
+  if (authMode === 'signup'){
+    var name = (document.getElementById('authName').value || '').trim();
+    var confirm = document.getElementById('authConfirm').value || '';
+    if (pass !== confirm){ authShowError('Les mots de passe ne correspondent pas.'); return; }
+    url = '/api/signup';
+    body = { email: email, password: pass, name: name };
+  } else {
+    url = '/api/login';
+    body = { email: email, password: pass };
+  }
+
+  btn.disabled = true;
+  fetch(url, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(body)
+  }).then(function(res){
+    return res.json().then(function(data){ return {status: res.status, data: data}; });
+  }).then(function(r){
+    btn.disabled = false;
+    if (r.status >= 200 && r.status < 300){
+      window.location.href = '/';
+    } else {
+      authShowError(r.data && r.data.error ? r.data.error : "Une erreur est survenue.");
+    }
+  }).catch(function(){
+    btn.disabled = false;
+    authShowError("Impossible de contacter le serveur. Réessaie.");
+  });
+}
+</script>
+</body>
+</html>
