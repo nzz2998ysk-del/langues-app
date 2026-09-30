@@ -10,6 +10,18 @@ espéranto, klingon, navajo). Inscription par email + mot de passe (comptes sur
 PostgreSQL, mots de passe hachés bcrypt), compte administrateur, paiement par
 abonnement (Stripe) et facture envoyée par email.
 
+## Design
+
+L'app entière (l'habillage — connexion, profil, idées, admin, réinitialisation
+de mot de passe — ainsi que les 272 pages de contenu embarquées pour chaque
+langue) suit un langage visuel « iOS 27 / Liquid Glass », inspiré de
+[ios27-design-system](https://github.com/seunghan91/ios27-design-system) :
+couleurs système (clair/sombre), typographie SF Pro, grille d'espacement 8pt,
+rayons de coin agrandis et surfaces en verre translucide avec flou
+d'arrière-plan. La couleur d'accent propre à chaque langue est préservée ;
+seule la palette neutre partagée (fonds, textes, séparateurs, ombres) a été
+remplacée par les tokens iOS 27.
+
 ## Modèle d'accès
 
 Toutes les langues sont accessibles gratuitement à tout le monde, au niveau de
