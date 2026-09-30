@@ -56,6 +56,12 @@ body.in-lang #homeHub{display:none !important}
 .hub-lock{display:none;position:absolute;top:12px;right:12px;font-size:15px}
 .hub-card.locked{opacity:.55;filter:grayscale(.3)}
 .hub-card.locked .hub-lock{display:block}
+.hub-card.hub-card-dev{opacity:.5;filter:grayscale(.6);cursor:default}
+.hub-card.hub-card-dev:active{transform:none}
+.hub-dev-badge{display:none;position:absolute;top:10px;right:10px;font-size:10.5px;font-weight:800;
+  background:rgba(0,0,0,.35);color:#fff;padding:4px 8px;border-radius:999px;letter-spacing:.02em}
+.hub-card.hub-card-dev .hub-dev-badge{display:block}
+.hub-card.hub-card-dev .hub-lock{display:none}
 .hub-grid.reordering .hub-card{cursor:grab;animation:hubWiggle .28s ease-in-out infinite alternate}
 .hub-grid.reordering .hub-card:nth-child(even){animation-delay:.07s}
 @keyframes hubWiggle{from{transform:rotate(-0.7deg)}to{transform:rotate(0.7deg)}}
@@ -197,6 +203,7 @@ html[data-theme="dark"] .tabbtn.on::after{background:var(--primary-dark)}
       <div class="hub-subtitle" id="hubGreeting">Choisis une langue pour commencer</div>
       <div class="hub-header-actions">
         <a href="/admin" class="hub-admin-link" id="hubAdminLink" style="display:none">⚙️ Admin</a>
+        <a href="/profile" class="hub-admin-link">🧑 Profil</a>
         <a href="/ideas" class="hub-admin-link">💡 Idées</a>
         <button type="button" class="hub-logout" id="hubReorderBtn" onclick="toggleReorder()">↕️ Réorganiser</button>
         <button type="button" class="hub-logout" id="hubLogoutBtn" onclick="serverLogout()">Se déconnecter</button>
@@ -378,8 +385,13 @@ function renderHubGrid(order){
     btn.style.setProperty("--card-color", meta.color);
     btn.style.setProperty("--card-color-light", meta.light);
     btn.draggable = reordering;
-    btn.innerHTML = '<span class="hub-flag">' + meta.flag + '</span><span class="hub-name">' + meta.name + '</span><span class="hub-lock">🔒</span>';
-    btn.addEventListener("click", function(){ if (!reordering) openLang(code); });
+    btn.innerHTML = '<span class="hub-flag">' + meta.flag + '</span><span class="hub-name">' + meta.name + '</span><span class="hub-lock">🔒</span><span class="hub-dev-badge">🚧 Bientôt</span>';
+    if (window.LANG_DEV_CODES && window.LANG_DEV_CODES[code]) btn.classList.add("hub-card-dev");
+    btn.addEventListener("click", function(){
+      if (reordering) return;
+      if (btn.classList.contains("hub-card-dev")) return;
+      openLang(code);
+    });
     btn.addEventListener("dragstart", function(e){ dragSrc = code; btn.classList.add("dragging"); try{ e.dataTransfer.setData("text/plain", code); }catch(err){} });
     btn.addEventListener("dragend", function(){ btn.classList.remove("dragging"); document.querySelectorAll(".hub-card.drag-over").forEach(function(c){ c.classList.remove("drag-over"); }); });
     btn.addEventListener("dragover", function(e){ if (!reordering) return; e.preventDefault(); btn.classList.add("drag-over"); });
@@ -425,6 +437,12 @@ function saveLangOrder(order){
       var link = document.getElementById("hubAdminLink");
       if (link) link.style.display = "inline-block";
     }
+    var greet = document.getElementById("hubGreeting");
+    if (greet){
+      var base = LANG_META[me.baseLang] || LANG_META.fr;
+      var hello = me.name ? ("Bonjour " + me.name + " 👋") : "Choisis une langue pour commencer";
+      greet.textContent = hello + " · langue de base : " + base.flag + " " + base.name;
+    }
     if (me.langOrder && Array.isArray(me.langOrder) && me.langOrder.length){
       var known = me.langOrder.filter(function(c){ return LANG_META[c]; });
       LANG_ORDER_DEFAULT.forEach(function(c){ if (known.indexOf(c) === -1) known.push(c); });
@@ -436,6 +454,14 @@ function saveLangOrder(order){
       var anyPremiumLocked = (data.features || []).some(function(f){ return f.locked; });
       var cta = document.getElementById("hubPremiumCta");
       if (cta) cta.style.display = (anyPremiumLocked && !unlocked) ? "block" : "none";
+      window.LANG_DEV_CODES = {};
+      Object.keys(data.languageStatus || {}).forEach(function(c){
+        if (data.languageStatus[c] === "development") window.LANG_DEV_CODES[c] = true;
+      });
+      document.querySelectorAll(".hub-card").forEach(function(btn){
+        var code = btn.getAttribute("data-lang");
+        btn.classList.toggle("hub-card-dev", !!window.LANG_DEV_CODES[code]);
+      });
     });
   }).catch(function(){ renderHubGrid(currentOrder); });
 })();
