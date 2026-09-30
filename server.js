@@ -510,9 +510,34 @@ app.use((req, res, next) => {
 // request is a single string split/join.
 const NONCE_MARK = "__CSP_NONCE__";
 const htmlTemplates = new Map();
+// Cache busting: /course and /design-system files are cached by browsers (1 h
+// in production), so the pages reference them as "?v=<hash of their content>".
+// A deploy that changes engine.js, a stylesheet... changes the URL, and
+// nobody keeps running an old engine against a newer API.
+const assetVersions = new Map();
+function assetVersion(rel) {
+  const file = path.join(__dirname, rel);
+  if (!file.startsWith(__dirname + path.sep)) return "";
+  try {
+    const mtime = require("fs").statSync(file).mtimeMs;
+    const hit = assetVersions.get(rel);
+    if (hit && (isProd || hit.mtime === mtime)) return hit.v;
+    const v = crypto.createHash("sha256").update(require("fs").readFileSync(file)).digest("hex").slice(0, 10);
+    assetVersions.set(rel, { mtime, v });
+    return v;
+  } catch (e) {
+    return "";
+  }
+}
+function versionAssets(html) {
+  return html.replace(/((?:src|href)=\\?")(\/(?:course|design-system)\/[\w./-]+\.(?:js|css))(?=\\?")/g, (m, pre, url) => {
+    const v = assetVersion(url.slice(1));
+    return v ? `${pre}${url}?v=${v}` : m;
+  });
+}
 function htmlTemplate(name) {
   if (isProd && htmlTemplates.has(name)) return htmlTemplates.get(name);
-  const raw = require("fs").readFileSync(path.join(__dirname, name), "utf8");
+  const raw = versionAssets(require("fs").readFileSync(path.join(__dirname, name), "utf8"));
   const tpl = raw.split("\n").map((line) =>
     // app.html's ALL_PAGES line is JSON: its attribute quotes must be escaped.
     line.startsWith("var ALL_PAGES = ")

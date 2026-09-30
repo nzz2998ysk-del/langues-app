@@ -28,6 +28,10 @@ self.addEventListener("fetch", (e) => {
     fetch(req).then((res) => {
       if (res.ok) { const copy = res.clone(); caches.open(CACHE).then((c) => c.put(req, copy)); }
       return res;
-    }).catch(() => caches.match(req).then((hit) => hit || new Response("", { status: 503, statusText: "offline" })))
+    }).catch(() => caches.match(req)
+      // Pages load /course and /design-system files as "?v=<hash>": offline,
+      // any cached version of the file is better than nothing.
+      .then((hit) => hit || (url.pathname.startsWith("/api/") ? null : caches.match(req, { ignoreSearch: true })))
+      .then((hit) => hit || new Response("", { status: 503, statusText: "offline" })))
   );
 });

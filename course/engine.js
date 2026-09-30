@@ -91,6 +91,14 @@
   }
   function emptyMsg() { return '<p class="muted with-masc">' + masc(pickMood(["thinking", "sad"]), 56, "masc-inline") + esc(T("no_results")) + "</p>"; }
 
+  // A mascot picture that cannot load is removed rather than shown as a
+  // broken-image icon (the text around it always stands on its own).
+  document.addEventListener("error", function (e) {
+    var t = e.target;
+    if (t && t.tagName === "IMG" && t.classList.contains("masc")) {
+      var box = t.closest(".mt-faces"); if (box) box.remove(); else t.remove();
+    }
+  }, true);
   function toast(msg, mood) {
     var el = document.getElementById("engToast");
     if (!el) { el = document.createElement("div"); el.id = "engToast"; el.className = "toast"; body.appendChild(el); }
