@@ -1,0 +1,264 @@
+{
+ "note": {
+  "fr": "Le hindi s'écrit en devanagari, de gauche à droite."
+ },
+ "themes": [
+  {
+   "id": "salutations",
+   "fr": "Salutations"
+  },
+  {
+   "id": "nombres",
+   "fr": "Nombres"
+  },
+  {
+   "id": "couleurs",
+   "fr": "Couleurs"
+  }
+ ],
+ "words": [
+  {
+   "t": "नमस्ते",
+   "r": "namaste",
+   "level": "A1",
+   "theme": "salutations",
+   "g": {
+    "fr": "bonjour"
+   }
+  },
+  {
+   "t": "धन्यवाद",
+   "r": "dhanyavād",
+   "level": "A1",
+   "theme": "salutations",
+   "g": {
+    "fr": "merci"
+   }
+  },
+  {
+   "t": "कृपया",
+   "r": "kṛpayā",
+   "level": "A1",
+   "theme": "salutations",
+   "g": {
+    "fr": "s'il te plaît"
+   }
+  },
+  {
+   "t": "हाँ",
+   "r": "hā̃",
+   "level": "A1",
+   "theme": "salutations",
+   "g": {
+    "fr": "oui"
+   }
+  },
+  {
+   "t": "नहीं",
+   "r": "nahī̃",
+   "level": "A1",
+   "theme": "salutations",
+   "g": {
+    "fr": "non"
+   }
+  },
+  {
+   "t": "अलविदा",
+   "r": "alvidā",
+   "level": "A1",
+   "theme": "salutations",
+   "g": {
+    "fr": "au revoir"
+   }
+  },
+  {
+   "t": "एक",
+   "r": "ek",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "1"
+   }
+  },
+  {
+   "t": "दो",
+   "r": "do",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "2"
+   }
+  },
+  {
+   "t": "तीन",
+   "r": "tīn",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "3"
+   }
+  },
+  {
+   "t": "चार",
+   "r": "cār",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "4"
+   }
+  },
+  {
+   "t": "पांच",
+   "r": "pā̃c",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "5"
+   }
+  },
+  {
+   "t": "छह",
+   "r": "chah",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "6"
+   }
+  },
+  {
+   "t": "सात",
+   "r": "sāt",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "7"
+   }
+  },
+  {
+   "t": "आठ",
+   "r": "āṭh",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "8"
+   }
+  },
+  {
+   "t": "नौ",
+   "r": "nau",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "9"
+   }
+  },
+  {
+   "t": "दस",
+   "r": "das",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "10"
+   }
+  },
+  {
+   "t": "लाल",
+   "r": "lāl",
+   "level": "A1",
+   "theme": "couleurs",
+   "g": {
+    "fr": "rouge"
+   }
+  },
+  {
+   "t": "नीला",
+   "r": "nīlā",
+   "level": "A1",
+   "theme": "couleurs",
+   "g": {
+    "fr": "bleu"
+   }
+  },
+  {
+   "t": "हरा",
+   "r": "harā",
+   "level": "A1",
+   "theme": "couleurs",
+   "g": {
+    "fr": "vert"
+   }
+  },
+  {
+   "t": "पीला",
+   "r": "pīlā",
+   "level": "A1",
+   "theme": "couleurs",
+   "g": {
+    "fr": "jaune"
+   }
+  },
+  {
+   "t": "काला",
+   "r": "kālā",
+   "level": "A1",
+   "theme": "couleurs",
+   "g": {
+    "fr": "noir"
+   }
+  },
+  {
+   "t": "सफेद",
+   "r": "safed",
+   "level": "A1",
+   "theme": "couleurs",
+   "g": {
+    "fr": "blanc"
+   }
+  }
+ ],
+ "grammar": [
+  {
+   "id": "g0",
+   "level": "A1",
+   "title": {
+    "fr": "Ordre des mots"
+   },
+   "body": {
+    "fr": "<p>Le hindi suit l'ordre Sujet-Objet-Verbe : « मैं चाय पीता हूँ » (je thé bois).</p>"
+   }
+  },
+  {
+   "id": "g1",
+   "level": "A1",
+   "title": {
+    "fr": "Postpositions"
+   },
+   "body": {
+    "fr": "<p>Au lieu de prépositions avant le nom, le hindi utilise des postpositions après : घर में (dans la maison).</p>"
+   }
+  },
+  {
+   "id": "g2",
+   "level": "A1",
+   "title": {
+    "fr": "Genre grammatical"
+   },
+   "body": {
+    "fr": "<p>Les noms et adjectifs sont masculins ou féminins, ce qui change la forme du verbe.</p>"
+   }
+  }
+ ],
+ "readings": [
+  {
+   "id": "r0",
+   "level": "A1",
+   "title": "Lecture",
+   "t": "मेरा नाम राज है। मैं दिल्ली में रहता हूँ।",
+   "r": "",
+   "tr": {
+    "fr": "Traduction : « Je m'appelle Raj. J'habite à Delhi. »"
+   },
+   "q": []
+  }
+ ]
+}

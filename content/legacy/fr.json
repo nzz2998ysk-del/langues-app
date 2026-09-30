@@ -1,0 +1,264 @@
+{
+ "note": {
+  "fr": "Le français s'écrit avec l'alphabet latin et des accents (é, è, ê, ç)."
+ },
+ "themes": [
+  {
+   "id": "salutations",
+   "fr": "Salutations"
+  },
+  {
+   "id": "nombres",
+   "fr": "Nombres"
+  },
+  {
+   "id": "couleurs",
+   "fr": "Couleurs"
+  }
+ ],
+ "words": [
+  {
+   "t": "Bonjour",
+   "r": "",
+   "level": "A1",
+   "theme": "salutations",
+   "g": {
+    "fr": "bonjour"
+   }
+  },
+  {
+   "t": "Merci",
+   "r": "",
+   "level": "A1",
+   "theme": "salutations",
+   "g": {
+    "fr": "merci"
+   }
+  },
+  {
+   "t": "S'il te plaît",
+   "r": "",
+   "level": "A1",
+   "theme": "salutations",
+   "g": {
+    "fr": "s'il te plaît"
+   }
+  },
+  {
+   "t": "Oui",
+   "r": "",
+   "level": "A1",
+   "theme": "salutations",
+   "g": {
+    "fr": "oui"
+   }
+  },
+  {
+   "t": "Non",
+   "r": "",
+   "level": "A1",
+   "theme": "salutations",
+   "g": {
+    "fr": "non"
+   }
+  },
+  {
+   "t": "Au revoir",
+   "r": "",
+   "level": "A1",
+   "theme": "salutations",
+   "g": {
+    "fr": "au revoir"
+   }
+  },
+  {
+   "t": "un",
+   "r": "",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "1"
+   }
+  },
+  {
+   "t": "deux",
+   "r": "",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "2"
+   }
+  },
+  {
+   "t": "trois",
+   "r": "",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "3"
+   }
+  },
+  {
+   "t": "quatre",
+   "r": "",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "4"
+   }
+  },
+  {
+   "t": "cinq",
+   "r": "",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "5"
+   }
+  },
+  {
+   "t": "six",
+   "r": "",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "6"
+   }
+  },
+  {
+   "t": "sept",
+   "r": "",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "7"
+   }
+  },
+  {
+   "t": "huit",
+   "r": "",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "8"
+   }
+  },
+  {
+   "t": "neuf",
+   "r": "",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "9"
+   }
+  },
+  {
+   "t": "dix",
+   "r": "",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "10"
+   }
+  },
+  {
+   "t": "rouge",
+   "r": "",
+   "level": "A1",
+   "theme": "couleurs",
+   "g": {
+    "fr": "rouge"
+   }
+  },
+  {
+   "t": "bleu",
+   "r": "",
+   "level": "A1",
+   "theme": "couleurs",
+   "g": {
+    "fr": "bleu"
+   }
+  },
+  {
+   "t": "vert",
+   "r": "",
+   "level": "A1",
+   "theme": "couleurs",
+   "g": {
+    "fr": "vert"
+   }
+  },
+  {
+   "t": "jaune",
+   "r": "",
+   "level": "A1",
+   "theme": "couleurs",
+   "g": {
+    "fr": "jaune"
+   }
+  },
+  {
+   "t": "noir",
+   "r": "",
+   "level": "A1",
+   "theme": "couleurs",
+   "g": {
+    "fr": "noir"
+   }
+  },
+  {
+   "t": "blanc",
+   "r": "",
+   "level": "A1",
+   "theme": "couleurs",
+   "g": {
+    "fr": "blanc"
+   }
+  }
+ ],
+ "grammar": [
+  {
+   "id": "g0",
+   "level": "A1",
+   "title": {
+    "fr": "Genre des noms"
+   },
+   "body": {
+    "fr": "<p>Chaque nom est masculin ou féminin (le/la) ; les adjectifs s'accordent en genre et en nombre.</p>"
+   }
+  },
+  {
+   "id": "g1",
+   "level": "A1",
+   "title": {
+    "fr": "Ordre des mots"
+   },
+   "body": {
+    "fr": "<p>Sujet-Verbe-Objet, comme en anglais : « Je mange une pomme ».</p>"
+   }
+  },
+  {
+   "id": "g2",
+   "level": "A1",
+   "title": {
+    "fr": "Conjugaison"
+   },
+   "body": {
+    "fr": "<p>Les verbes changent de forme selon la personne et le temps (je parle, tu parles, il parle...).</p>"
+   }
+  }
+ ],
+ "readings": [
+  {
+   "id": "r0",
+   "level": "A1",
+   "title": "Lecture",
+   "t": "Bonjour, je m'appelle Léa. J'habite à Lyon et j'aime la lecture.",
+   "r": "",
+   "tr": {
+    "fr": "Traduction : « Hello, my name is Léa. I live in Lyon and I like reading. »"
+   },
+   "q": []
+  }
+ ]
+}

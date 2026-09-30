@@ -50,34 +50,34 @@ button:disabled{opacity:.5;cursor:default;box-shadow:var(--ig27-shadow-sm)}
 <body>
 <div class="wrap">
   <div class="topnav">
-    <a class="ig27-back" href="/">‹ Retour à l'accueil</a>
+    <a class="ig27-back" href="/">‹ <span data-i18n="back_home">Retour à l'accueil</span></a>
   </div>
-  <h1>🧑 Mon profil</h1>
-  <p class="lead">Ton nom et ta langue de base — celle que tu parles déjà, utilisée comme point de départ pour
-    apprendre les autres. Par défaut c'est le français, mais tu peux choisir n'importe laquelle des 39 langues.</p>
+  <h1>🧑 <span data-i18n="profile_title">Mon profil</span></h1>
+  <p class="lead" data-i18n="profile_lead">Ton nom et ta langue de base — celle que tu parles déjà. Toute l'application s'y adapte : interface, traductions, explications et parcours.</p>
 
   <div class="card">
     <div class="field">
-      <label for="name">Prénom / nom affiché</label>
-      <input type="text" id="name" maxlength="80" placeholder="Ton prénom">
+      <label for="name" data-i18n="name_label">Prénom / nom affiché</label>
+      <input type="text" id="name" maxlength="80" data-i18n-ph="name_ph" placeholder="Ton prénom">
     </div>
     <div class="field">
-      <label for="baseLang">Langue de base</label>
+      <label for="baseLang" data-i18n="base_lang">Langue de base</label>
       <select id="baseLang"></select>
     </div>
     <div class="field email-row">
       <div><label style="margin-bottom:2px">Email</label><div class="val" id="emailVal">…</div></div>
     </div>
-    <button id="saveBtn" onclick="saveProfile()">Enregistrer</button>
+    <button id="saveBtn" onclick="saveProfile()" data-i18n="save">Enregistrer</button>
     <div class="msg" id="status"></div>
   </div>
 
-  <div class="note">La langue de base personnalise ton profil (nom affiché, salutation sur l'accueil). Le contenu
-    des leçons (vocabulaire, grammaire, lecture) reste pour l'instant rédigé en français quelle que soit la langue de
-    base choisie — la traduction complète de chaque module dans toutes les langues de base est un chantier à part,
-    langue par langue.</div>
+  <div class="note" data-i18n="profile_note">Exemple : langue de base français + langue apprise japonais = interface, traductions des mots et des phrases, et explications en français, contenu en japonais. Les explications de grammaire et de culture sont rédigées en français et en anglais : pour les autres langues de base, la version anglaise est utilisée.</div>
 </div>
+<script src="/course/i18n.js"></script>
 <script>
+var BASE = 'fr';
+function tr(k){ return I18N.t(BASE, k); }
+function applyLang(code){ return I18N.load(code).then(function(c){ BASE = c; document.documentElement.lang = c; document.documentElement.dir = I18N.rtl(c) ? 'rtl' : 'ltr'; I18N.apply(c); }); }
 var LANG_META = {
   en:{flag:"🇬🇧", name:"English"}, es:{flag:"🇪🇸", name:"Español"}, it:{flag:"🇮🇹", name:"Italiano"},
   he:{flag:"🇮🇱", name:"Hébreu"}, zh:{flag:"🇨🇳", name:"中文"}, pt:{flag:"🇵🇹", name:"Português"},
@@ -111,6 +111,7 @@ async function loadProfile(){
   document.getElementById('name').value = me.name || '';
   document.getElementById('emailVal').textContent = me.email || '';
   select.value = me.baseLang || 'fr';
+  applyLang(select.value);
 }
 
 async function saveProfile(){
@@ -118,7 +119,7 @@ async function saveProfile(){
   var status = document.getElementById('status');
   status.className = 'msg';
   btn.disabled = true;
-  btn.textContent = 'Enregistrement…';
+  btn.textContent = tr('saving');
   try {
     var r = await fetch('/api/profile', {
       method: 'PUT',
@@ -127,16 +128,18 @@ async function saveProfile(){
     });
     var data = await r.json().catch(function(){ return {}; });
     if (r.ok){
-      status.textContent = 'Profil enregistré ✓';
+      status.textContent = tr('saved');
+      applyLang(select.value);
+      try { if (window.top.__COURSE_CACHE) window.top.__COURSE_CACHE = {}; } catch(e) {}
       status.classList.add('ok');
     } else {
-      status.textContent = data.error || "Impossible d'enregistrer pour le moment.";
+      status.textContent = data.error || tr("save_error");
     }
   } catch(e){
-    status.textContent = 'Erreur réseau.';
+    status.textContent = tr('net_error');
   }
   btn.disabled = false;
-  btn.textContent = 'Enregistrer';
+  btn.textContent = tr('save');
 }
 
 loadProfile();

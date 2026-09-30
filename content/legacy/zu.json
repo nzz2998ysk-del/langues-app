@@ -1,0 +1,206 @@
+{
+ "note": {
+  "fr": "Le zoulou est une langue bantoue d'Afrique du Sud, à système de classes nominales. Vocabulaire best-effort."
+ },
+ "themes": [
+  {
+   "id": "salutations",
+   "fr": "Salutations"
+  },
+  {
+   "id": "nombres",
+   "fr": "Nombres"
+  }
+ ],
+ "words": [
+  {
+   "t": "Sawubona",
+   "r": "",
+   "level": "A1",
+   "theme": "salutations",
+   "g": {
+    "fr": "bonjour"
+   }
+  },
+  {
+   "t": "Ngiyabonga",
+   "r": "",
+   "level": "A1",
+   "theme": "salutations",
+   "g": {
+    "fr": "merci"
+   }
+  },
+  {
+   "t": "Ngicela",
+   "r": "",
+   "level": "A1",
+   "theme": "salutations",
+   "g": {
+    "fr": "s'il te plaît"
+   }
+  },
+  {
+   "t": "Yebo",
+   "r": "",
+   "level": "A1",
+   "theme": "salutations",
+   "g": {
+    "fr": "oui"
+   }
+  },
+  {
+   "t": "Cha",
+   "r": "",
+   "level": "A1",
+   "theme": "salutations",
+   "g": {
+    "fr": "non"
+   }
+  },
+  {
+   "t": "Sala kahle",
+   "r": "",
+   "level": "A1",
+   "theme": "salutations",
+   "g": {
+    "fr": "au revoir"
+   }
+  },
+  {
+   "t": "kunye",
+   "r": "",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "1"
+   }
+  },
+  {
+   "t": "kubili",
+   "r": "",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "2"
+   }
+  },
+  {
+   "t": "kuthathu",
+   "r": "",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "3"
+   }
+  },
+  {
+   "t": "kune",
+   "r": "",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "4"
+   }
+  },
+  {
+   "t": "kuhlanu",
+   "r": "",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "5"
+   }
+  },
+  {
+   "t": "isithupha",
+   "r": "",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "6"
+   }
+  },
+  {
+   "t": "isikhombisa",
+   "r": "",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "7"
+   }
+  },
+  {
+   "t": "isishiyagalombili",
+   "r": "",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "8"
+   }
+  },
+  {
+   "t": "isishiyagalolunye",
+   "r": "",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "9"
+   }
+  },
+  {
+   "t": "ishumi",
+   "r": "",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "10"
+   }
+  }
+ ],
+ "grammar": [
+  {
+   "id": "g0",
+   "level": "A1",
+   "title": {
+    "fr": "Classes nominales"
+   },
+   "body": {
+    "fr": "<p>Le zoulou classe ses noms en une quinzaine de « classes », chacune avec ses propres préfixes.</p>"
+   }
+  },
+  {
+   "id": "g1",
+   "level": "A1",
+   "title": {
+    "fr": "Langue agglutinante"
+   },
+   "body": {
+    "fr": "<p>Les verbes portent de nombreux préfixes/suffixes indiquant sujet, objet, temps.</p>"
+   }
+  },
+  {
+   "id": "g2",
+   "level": "A1",
+   "title": {
+    "fr": "Clics consonantiques"
+   },
+   "body": {
+    "fr": "<p>Le zoulou comporte des consonnes « clics », rares dans les autres langues du monde.</p>"
+   }
+  }
+ ],
+ "readings": [
+  {
+   "id": "r0",
+   "level": "A1",
+   "title": "Lecture",
+   "t": "Igama lami nginguThabo. Ngihlala eThekwini.",
+   "r": "",
+   "tr": {
+    "fr": "Traduction (best-effort) : « Je m'appelle Thabo. J'habite à Durban. »"
+   },
+   "q": []
+  }
+ ]
+}

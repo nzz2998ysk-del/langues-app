@@ -1,0 +1,264 @@
+{
+ "note": {
+  "fr": "L'arabe s'écrit de droite à gauche, avec des lettres qui changent de forme selon leur position dans le mot."
+ },
+ "themes": [
+  {
+   "id": "salutations",
+   "fr": "Salutations"
+  },
+  {
+   "id": "nombres",
+   "fr": "Nombres"
+  },
+  {
+   "id": "couleurs",
+   "fr": "Couleurs"
+  }
+ ],
+ "words": [
+  {
+   "t": "مرحبا",
+   "r": "marhaba",
+   "level": "A1",
+   "theme": "salutations",
+   "g": {
+    "fr": "bonjour"
+   }
+  },
+  {
+   "t": "شكرا",
+   "r": "shukran",
+   "level": "A1",
+   "theme": "salutations",
+   "g": {
+    "fr": "merci"
+   }
+  },
+  {
+   "t": "من فضلك",
+   "r": "min fadlik",
+   "level": "A1",
+   "theme": "salutations",
+   "g": {
+    "fr": "s'il te plaît"
+   }
+  },
+  {
+   "t": "نعم",
+   "r": "na'am",
+   "level": "A1",
+   "theme": "salutations",
+   "g": {
+    "fr": "oui"
+   }
+  },
+  {
+   "t": "لا",
+   "r": "lā",
+   "level": "A1",
+   "theme": "salutations",
+   "g": {
+    "fr": "non"
+   }
+  },
+  {
+   "t": "مع السلامة",
+   "r": "ma'a salāma",
+   "level": "A1",
+   "theme": "salutations",
+   "g": {
+    "fr": "au revoir"
+   }
+  },
+  {
+   "t": "واحد",
+   "r": "wāhid",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "1"
+   }
+  },
+  {
+   "t": "اثنان",
+   "r": "ithnān",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "2"
+   }
+  },
+  {
+   "t": "ثلاثة",
+   "r": "thalātha",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "3"
+   }
+  },
+  {
+   "t": "أربعة",
+   "r": "arba'a",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "4"
+   }
+  },
+  {
+   "t": "خمسة",
+   "r": "khamsa",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "5"
+   }
+  },
+  {
+   "t": "ستة",
+   "r": "sitta",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "6"
+   }
+  },
+  {
+   "t": "سبعة",
+   "r": "sab'a",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "7"
+   }
+  },
+  {
+   "t": "ثمانية",
+   "r": "thamāniya",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "8"
+   }
+  },
+  {
+   "t": "تسعة",
+   "r": "tis'a",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "9"
+   }
+  },
+  {
+   "t": "عشرة",
+   "r": "'ashara",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "10"
+   }
+  },
+  {
+   "t": "أحمر",
+   "r": "ahmar",
+   "level": "A1",
+   "theme": "couleurs",
+   "g": {
+    "fr": "rouge"
+   }
+  },
+  {
+   "t": "أزرق",
+   "r": "azraq",
+   "level": "A1",
+   "theme": "couleurs",
+   "g": {
+    "fr": "bleu"
+   }
+  },
+  {
+   "t": "أخضر",
+   "r": "akhdar",
+   "level": "A1",
+   "theme": "couleurs",
+   "g": {
+    "fr": "vert"
+   }
+  },
+  {
+   "t": "أصفر",
+   "r": "asfar",
+   "level": "A1",
+   "theme": "couleurs",
+   "g": {
+    "fr": "jaune"
+   }
+  },
+  {
+   "t": "أسود",
+   "r": "aswad",
+   "level": "A1",
+   "theme": "couleurs",
+   "g": {
+    "fr": "noir"
+   }
+  },
+  {
+   "t": "أبيض",
+   "r": "abyad",
+   "level": "A1",
+   "theme": "couleurs",
+   "g": {
+    "fr": "blanc"
+   }
+  }
+ ],
+ "grammar": [
+  {
+   "id": "g0",
+   "level": "A1",
+   "title": {
+    "fr": "Sens d'écriture"
+   },
+   "body": {
+    "fr": "<p>L'arabe s'écrit et se lit de droite à gauche.</p>"
+   }
+  },
+  {
+   "id": "g1",
+   "level": "A1",
+   "title": {
+    "fr": "Racines"
+   },
+   "body": {
+    "fr": "<p>La plupart des mots dérivent d'une racine de 3 consonnes qui porte le sens de base.</p>"
+   }
+  },
+  {
+   "id": "g2",
+   "level": "A1",
+   "title": {
+    "fr": "Ordre des mots"
+   },
+   "body": {
+    "fr": "<p>L'arabe standard place souvent le verbe avant le sujet (VSO).</p>"
+   }
+  }
+ ],
+ "readings": [
+  {
+   "id": "r0",
+   "level": "A1",
+   "title": "Lecture",
+   "t": "اسمي أحمد. أسكن في القاهرة.",
+   "r": "",
+   "tr": {
+    "fr": "Traduction : « Je m'appelle Ahmed. J'habite au Caire. »"
+   },
+   "q": []
+  }
+ ]
+}

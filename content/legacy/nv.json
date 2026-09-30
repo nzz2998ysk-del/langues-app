@@ -1,0 +1,197 @@
+{
+ "note": {
+  "fr": "Le navajo (diné bizaad) est une langue tonale et polysynthétique parlée par la nation Navajo (sud-ouest des États-Unis). Vocabulaire best-effort."
+ },
+ "themes": [
+  {
+   "id": "salutations",
+   "fr": "Salutations"
+  },
+  {
+   "id": "nombres",
+   "fr": "Nombres"
+  }
+ ],
+ "words": [
+  {
+   "t": "Yá'át'ééh",
+   "r": "",
+   "level": "A1",
+   "theme": "salutations",
+   "g": {
+    "fr": "bonjour"
+   }
+  },
+  {
+   "t": "Ahéhee'",
+   "r": "",
+   "level": "A1",
+   "theme": "salutations",
+   "g": {
+    "fr": "merci"
+   }
+  },
+  {
+   "t": "Aoo'",
+   "r": "",
+   "level": "A1",
+   "theme": "salutations",
+   "g": {
+    "fr": "oui"
+   }
+  },
+  {
+   "t": "Dooda",
+   "r": "",
+   "level": "A1",
+   "theme": "salutations",
+   "g": {
+    "fr": "non"
+   }
+  },
+  {
+   "t": "Hágoónee'",
+   "r": "",
+   "level": "A1",
+   "theme": "salutations",
+   "g": {
+    "fr": "au revoir"
+   }
+  },
+  {
+   "t": "t'ááłá'í",
+   "r": "",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "1"
+   }
+  },
+  {
+   "t": "naaki",
+   "r": "",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "2"
+   }
+  },
+  {
+   "t": "táá'",
+   "r": "",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "3"
+   }
+  },
+  {
+   "t": "dį́į́'",
+   "r": "",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "4"
+   }
+  },
+  {
+   "t": "ashdla'",
+   "r": "",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "5"
+   }
+  },
+  {
+   "t": "hastą́ą́",
+   "r": "",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "6"
+   }
+  },
+  {
+   "t": "tsosts'id",
+   "r": "",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "7"
+   }
+  },
+  {
+   "t": "tseebíí",
+   "r": "",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "8"
+   }
+  },
+  {
+   "t": "náhást'éí",
+   "r": "",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "9"
+   }
+  },
+  {
+   "t": "neeznáá",
+   "r": "",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "10"
+   }
+  }
+ ],
+ "grammar": [
+  {
+   "id": "g0",
+   "level": "A1",
+   "title": {
+    "fr": "Verbe en fin de phrase"
+   },
+   "body": {
+    "fr": "<p>Le navajo suit l'ordre Sujet-Objet-Verbe, avec une morphologie verbale extrêmement riche.</p>"
+   }
+  },
+  {
+   "id": "g1",
+   "level": "A1",
+   "title": {
+    "fr": "Langue tonale"
+   },
+   "body": {
+    "fr": "<p>Chaque voyelle porte un ton haut ou bas qui change le sens du mot.</p>"
+   }
+  },
+  {
+   "id": "g2",
+   "level": "A1",
+   "title": {
+    "fr": "Polysynthétique"
+   },
+   "body": {
+    "fr": "<p>Un seul mot-verbe peut porter à lui seul le sens de toute une phrase française.</p>"
+   }
+  }
+ ],
+ "readings": [
+  {
+   "id": "r0",
+   "level": "A1",
+   "title": "Lecture",
+   "t": "Shí éí John yinishyé.",
+   "r": "",
+   "tr": {
+    "fr": "Traduction (best-effort) : « Je m'appelle John. »"
+   },
+   "q": []
+  }
+ ]
+}

@@ -1,0 +1,112 @@
+{
+ "note": {
+  "fr": "Langue construite pour la série « Game of Thrones » par le linguiste David J. Peterson. Le vocabulaire publié est limité : ce module reste volontairement minimal."
+ },
+ "themes": [
+  {
+   "id": "expressions-connues",
+   "fr": "Expressions connues"
+  }
+ ],
+ "words": [
+  {
+   "t": "Valar morghulis",
+   "r": "",
+   "level": "A1",
+   "theme": "expressions-connues",
+   "g": {
+    "fr": "tous les hommes doivent mourir"
+   }
+  },
+  {
+   "t": "Valar dohaeris",
+   "r": "",
+   "level": "A1",
+   "theme": "expressions-connues",
+   "g": {
+    "fr": "tous les hommes doivent servir"
+   }
+  },
+  {
+   "t": "Kirimvose",
+   "r": "",
+   "level": "A1",
+   "theme": "expressions-connues",
+   "g": {
+    "fr": "merci"
+   }
+  },
+  {
+   "t": "Skoros jaqagon nyke",
+   "r": "",
+   "level": "A1",
+   "theme": "expressions-connues",
+   "g": {
+    "fr": "que dois-je faire ?"
+   }
+  },
+  {
+   "t": "Dracarys",
+   "r": "",
+   "level": "A1",
+   "theme": "expressions-connues",
+   "g": {
+    "fr": "feu de dragon (ordre de cracher le feu)"
+   }
+  },
+  {
+   "t": "Rytsas",
+   "r": "",
+   "level": "A1",
+   "theme": "expressions-connues",
+   "g": {
+    "fr": "salut / bien"
+   }
+  }
+ ],
+ "grammar": [
+  {
+   "id": "g0",
+   "level": "A1",
+   "title": {
+    "fr": "Langue construite"
+   },
+   "body": {
+    "fr": "<p>Le haut valyrien a été créé pour la fiction : son vocabulaire documenté est bien plus restreint qu'une langue naturelle.</p>"
+   }
+  },
+  {
+   "id": "g1",
+   "level": "A1",
+   "title": {
+    "fr": "Déclinaisons"
+   },
+   "body": {
+    "fr": "<p>Comme le latin, le haut valyrien décline ses noms selon leur fonction dans la phrase.</p>"
+   }
+  },
+  {
+   "id": "g2",
+   "level": "A1",
+   "title": {
+    "fr": "Quatre genres"
+   },
+   "body": {
+    "fr": "<p>Il distingue quatre genres grammaticaux : lunaire, solaire, terrestre et aquatique.</p>"
+   }
+  }
+ ],
+ "readings": [
+  {
+   "id": "r0",
+   "level": "A1",
+   "title": "Lecture",
+   "t": "Valar morghulis. Valar dohaeris.",
+   "r": "",
+   "tr": {
+    "fr": "Traduction : « Tous les hommes doivent mourir. Tous les hommes doivent servir. » (réplique culte de la série)"
+   },
+   "q": []
+  }
+ ]
+}

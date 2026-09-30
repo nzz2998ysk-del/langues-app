@@ -1,0 +1,264 @@
+{
+ "note": {
+  "fr": "Le latin classique s'écrit en alphabet latin (bien sûr) ; c'est la langue-mère du français."
+ },
+ "themes": [
+  {
+   "id": "salutations",
+   "fr": "Salutations"
+  },
+  {
+   "id": "nombres",
+   "fr": "Nombres"
+  },
+  {
+   "id": "couleurs",
+   "fr": "Couleurs"
+  }
+ ],
+ "words": [
+  {
+   "t": "Salve",
+   "r": "",
+   "level": "A1",
+   "theme": "salutations",
+   "g": {
+    "fr": "bonjour"
+   }
+  },
+  {
+   "t": "Gratias tibi ago",
+   "r": "",
+   "level": "A1",
+   "theme": "salutations",
+   "g": {
+    "fr": "merci"
+   }
+  },
+  {
+   "t": "Quaeso",
+   "r": "",
+   "level": "A1",
+   "theme": "salutations",
+   "g": {
+    "fr": "s'il te plaît"
+   }
+  },
+  {
+   "t": "Ita / Sane",
+   "r": "",
+   "level": "A1",
+   "theme": "salutations",
+   "g": {
+    "fr": "oui"
+   }
+  },
+  {
+   "t": "Non",
+   "r": "",
+   "level": "A1",
+   "theme": "salutations",
+   "g": {
+    "fr": "non"
+   }
+  },
+  {
+   "t": "Vale",
+   "r": "",
+   "level": "A1",
+   "theme": "salutations",
+   "g": {
+    "fr": "au revoir"
+   }
+  },
+  {
+   "t": "unus",
+   "r": "",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "1"
+   }
+  },
+  {
+   "t": "duo",
+   "r": "",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "2"
+   }
+  },
+  {
+   "t": "tres",
+   "r": "",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "3"
+   }
+  },
+  {
+   "t": "quattuor",
+   "r": "",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "4"
+   }
+  },
+  {
+   "t": "quinque",
+   "r": "",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "5"
+   }
+  },
+  {
+   "t": "sex",
+   "r": "",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "6"
+   }
+  },
+  {
+   "t": "septem",
+   "r": "",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "7"
+   }
+  },
+  {
+   "t": "octo",
+   "r": "",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "8"
+   }
+  },
+  {
+   "t": "novem",
+   "r": "",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "9"
+   }
+  },
+  {
+   "t": "decem",
+   "r": "",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "10"
+   }
+  },
+  {
+   "t": "ruber",
+   "r": "",
+   "level": "A1",
+   "theme": "couleurs",
+   "g": {
+    "fr": "rouge"
+   }
+  },
+  {
+   "t": "caeruleus",
+   "r": "",
+   "level": "A1",
+   "theme": "couleurs",
+   "g": {
+    "fr": "bleu"
+   }
+  },
+  {
+   "t": "viridis",
+   "r": "",
+   "level": "A1",
+   "theme": "couleurs",
+   "g": {
+    "fr": "vert"
+   }
+  },
+  {
+   "t": "flavus",
+   "r": "",
+   "level": "A1",
+   "theme": "couleurs",
+   "g": {
+    "fr": "jaune"
+   }
+  },
+  {
+   "t": "niger",
+   "r": "",
+   "level": "A1",
+   "theme": "couleurs",
+   "g": {
+    "fr": "noir"
+   }
+  },
+  {
+   "t": "albus",
+   "r": "",
+   "level": "A1",
+   "theme": "couleurs",
+   "g": {
+    "fr": "blanc"
+   }
+  }
+ ],
+ "grammar": [
+  {
+   "id": "g0",
+   "level": "A1",
+   "title": {
+    "fr": "Déclinaisons"
+   },
+   "body": {
+    "fr": "<p>Les noms latins changent de terminaison selon leur fonction (nominatif, génitif, datif, accusatif, ablatif).</p>"
+   }
+  },
+  {
+   "id": "g1",
+   "level": "A1",
+   "title": {
+    "fr": "Ordre libre"
+   },
+   "body": {
+    "fr": "<p>Grâce aux déclinaisons, l'ordre des mots est très souple ; le verbe finit souvent la phrase.</p>"
+   }
+  },
+  {
+   "id": "g2",
+   "level": "A1",
+   "title": {
+    "fr": "Ancêtre du français"
+   },
+   "body": {
+    "fr": "<p>Beaucoup de mots français viennent directement du latin (aqua → eau, via → voie).</p>"
+   }
+  }
+ ],
+ "readings": [
+  {
+   "id": "r0",
+   "level": "A1",
+   "title": "Lecture",
+   "t": "Nomen mihi est Marcus. Romae habito.",
+   "r": "",
+   "tr": {
+    "fr": "Traduction : « Je m'appelle Marcus. J'habite à Rome. »"
+   },
+   "q": []
+  }
+ ]
+}

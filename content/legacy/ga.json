@@ -1,0 +1,264 @@
+{
+ "note": {
+  "fr": "L'irlandais (gaélique irlandais) s'écrit en alphabet latin avec des accents longs (á, é, í, ó, ú)."
+ },
+ "themes": [
+  {
+   "id": "salutations",
+   "fr": "Salutations"
+  },
+  {
+   "id": "nombres",
+   "fr": "Nombres"
+  },
+  {
+   "id": "couleurs",
+   "fr": "Couleurs"
+  }
+ ],
+ "words": [
+  {
+   "t": "Dia dhuit",
+   "r": "dee-a gwit",
+   "level": "A1",
+   "theme": "salutations",
+   "g": {
+    "fr": "bonjour"
+   }
+  },
+  {
+   "t": "Go raibh maith agat",
+   "r": "gur-uh mah ug-ut",
+   "level": "A1",
+   "theme": "salutations",
+   "g": {
+    "fr": "merci"
+   }
+  },
+  {
+   "t": "Le do thoil",
+   "r": "le duh hull",
+   "level": "A1",
+   "theme": "salutations",
+   "g": {
+    "fr": "s'il te plaît"
+   }
+  },
+  {
+   "t": "Tá",
+   "r": "taw",
+   "level": "A1",
+   "theme": "salutations",
+   "g": {
+    "fr": "oui"
+   }
+  },
+  {
+   "t": "Níl",
+   "r": "neel",
+   "level": "A1",
+   "theme": "salutations",
+   "g": {
+    "fr": "non"
+   }
+  },
+  {
+   "t": "Slán",
+   "r": "slawn",
+   "level": "A1",
+   "theme": "salutations",
+   "g": {
+    "fr": "au revoir"
+   }
+  },
+  {
+   "t": "a haon",
+   "r": "uh hayn",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "1"
+   }
+  },
+  {
+   "t": "a dó",
+   "r": "uh doe",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "2"
+   }
+  },
+  {
+   "t": "a trí",
+   "r": "uh tree",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "3"
+   }
+  },
+  {
+   "t": "a ceathair",
+   "r": "uh ka-hir",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "4"
+   }
+  },
+  {
+   "t": "a cúig",
+   "r": "uh koo-ig",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "5"
+   }
+  },
+  {
+   "t": "a sé",
+   "r": "uh shay",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "6"
+   }
+  },
+  {
+   "t": "a seacht",
+   "r": "uh shakht",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "7"
+   }
+  },
+  {
+   "t": "a hocht",
+   "r": "uh hukht",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "8"
+   }
+  },
+  {
+   "t": "a naoi",
+   "r": "uh nee",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "9"
+   }
+  },
+  {
+   "t": "a deich",
+   "r": "uh jeh",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "10"
+   }
+  },
+  {
+   "t": "dearg",
+   "r": "jarrug",
+   "level": "A1",
+   "theme": "couleurs",
+   "g": {
+    "fr": "rouge"
+   }
+  },
+  {
+   "t": "gorm",
+   "r": "gurrum",
+   "level": "A1",
+   "theme": "couleurs",
+   "g": {
+    "fr": "bleu"
+   }
+  },
+  {
+   "t": "glas",
+   "r": "glass",
+   "level": "A1",
+   "theme": "couleurs",
+   "g": {
+    "fr": "vert"
+   }
+  },
+  {
+   "t": "buí",
+   "r": "bwee",
+   "level": "A1",
+   "theme": "couleurs",
+   "g": {
+    "fr": "jaune"
+   }
+  },
+  {
+   "t": "dubh",
+   "r": "duv",
+   "level": "A1",
+   "theme": "couleurs",
+   "g": {
+    "fr": "noir"
+   }
+  },
+  {
+   "t": "bán",
+   "r": "bawn",
+   "level": "A1",
+   "theme": "couleurs",
+   "g": {
+    "fr": "blanc"
+   }
+  }
+ ],
+ "grammar": [
+  {
+   "id": "g0",
+   "level": "A1",
+   "title": {
+    "fr": "Ordre VSO"
+   },
+   "body": {
+    "fr": "<p>Le verbe se place en premier dans la phrase : Tá mé (je suis, littéralement « suis je »).</p>"
+   }
+  },
+  {
+   "id": "g1",
+   "level": "A1",
+   "title": {
+    "fr": "Mutations initiales"
+   },
+   "body": {
+    "fr": "<p>La première consonne d'un mot peut changer selon le contexte grammatical.</p>"
+   }
+  },
+  {
+   "id": "g2",
+   "level": "A1",
+   "title": {
+    "fr": "Pas de « oui »/« non » directs"
+   },
+   "body": {
+    "fr": "<p>On répond en répétant le verbe de la question, à la forme positive ou négative.</p>"
+   }
+  }
+ ],
+ "readings": [
+  {
+   "id": "r0",
+   "level": "A1",
+   "title": "Lecture",
+   "t": "Is mise Séamas. Tá mé i mo chónaí i mBaile Átha Cliath.",
+   "r": "",
+   "tr": {
+    "fr": "Traduction : « Je suis Séamas. J'habite à Dublin. »"
+   },
+   "q": []
+  }
+ ]
+}

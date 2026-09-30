@@ -1,22 +1,24 @@
 # Mes langues — app d'apprentissage (39 langues)
 
-Application web d'apprentissage des langues : anglais, espagnol, italien, hébreu,
-chinois mandarin, portugais, russe, allemand, japonais, plus 30 langues
-supplémentaires en module « débutant » (français, hindi, coréen, arabe, turc,
-néerlandais, grec, polonais, suédois, vietnamien, latin, norvégien, irlandais,
-indonésien, haut valyrien, ukrainien, finnois, danois, roumain, tchèque, zoulou,
-hawaïen, swahili, gallois, hongrois, gaélique écossais, créole haïtien,
-espéranto, klingon, navajo). Inscription par email + mot de passe (comptes sur
-PostgreSQL, mots de passe hachés bcrypt), compte administrateur, paiement par
-abonnement (Stripe) et facture envoyée par email.
+Application web d'apprentissage de 39 langues (anglais, espagnol, italien,
+hébreu, chinois, portugais, russe, allemand, japonais, français, hindi, coréen,
+arabe, turc, néerlandais, grec, polonais, suédois, vietnamien, latin, norvégien,
+irlandais, indonésien, haut valyrien, ukrainien, finnois, danois, roumain,
+tchèque, zoulou, hawaïen, swahili, gallois, hongrois, gaélique écossais, créole
+haïtien, espéranto, klingon, navajo), toutes avec les mêmes modules, du niveau
+A1 au C2. Inscription par email + mot de passe (comptes sur PostgreSQL, mots de
+passe hachés bcrypt), compte administrateur, abonnement Premium (Stripe) et
+facture envoyée par email.
 
 ## Design
 
 L'app entière suit le langage visuel **iOS 27 « Liquid Glass »**, de façon
 uniforme : les 6 pages d'habillage (connexion, profil, idées, admin,
 réinitialisation, abonnement), la chrome d'`app.html` (accueil, barre du haut,
-barre d'onglets, écran de chargement) et les 272 pages de contenu embarquées
-pour les 39 langues.
+barre d'onglets, écran de chargement) et les 936 pages de contenu embarquées
+(24 modules × 39 langues) — toutes rendues par le même moteur de cours
+(`course/engine.js` + `course/engine.css`), donc exactement le même design que
+l'hébreu, sans exception.
 
 - **Source de vérité unique** : `design-system/ios27-liquid-glass.css` (tokens
   `--ig27-*` : couleurs système clair/sombre, échelle typographique SF Pro,
@@ -35,10 +37,8 @@ pour les 39 langues.
   système par défaut, bouton 🌙/☀️ pour forcer), partagé entre toutes les pages.
 - Les deux fichiers sont servis par `server.js` sous `/design-system/`.
 
-Outils : `scripts/liquid-glass.js` convertit une page en tokens (utilisé par
-les générateurs, donc toute langue générée plus tard a ce design dès sa
-création) ; `node scripts/apply-liquid-glass.js` réapplique la conversion à
-tout `ALL_PAGES` (idempotent, `--dry-run` pour vérifier).
+`scripts/liquid-glass.js` fournit le script d'initialisation du thème injecté
+dans chaque page générée par `scripts/course/build.js`.
 
 ## Modèle d'accès
 
@@ -61,13 +61,20 @@ cours de rédaction — ce changement n'envoie jamais d'email.
 
 ## Mon profil / langue de base
 
-Chaque compte a une page `/profile` (lien « 🧑 Profil » sur l'accueil) pour
-choisir son prénom affiché et sa **langue de base** — celle qu'on parle déjà,
-utilisée comme point de départ pour apprendre les autres. Par défaut c'est le
-français (langue dans laquelle l'essentiel du contenu existant est rédigé),
-mais n'importe laquelle des 39 langues peut être choisie ; ça personnalise la
-salutation sur l'accueil. Traduire tout le contenu des leçons dans chaque
-langue de base possible est un chantier à part, pas encore fait.
+Chaque compte a une page `/profile` pour choisir son prénom et sa **langue de
+base** (celle qu'on parle déjà). Tout le site s'y adapte :
+
+- **Traductions des mots et des phrases** : disponibles dans les 39 langues de
+  base (chaque concept du vocabulaire est traduit dans toutes les langues).
+  Quand une traduction manque (anciens mots propres à une langue), une autre
+  langue est affichée avec une étiquette (ex. `FR`).
+- **Interface** (menus, boutons, exercices, statistiques, profil, idées) :
+  entièrement traduite en français, anglais, espagnol, italien, portugais,
+  allemand, néerlandais, russe, arabe, hébreu, chinois, japonais, coréen, turc
+  et polonais (`course/i18n.js` + `course/i18n/<code>.js`). Les autres langues
+  de base ont l'interface en anglais. Arabe et hébreu passent en droite-à-gauche.
+- **Explications** de grammaire et de culture : rédigées en français et en
+  anglais ; les autres langues de base reçoivent la version anglaise.
 
 ## Boîte à idées
 
@@ -82,6 +89,12 @@ si le service se met en veille (plan gratuit Render) :
   à faire correspondre à la variable `DIGEST_CRON_SECRET`), pensé pour être
   appelé une fois par jour par un Render Cron Job externe.
 Chaque suggestion n'est envoyée qu'une seule fois (marquée `sent_at` en base).
+
+Chaque idée a une **catégorie** (fonctionnalité, contenu, nouvelle langue,
+design, bug, autre). Dans `/admin`, la section « 💡 Idées » liste toutes les
+idées (auteur, date, catégorie, contenu), avec recherche et filtres, un
+**statut** modifiable (nouvelle, vue, en cours, acceptée, refusée) et des
+**notes internes** visibles uniquement par l'administrateur.
 
 ## Développement local
 
@@ -182,21 +195,57 @@ vers le compte bancaire renseigné dans ton Dashboard Stripe (Paramètres →
 Comptes bancaires / Payouts). Cette app ne touche jamais à tes coordonnées
 bancaires — c'est à faire une seule fois, directement dans Stripe.
 
-## Contenu "v1" / "débutant" des langues ajoutées
+## Moteur de cours et contenu
 
-- Chinois, portugais, russe, allemand, japonais : module « v1 » (8 thèmes de
-  vocabulaire, 6 points de grammaire, 4 lectures) — plus léger que les 4 langues
-  historiques (hébreu/espagnol/anglais/italien), qui représentent chacune
-  plusieurs méga-octets de contenu accumulé.
-- Les 30 langues suivantes (français, hindi, coréen, arabe, turc, néerlandais,
-  grec, polonais, suédois, vietnamien, latin, norvégien, irlandais, indonésien,
-  haut valyrien, ukrainien, finnois, danois, roumain, tchèque, zoulou, hawaïen,
-  swahili, gallois, hongrois, gaélique écossais, créole haïtien, espéranto,
-  klingon, navajo) ont un module encore plus resserré, volontairement : 3 thèmes
-  de vocabulaire (salutations, nombres, couleurs), 3 points de grammaire et une
-  courte lecture. Les traductions viennent des connaissances de Claude et n'ont
-  pas été relues par un locuteur natif — à vérifier avant un usage sérieux,
-  particulièrement pour les langues les moins courantes (haut valyrien, klingon,
-  navajo, zoulou, hawaïen, gaélique écossais...).
+Chaque langue × module est une petite page (`<body data-lang data-page>`)
+générée dans `ALL_PAGES` d'`app.html`, qui charge le moteur commun
+`course/engine.js`. Les données viennent de `GET /api/course/:lang` (le serveur
+retire lui-même le contenu Premium pour les comptes gratuits) et la
+progression est synchronisée sur `/api/progress/:lang`.
 
-Le contenu de chaque langue peut être approfondi une par une par la suite.
+Modules (identiques pour toutes les langues) : accueil, vocabulaire, phrases,
+grammaire, conjugaison, alphabet (écritures non latines), lecture, écoute,
+exercices (QCM, traduction inverse, écoute, écriture, dictée, texte à trous,
+remise en ordre, conjugaison, mix), révision (répétition espacée), prononciation
+(reconnaissance vocale), culture, examens par niveau, statistiques, badges,
+certificats, dictionnaire, profil, et une page par niveau A1 → C2.
+**Audio partout** : chaque mot, phrase, exemple, forme verbale, lettre et texte
+a son bouton 🔊 (synthèse vocale du navigateur ; voix approchée signalée pour
+les langues sans voix native).
+
+Contenu source (`content/`) :
+- `vocab/*.txt`, `phrases/*.txt` : matrices multilingues, un concept par ligne
+  avec son **niveau CECRL** et sa traduction dans chaque langue ;
+- `langs/<code>.js` : grammaire, conjugaison, lectures avec questions, culture,
+  alphabet propres à chaque langue (explications en français et en anglais) ;
+- `legacy/<code>.json` : contenu historique converti sans perte ;
+- `meta.js` : nom, drapeau, voix de synthèse, sens d'écriture.
+
+`node scripts/course/build.js` régénère `course/data/<code>.json` et les pages
+de `app.html` (`--check` pour valider sans écrire). Le contenu a été rédigé
+sans relecture par des locuteurs natifs : à faire relire avant un usage
+sérieux, surtout pour les langues rares ou construites (haut valyrien, klingon,
+navajo, hawaïen, zoulou, gaélique écossais), volontairement limitées à des
+formes vérifiées.
+
+## Niveaux CECRL
+
+Chaque mot a un niveau A1–C2, affiché partout (vocabulaire, leçons, exercices,
+révisions, dictionnaire) avec filtres et tri par niveau. Au démarrage, le
+serveur synchronise tout le vocabulaire dans la table `course_words`
+(`lang, word_id, word, level, level_override…`). La section « 🎯 Niveaux des mots » de
+`/admin` permet de rechercher un mot et de corriger son niveau
+(`level_override`), appliqué immédiatement dans l'app.
+
+## Premium
+
+Gratuit : tout le contenu A1 → B2 de toutes les langues, 3 leçons par jour,
+révision par boîtes (20 par jour), exercices de base. Premium (réglable par
+fonctionnalité dans `/admin`, section « ★ Fonctionnalités premium ») :
+niveaux C1/C2, leçons illimitées, révision SM-2 avancée sans limite,
+prononciation avec reconnaissance vocale et score, statistiques avancées,
+progression détaillée mot par mot, certificats, badges, mode hors-ligne,
+mots personnels illimités, examens blancs, export CSV, plus les réglages
+langue × module (feedback avancé, leçons avancées, exercices avancés). L'app
+n'affiche aucune publicité. Les restrictions sont appliquées côté serveur
+(contenu C1/C2 retiré de la réponse API pour les comptes gratuits).

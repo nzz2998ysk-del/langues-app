@@ -1,0 +1,7 @@
+const { C } = require("./_helpers");
+module.exports = { culture: [
+  C("he-c1", "A1", "🕯️", ["Shabbat", "Shabbat"], ["<p>Du vendredi soir au samedi soir, beaucoup de commerces et transports s'arrêtent. On se salue par <i>שַׁבָּת שָׁלוֹם</i>.</p>", "<p>From Friday evening to Saturday evening many shops and transport stop. People greet each other with <i>שַׁבָּת שָׁלוֹם</i>.</p>"]),
+  C("he-c2", "A2", "🗣️", ["Une langue ressuscitée", "A revived language"], ["<p>Langue liturgique pendant des siècles, l'hébreu est redevenu langue parlée à la fin du XIX<sup>e</sup> siècle, sous l'impulsion d'Eliezer Ben-Yehuda.</p>", "<p>A liturgical language for centuries, Hebrew became a spoken language again in the late 19th century, driven by Eliezer Ben-Yehuda.</p>"]),
+  C("he-c3", "B1", "🌵", ["Sabra et dugri", "Sabra and dugri"], ["<p>Le franc-parler (<i>dugri</i>) est valorisé ; « sabra » (figue de Barbarie) désigne les Israéliens nés dans le pays : piquants dehors, doux dedans.</p>", "<p>Straight talk (<i>dugri</i>) is valued; 'sabra' (prickly pear) means Israeli-born: prickly outside, sweet inside.</p>"]),
+  C("he-c4", "B2", "📜", ["Hébreu biblique et moderne", "Biblical and modern Hebrew"], ["<p>Un Israélien lit la Bible dans le texte, mais la syntaxe et le vocabulaire modernes ont beaucoup évolué.</p>", "<p>Israelis can read the Bible in the original, but modern syntax and vocabulary have changed a lot.</p>"]),
+] };

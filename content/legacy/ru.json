@@ -1,0 +1,833 @@
+{
+ "themes": [
+  {
+   "id": "salutations",
+   "fr": "Salutations"
+  },
+  {
+   "id": "nombres",
+   "fr": "Nombres"
+  },
+  {
+   "id": "famille",
+   "fr": "Famille"
+  },
+  {
+   "id": "nourriture",
+   "fr": "Nourriture"
+  },
+  {
+   "id": "voyage",
+   "fr": "Voyage"
+  },
+  {
+   "id": "temps",
+   "fr": "Temps"
+  },
+  {
+   "id": "couleurs",
+   "fr": "Couleurs"
+  },
+  {
+   "id": "verbes-courants",
+   "fr": "Verbes courants"
+  }
+ ],
+ "words": [
+  {
+   "t": "Привет",
+   "r": "privet",
+   "level": "A1",
+   "theme": "salutations",
+   "g": {
+    "fr": "salut"
+   }
+  },
+  {
+   "t": "До свидания",
+   "r": "do svidaniya",
+   "level": "A1",
+   "theme": "salutations",
+   "g": {
+    "fr": "au revoir"
+   }
+  },
+  {
+   "t": "Спасибо",
+   "r": "spasibo",
+   "level": "A1",
+   "theme": "salutations",
+   "g": {
+    "fr": "merci"
+   }
+  },
+  {
+   "t": "Пожалуйста",
+   "r": "pozhaluysta",
+   "level": "A1",
+   "theme": "salutations",
+   "g": {
+    "fr": "je t'en prie / s'il te plaît"
+   }
+  },
+  {
+   "t": "Извините",
+   "r": "izvinite",
+   "level": "A1",
+   "theme": "salutations",
+   "g": {
+    "fr": "excusez-moi"
+   }
+  },
+  {
+   "t": "Да",
+   "r": "da",
+   "level": "A1",
+   "theme": "salutations",
+   "g": {
+    "fr": "oui"
+   }
+  },
+  {
+   "t": "Нет",
+   "r": "net",
+   "level": "A1",
+   "theme": "salutations",
+   "g": {
+    "fr": "non"
+   }
+  },
+  {
+   "t": "Доброе утро",
+   "r": "dobroye utro",
+   "level": "A1",
+   "theme": "salutations",
+   "g": {
+    "fr": "bonjour (matin)"
+   }
+  },
+  {
+   "t": "Добрый вечер",
+   "r": "dobryy vecher",
+   "level": "A1",
+   "theme": "salutations",
+   "g": {
+    "fr": "bonsoir"
+   }
+  },
+  {
+   "t": "Спокойной ночи",
+   "r": "spokoynoy nochi",
+   "level": "A1",
+   "theme": "salutations",
+   "g": {
+    "fr": "bonne nuit"
+   }
+  },
+  {
+   "t": "один",
+   "r": "odin",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "un"
+   }
+  },
+  {
+   "t": "два",
+   "r": "dva",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "deux"
+   }
+  },
+  {
+   "t": "три",
+   "r": "tri",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "trois"
+   }
+  },
+  {
+   "t": "четыре",
+   "r": "chetyre",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "quatre"
+   }
+  },
+  {
+   "t": "пять",
+   "r": "pyat'",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "cinq"
+   }
+  },
+  {
+   "t": "шесть",
+   "r": "shest'",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "six"
+   }
+  },
+  {
+   "t": "семь",
+   "r": "sem'",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "sept"
+   }
+  },
+  {
+   "t": "восемь",
+   "r": "vosem'",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "huit"
+   }
+  },
+  {
+   "t": "девять",
+   "r": "devyat'",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "neuf"
+   }
+  },
+  {
+   "t": "десять",
+   "r": "desyat'",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "dix"
+   }
+  },
+  {
+   "t": "семья",
+   "r": "sem'ya",
+   "level": "A1",
+   "theme": "famille",
+   "g": {
+    "fr": "famille"
+   }
+  },
+  {
+   "t": "мама",
+   "r": "mama",
+   "level": "A1",
+   "theme": "famille",
+   "g": {
+    "fr": "maman"
+   }
+  },
+  {
+   "t": "папа",
+   "r": "papa",
+   "level": "A1",
+   "theme": "famille",
+   "g": {
+    "fr": "papa"
+   }
+  },
+  {
+   "t": "брат",
+   "r": "brat",
+   "level": "A1",
+   "theme": "famille",
+   "g": {
+    "fr": "frère"
+   }
+  },
+  {
+   "t": "сестра",
+   "r": "sestra",
+   "level": "A1",
+   "theme": "famille",
+   "g": {
+    "fr": "sœur"
+   }
+  },
+  {
+   "t": "сын",
+   "r": "syn",
+   "level": "A1",
+   "theme": "famille",
+   "g": {
+    "fr": "fils"
+   }
+  },
+  {
+   "t": "дочь",
+   "r": "doch'",
+   "level": "A1",
+   "theme": "famille",
+   "g": {
+    "fr": "fille"
+   }
+  },
+  {
+   "t": "бабушка",
+   "r": "babushka",
+   "level": "A1",
+   "theme": "famille",
+   "g": {
+    "fr": "grand-mère"
+   }
+  },
+  {
+   "t": "дедушка",
+   "r": "dedushka",
+   "level": "A1",
+   "theme": "famille",
+   "g": {
+    "fr": "grand-père"
+   }
+  },
+  {
+   "t": "друг",
+   "r": "drug",
+   "level": "A1",
+   "theme": "famille",
+   "g": {
+    "fr": "ami"
+   }
+  },
+  {
+   "t": "хлеб",
+   "r": "khleb",
+   "level": "A1",
+   "theme": "nourriture",
+   "g": {
+    "fr": "pain"
+   }
+  },
+  {
+   "t": "вода",
+   "r": "voda",
+   "level": "A1",
+   "theme": "nourriture",
+   "g": {
+    "fr": "eau"
+   }
+  },
+  {
+   "t": "чай",
+   "r": "chay",
+   "level": "A1",
+   "theme": "nourriture",
+   "g": {
+    "fr": "thé"
+   }
+  },
+  {
+   "t": "кофе",
+   "r": "kofe",
+   "level": "A1",
+   "theme": "nourriture",
+   "g": {
+    "fr": "café"
+   }
+  },
+  {
+   "t": "рыба",
+   "r": "ryba",
+   "level": "A1",
+   "theme": "nourriture",
+   "g": {
+    "fr": "poisson"
+   }
+  },
+  {
+   "t": "мясо",
+   "r": "myaso",
+   "level": "A1",
+   "theme": "nourriture",
+   "g": {
+    "fr": "viande"
+   }
+  },
+  {
+   "t": "овощи",
+   "r": "ovoshchi",
+   "level": "A1",
+   "theme": "nourriture",
+   "g": {
+    "fr": "légumes"
+   }
+  },
+  {
+   "t": "фрукты",
+   "r": "frukty",
+   "level": "A1",
+   "theme": "nourriture",
+   "g": {
+    "fr": "fruits"
+   }
+  },
+  {
+   "t": "сыр",
+   "r": "syr",
+   "level": "A1",
+   "theme": "nourriture",
+   "g": {
+    "fr": "fromage"
+   }
+  },
+  {
+   "t": "суп",
+   "r": "sup",
+   "level": "A1",
+   "theme": "nourriture",
+   "g": {
+    "fr": "soupe"
+   }
+  },
+  {
+   "t": "самолёт",
+   "r": "samolyot",
+   "level": "A1",
+   "theme": "voyage",
+   "g": {
+    "fr": "avion"
+   }
+  },
+  {
+   "t": "поезд",
+   "r": "poyezd",
+   "level": "A1",
+   "theme": "voyage",
+   "g": {
+    "fr": "train"
+   }
+  },
+  {
+   "t": "гостиница",
+   "r": "gostinitsa",
+   "level": "A1",
+   "theme": "voyage",
+   "g": {
+    "fr": "hôtel"
+   }
+  },
+  {
+   "t": "аэропорт",
+   "r": "aeroport",
+   "level": "A1",
+   "theme": "voyage",
+   "g": {
+    "fr": "aéroport"
+   }
+  },
+  {
+   "t": "паспорт",
+   "r": "pasport",
+   "level": "A1",
+   "theme": "voyage",
+   "g": {
+    "fr": "passeport"
+   }
+  },
+  {
+   "t": "карта",
+   "r": "karta",
+   "level": "A1",
+   "theme": "voyage",
+   "g": {
+    "fr": "carte"
+   }
+  },
+  {
+   "t": "билет",
+   "r": "bilet",
+   "level": "A1",
+   "theme": "voyage",
+   "g": {
+    "fr": "billet"
+   }
+  },
+  {
+   "t": "такси",
+   "r": "taksi",
+   "level": "A1",
+   "theme": "voyage",
+   "g": {
+    "fr": "taxi"
+   }
+  },
+  {
+   "t": "багаж",
+   "r": "bagazh",
+   "level": "A1",
+   "theme": "voyage",
+   "g": {
+    "fr": "bagages"
+   }
+  },
+  {
+   "t": "путешествие",
+   "r": "puteshestviye",
+   "level": "A1",
+   "theme": "voyage",
+   "g": {
+    "fr": "voyage"
+   }
+  },
+  {
+   "t": "сегодня",
+   "r": "segodnya",
+   "level": "A1",
+   "theme": "temps",
+   "g": {
+    "fr": "aujourd'hui"
+   }
+  },
+  {
+   "t": "завтра",
+   "r": "zavtra",
+   "level": "A1",
+   "theme": "temps",
+   "g": {
+    "fr": "demain"
+   }
+  },
+  {
+   "t": "вчера",
+   "r": "vchera",
+   "level": "A1",
+   "theme": "temps",
+   "g": {
+    "fr": "hier"
+   }
+  },
+  {
+   "t": "сейчас",
+   "r": "seychas",
+   "level": "A1",
+   "theme": "temps",
+   "g": {
+    "fr": "maintenant"
+   }
+  },
+  {
+   "t": "утро",
+   "r": "utro",
+   "level": "A1",
+   "theme": "temps",
+   "g": {
+    "fr": "matin"
+   }
+  },
+  {
+   "t": "вечер",
+   "r": "vecher",
+   "level": "A1",
+   "theme": "temps",
+   "g": {
+    "fr": "soir"
+   }
+  },
+  {
+   "t": "понедельник",
+   "r": "ponedel'nik",
+   "level": "A1",
+   "theme": "temps",
+   "g": {
+    "fr": "lundi"
+   }
+  },
+  {
+   "t": "воскресенье",
+   "r": "voskresen'ye",
+   "level": "A1",
+   "theme": "temps",
+   "g": {
+    "fr": "dimanche"
+   }
+  },
+  {
+   "t": "час",
+   "r": "chas",
+   "level": "A1",
+   "theme": "temps",
+   "g": {
+    "fr": "heure"
+   }
+  },
+  {
+   "t": "минута",
+   "r": "minuta",
+   "level": "A1",
+   "theme": "temps",
+   "g": {
+    "fr": "minute"
+   }
+  },
+  {
+   "t": "красный",
+   "r": "krasnyy",
+   "level": "A1",
+   "theme": "couleurs",
+   "g": {
+    "fr": "rouge"
+   }
+  },
+  {
+   "t": "синий",
+   "r": "siniy",
+   "level": "A1",
+   "theme": "couleurs",
+   "g": {
+    "fr": "bleu"
+   }
+  },
+  {
+   "t": "зелёный",
+   "r": "zelyonyy",
+   "level": "A1",
+   "theme": "couleurs",
+   "g": {
+    "fr": "vert"
+   }
+  },
+  {
+   "t": "жёлтый",
+   "r": "zhyoltyy",
+   "level": "A1",
+   "theme": "couleurs",
+   "g": {
+    "fr": "jaune"
+   }
+  },
+  {
+   "t": "чёрный",
+   "r": "chyornyy",
+   "level": "A1",
+   "theme": "couleurs",
+   "g": {
+    "fr": "noir"
+   }
+  },
+  {
+   "t": "белый",
+   "r": "belyy",
+   "level": "A1",
+   "theme": "couleurs",
+   "g": {
+    "fr": "blanc"
+   }
+  },
+  {
+   "t": "фиолетовый",
+   "r": "fioletovyy",
+   "level": "A1",
+   "theme": "couleurs",
+   "g": {
+    "fr": "violet"
+   }
+  },
+  {
+   "t": "оранжевый",
+   "r": "oranzhevyy",
+   "level": "A1",
+   "theme": "couleurs",
+   "g": {
+    "fr": "orange"
+   }
+  },
+  {
+   "t": "серый",
+   "r": "seryy",
+   "level": "A1",
+   "theme": "couleurs",
+   "g": {
+    "fr": "gris"
+   }
+  },
+  {
+   "t": "розовый",
+   "r": "rozovyy",
+   "level": "A1",
+   "theme": "couleurs",
+   "g": {
+    "fr": "rose"
+   }
+  },
+  {
+   "t": "быть",
+   "r": "byt'",
+   "level": "A1",
+   "theme": "verbes-courants",
+   "g": {
+    "fr": "être"
+   }
+  },
+  {
+   "t": "иметь",
+   "r": "imet'",
+   "level": "A1",
+   "theme": "verbes-courants",
+   "g": {
+    "fr": "avoir"
+   }
+  },
+  {
+   "t": "идти",
+   "r": "idti",
+   "level": "A1",
+   "theme": "verbes-courants",
+   "g": {
+    "fr": "aller"
+   }
+  },
+  {
+   "t": "приходить",
+   "r": "prikhodit'",
+   "level": "A1",
+   "theme": "verbes-courants",
+   "g": {
+    "fr": "venir"
+   }
+  },
+  {
+   "t": "есть",
+   "r": "yest'",
+   "level": "A1",
+   "theme": "verbes-courants",
+   "g": {
+    "fr": "manger"
+   }
+  },
+  {
+   "t": "пить",
+   "r": "pit'",
+   "level": "A1",
+   "theme": "verbes-courants",
+   "g": {
+    "fr": "boire"
+   }
+  },
+  {
+   "t": "говорить",
+   "r": "govorit'",
+   "level": "A1",
+   "theme": "verbes-courants",
+   "g": {
+    "fr": "parler"
+   }
+  },
+  {
+   "t": "видеть",
+   "r": "videt'",
+   "level": "A1",
+   "theme": "verbes-courants",
+   "g": {
+    "fr": "voir"
+   }
+  },
+  {
+   "t": "делать",
+   "r": "delat'",
+   "level": "A1",
+   "theme": "verbes-courants",
+   "g": {
+    "fr": "faire"
+   }
+  },
+  {
+   "t": "хотеть",
+   "r": "khotet'",
+   "level": "A1",
+   "theme": "verbes-courants",
+   "g": {
+    "fr": "vouloir"
+   }
+  }
+ ],
+ "grammar": [
+  {
+   "id": "g0",
+   "level": "A1",
+   "title": {
+    "fr": "L'alphabet cyrillique"
+   },
+   "body": {
+    "fr": "<p>33 lettres, certaines ressemblent au latin mais se prononcent différemment (В = V, Н = N, Р = R).</p>"
+   }
+  },
+  {
+   "id": "g1",
+   "level": "A1",
+   "title": {
+    "fr": "Pas d'articles"
+   },
+   "body": {
+    "fr": "<p>Le russe n'a ni « le/la » ni « un/une » : книга peut vouloir dire « le livre », « un livre » ou « des livres » selon le contexte.</p>"
+   }
+  },
+  {
+   "id": "g2",
+   "level": "A1",
+   "title": {
+    "fr": "Les cas (déclinaisons)"
+   },
+   "body": {
+    "fr": "<p>Les noms changent de terminaison selon leur fonction dans la phrase (nominatif, accusatif, génitif...) : книга (sujet) → книгу (objet direct).</p>"
+   }
+  },
+  {
+   "id": "g3",
+   "level": "A1",
+   "title": {
+    "fr": "Le verbe « être » au présent"
+   },
+   "body": {
+    "fr": "<p>Il est généralement omis au présent : Я студент (littéralement « je étudiant »).</p>"
+   }
+  },
+  {
+   "id": "g4",
+   "level": "A2",
+   "title": {
+    "fr": "La négation"
+   },
+   "body": {
+    "fr": "<p>On place не avant le verbe : Я не говорю по-русски (je ne parle pas russe).</p>"
+   }
+  },
+  {
+   "id": "g5",
+   "level": "A2",
+   "title": {
+    "fr": "Poser une question"
+   },
+   "body": {
+    "fr": "<p>L'intonation montante suffit à l'oral, sans changer l'ordre des mots : Ты говоришь по-русски?</p>"
+   }
+  }
+ ],
+ "readings": [
+  {
+   "id": "r0",
+   "level": "A1",
+   "title": "Lecture",
+   "t": "Привет! Меня зовут Мари. Я из Франции. Сегодня хорошая погода, я хочу пойти в парк. Я люблю пить чай, но не люблю кофе. В моей семье есть папа, мама и брат.",
+   "r": "",
+   "tr": {
+    "fr": "Salut ! Je m'appelle Marie. Je suis de France. Aujourd'hui il fait beau, je veux aller au parc. J'aime boire du thé, mais je n'aime pas le café. Dans ma famille il y a papa, maman et un frère."
+   },
+   "q": []
+  }
+ ]
+}

@@ -1,0 +1,112 @@
+{
+ "note": {
+  "fr": "Langue construite par le linguiste Marc Okrand pour « Star Trek ». Vocabulaire et grammaire volontairement limités ici : ressources fiables rares."
+ },
+ "themes": [
+  {
+   "id": "expressions-connues",
+   "fr": "Expressions connues"
+  }
+ ],
+ "words": [
+  {
+   "t": "nuqneH",
+   "r": "",
+   "level": "A1",
+   "theme": "expressions-connues",
+   "g": {
+    "fr": "bonjour (litt. « que veux-tu ? »)"
+   }
+  },
+  {
+   "t": "qatlho'",
+   "r": "",
+   "level": "A1",
+   "theme": "expressions-connues",
+   "g": {
+    "fr": "merci"
+   }
+  },
+  {
+   "t": "Qapla'",
+   "r": "",
+   "level": "A1",
+   "theme": "expressions-connues",
+   "g": {
+    "fr": "succès ! (salutation/vœu)"
+   }
+  },
+  {
+   "t": "HIja'",
+   "r": "",
+   "level": "A1",
+   "theme": "expressions-connues",
+   "g": {
+    "fr": "oui"
+   }
+  },
+  {
+   "t": "ghobe'",
+   "r": "",
+   "level": "A1",
+   "theme": "expressions-connues",
+   "g": {
+    "fr": "non"
+   }
+  },
+  {
+   "t": "Heghlu'meH QaQ jajvam",
+   "r": "",
+   "level": "A1",
+   "theme": "expressions-connues",
+   "g": {
+    "fr": "c'est un bon jour pour mourir (phrase culte)"
+   }
+  }
+ ],
+ "grammar": [
+  {
+   "id": "g0",
+   "level": "A1",
+   "title": {
+    "fr": "Ordre OVS"
+   },
+   "body": {
+    "fr": "<p>Le klingon place l'objet avant le verbe, puis le sujet : un ordre très rare parmi les langues du monde (et naturelles).</p>"
+   }
+  },
+  {
+   "id": "g1",
+   "level": "A1",
+   "title": {
+    "fr": "Langue construite pour la fiction"
+   },
+   "body": {
+    "fr": "<p>Créée pour sonner « extraterrestre » et grammaticalement cohérente, avec un vocabulaire volontairement martial.</p>"
+   }
+  },
+  {
+   "id": "g2",
+   "level": "A1",
+   "title": {
+    "fr": "Agglutination verbale"
+   },
+   "body": {
+    "fr": "<p>Le verbe klingon porte de nombreux préfixes et suffixes obligatoires (sujet, objet, aspect...).</p>"
+   }
+  }
+ ],
+ "readings": [
+  {
+   "id": "r0",
+   "level": "A1",
+   "title": "Lecture",
+   "t": "Qapla'! nuqneH?",
+   "r": "",
+   "tr": {
+    "fr": "Traduction : « Succès ! Que veux-tu (= bonjour) ? » — salutation typique entre Klingons."
+   },
+   "q": []
+  }
+ ]
+}

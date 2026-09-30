@@ -1,0 +1,264 @@
+{
+ "note": {
+  "fr": "L'ukrainien s'écrit en alphabet cyrillique, proche du russe mais avec des différences notables."
+ },
+ "themes": [
+  {
+   "id": "salutations",
+   "fr": "Salutations"
+  },
+  {
+   "id": "nombres",
+   "fr": "Nombres"
+  },
+  {
+   "id": "couleurs",
+   "fr": "Couleurs"
+  }
+ ],
+ "words": [
+  {
+   "t": "Привіт",
+   "r": "pryvit",
+   "level": "A1",
+   "theme": "salutations",
+   "g": {
+    "fr": "bonjour/salut"
+   }
+  },
+  {
+   "t": "Дякую",
+   "r": "dyakuyu",
+   "level": "A1",
+   "theme": "salutations",
+   "g": {
+    "fr": "merci"
+   }
+  },
+  {
+   "t": "Будь ласка",
+   "r": "bud laska",
+   "level": "A1",
+   "theme": "salutations",
+   "g": {
+    "fr": "s'il te plaît"
+   }
+  },
+  {
+   "t": "Так",
+   "r": "tak",
+   "level": "A1",
+   "theme": "salutations",
+   "g": {
+    "fr": "oui"
+   }
+  },
+  {
+   "t": "Ні",
+   "r": "ni",
+   "level": "A1",
+   "theme": "salutations",
+   "g": {
+    "fr": "non"
+   }
+  },
+  {
+   "t": "До побачення",
+   "r": "do pobachennya",
+   "level": "A1",
+   "theme": "salutations",
+   "g": {
+    "fr": "au revoir"
+   }
+  },
+  {
+   "t": "один",
+   "r": "odyn",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "1"
+   }
+  },
+  {
+   "t": "два",
+   "r": "dva",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "2"
+   }
+  },
+  {
+   "t": "три",
+   "r": "try",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "3"
+   }
+  },
+  {
+   "t": "чотири",
+   "r": "chotyry",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "4"
+   }
+  },
+  {
+   "t": "п'ять",
+   "r": "pyat",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "5"
+   }
+  },
+  {
+   "t": "шість",
+   "r": "shist",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "6"
+   }
+  },
+  {
+   "t": "сім",
+   "r": "sim",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "7"
+   }
+  },
+  {
+   "t": "вісім",
+   "r": "visim",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "8"
+   }
+  },
+  {
+   "t": "дев'ять",
+   "r": "devyat",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "9"
+   }
+  },
+  {
+   "t": "десять",
+   "r": "desyat",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "10"
+   }
+  },
+  {
+   "t": "червоний",
+   "r": "chervonyi",
+   "level": "A1",
+   "theme": "couleurs",
+   "g": {
+    "fr": "rouge"
+   }
+  },
+  {
+   "t": "синій",
+   "r": "syniy",
+   "level": "A1",
+   "theme": "couleurs",
+   "g": {
+    "fr": "bleu"
+   }
+  },
+  {
+   "t": "зелений",
+   "r": "zelenyi",
+   "level": "A1",
+   "theme": "couleurs",
+   "g": {
+    "fr": "vert"
+   }
+  },
+  {
+   "t": "жовтий",
+   "r": "zhovtyi",
+   "level": "A1",
+   "theme": "couleurs",
+   "g": {
+    "fr": "jaune"
+   }
+  },
+  {
+   "t": "чорний",
+   "r": "chornyi",
+   "level": "A1",
+   "theme": "couleurs",
+   "g": {
+    "fr": "noir"
+   }
+  },
+  {
+   "t": "білий",
+   "r": "bilyi",
+   "level": "A1",
+   "theme": "couleurs",
+   "g": {
+    "fr": "blanc"
+   }
+  }
+ ],
+ "grammar": [
+  {
+   "id": "g0",
+   "level": "A1",
+   "title": {
+    "fr": "Alphabet cyrillique"
+   },
+   "body": {
+    "fr": "<p>L'ukrainien utilise le cyrillique, avec quelques lettres propres comme ї, є, і, ґ.</p>"
+   }
+  },
+  {
+   "id": "g1",
+   "level": "A1",
+   "title": {
+    "fr": "Sept cas"
+   },
+   "body": {
+    "fr": "<p>Les noms se déclinent selon leur fonction dans la phrase, comme en polonais.</p>"
+   }
+  },
+  {
+   "id": "g2",
+   "level": "A1",
+   "title": {
+    "fr": "Pas d'article"
+   },
+   "body": {
+    "fr": "<p>Il n'y a ni « le/la » ni « un/une » en ukrainien.</p>"
+   }
+  }
+ ],
+ "readings": [
+  {
+   "id": "r0",
+   "level": "A1",
+   "title": "Lecture",
+   "t": "Мене звати Олена. Я живу в Києві.",
+   "r": "",
+   "tr": {
+    "fr": "Traduction : « Je m'appelle Olena. J'habite à Kyiv. »"
+   },
+   "q": []
+  }
+ ]
+}

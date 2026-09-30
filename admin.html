@@ -82,6 +82,24 @@ input:checked + .slider:before{transform:translateX(16px)}
 .users-table tr:last-child td{border-bottom:none}
 .badge-yes{color:var(--green);font-weight:var(--ig27-weight-semibold)}
 .badge-no{color:var(--muted)}
+.adm-nav{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 20px}
+.adm-nav a{text-decoration:none}
+.section{margin-top:34px;scroll-margin-top:16px}
+.section h2{font:var(--ig27-weight-bold) var(--ig27-fs-title3)/var(--ig27-lh-title3) var(--ig27-font-family);margin-bottom:6px}
+.idea{padding:16px 14px;border-bottom:1px solid var(--line);display:grid;gap:10px}
+.idea:last-child{border-bottom:none}
+.idea-head{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:var(--ig27-fs-footnote);color:var(--muted)}
+.idea-msg{white-space:pre-wrap;font-size:var(--ig27-fs-subheadline);line-height:1.5}
+.idea-tools{display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap}
+.idea-tools textarea{flex:1;min-width:220px;min-height:60px;background:var(--ig27-fill-quaternary);border:1px solid var(--line);border-radius:var(--ig27-radius-lg);padding:8px 10px;font:inherit;color:var(--ink)}
+.chip-st{display:inline-flex;padding:2px 10px;border-radius:var(--ig27-radius-full);font:var(--ig27-weight-bold) var(--ig27-fs-caption2)/var(--ig27-lh-caption2) var(--ig27-font-family)}
+.st-nouvelle{background:var(--ig27-accent-soft);color:var(--ig27-accent)}.st-vue{background:var(--ig27-gray-soft);color:var(--muted)}
+.st-en_cours{background:var(--ig27-orange-soft);color:var(--ig27-orange)}.st-acceptee{background:var(--ig27-green-soft);color:var(--ig27-green)}
+.st-refusee{background:var(--ig27-red-soft);color:var(--ig27-red)}
+.cat{background:var(--ig27-fill-tertiary);color:var(--ink)}
+.lv{display:inline-flex;min-width:26px;justify-content:center;padding:1px 6px;border-radius:var(--ig27-radius-full);font:var(--ig27-weight-heavy) var(--ig27-fs-caption2)/var(--ig27-lh-caption2) var(--ig27-font-family);background:var(--ig27-accent-soft);color:var(--ig27-accent)}
+.gf-row{display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid var(--line)}
+.gf-row:last-child{border-bottom:none}
 </style>
 <link rel="stylesheet" href="/design-system/ios27-app.css">
 </head>
@@ -98,7 +116,14 @@ input:checked + .slider:before{transform:translateX(16px)}
     </div>
   </div>
 
-  <div class="layout">
+  <nav class="adm-nav">
+    <a class="btn" href="#sec-langs">🌍 Premium par langue</a>
+    <a class="btn" href="#sec-global">★ Fonctionnalités premium</a>
+    <a class="btn" href="#sec-ideas">💡 Idées <span id="ideasBadge"></span></a>
+    <a class="btn" href="#sec-levels">🎯 Niveaux des mots</a>
+    <a class="btn" href="#sec-users">👥 Comptes</a>
+  </nav>
+  <div class="layout" id="sec-langs">
     <div>
       <div class="panel-title">Statistiques</div>
       <div class="stats" id="stats"></div>
@@ -124,7 +149,35 @@ input:checked + .slider:before{transform:translateX(16px)}
       <div class="card" id="featuresList"><div class="empty">Chargement…</div></div>
       <div class="save-msg" id="saveMsg"></div>
 
-      <div class="panel-title">Comptes inscrits</div>
+      <div class="section" id="sec-global">
+        <h2>★ Fonctionnalités premium</h2>
+        <div class="sub" style="margin-bottom:10px">Les fonctionnalités réservées aux abonnés, dans toutes les langues. Coché = Premium ; décoché = gratuit pour tout le monde. Un compte admin ou abonné a toujours tout.</div>
+        <div class="card" id="globalFeatures"><div class="empty">Chargement…</div></div>
+      </div>
+
+      <div class="section" id="sec-ideas">
+        <h2>💡 Boîte à idées</h2>
+        <div class="sub" style="margin-bottom:10px">Toutes les idées envoyées par les utilisateurs. Change le statut et garde des notes internes (jamais visibles par l'auteur).</div>
+        <div class="toolbar"><div class="toolbar-row">
+          <input type="search" id="ideaQ" placeholder="Rechercher dans les idées ou par email…">
+          <select id="ideaStatus"><option value="">Tous les statuts</option></select>
+          <select id="ideaCat"><option value="">Toutes les catégories</option></select>
+        </div></div>
+        <div class="card" id="ideasList"><div class="empty">Chargement…</div></div>
+      </div>
+
+      <div class="section" id="sec-levels">
+        <h2>🎯 Niveaux CECRL des mots</h2>
+        <div class="sub" style="margin-bottom:10px">Chaque mot a un niveau A1 → C2, repris partout dans l'app (vocabulaire, leçons, exercices, révisions). Un niveau modifié ici remplace celui du contenu ; « Par défaut » revient au niveau d'origine.</div>
+        <div class="toolbar"><div class="toolbar-row">
+          <select id="lvLang"></select>
+          <input type="search" id="lvQ" placeholder="Chercher un mot ou une traduction…">
+          <select id="lvLevel"><option value="">Tous les niveaux</option><option>A1</option><option>A2</option><option>B1</option><option>B2</option><option>C1</option><option>C2</option></select>
+        </div><div class="toolbar-row" id="lvCounts"></div></div>
+        <div class="card" style="overflow-x:auto"><table class="users-table" id="lvTable"><tbody><tr><td class="empty">Chargement…</td></tr></tbody></table></div>
+      </div>
+
+      <div class="panel-title section" id="sec-users">Comptes inscrits</div>
       <div class="sub" style="margin-bottom:10px">Les mots de passe sont hachés (bcrypt) au moment de l'inscription et ne sont jamais stockés en clair — même un compte administrateur ne peut donc pas les afficher ici. Un utilisateur qui a oublié le sien doit utiliser « Mot de passe oublié ? » sur la page de connexion.</div>
       <div class="card" style="overflow-x:auto">
         <table class="users-table" id="usersTable">
@@ -136,6 +189,70 @@ input:checked + .slider:before{transform:translateX(16px)}
   </div>
 </div>
 <script>
+function escH(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+var IDEA_STATUS = {nouvelle:'Nouvelle', vue:'Vue', en_cours:'En cours', acceptee:'Acceptée', refusee:'Refusée'};
+var IDEA_CAT = {langue:'Nouvelle langue', contenu:'Contenu', fonctionnalite:'Fonctionnalité', design:'Design', bug:'Bug', autre:'Autre'};
+function renderGlobalFeatures(){
+  var list = STATE.features.filter(function(f){ return f.category === 'global'; });
+  document.getElementById('globalFeatures').innerHTML = list.map(function(f){
+    return '<div class="gf-row"><label class="toggle"><input type="checkbox" data-key="'+escH(f.key)+'" '+(f.is_premium?'checked':'')+' onchange="toggleFeature(this)"><span class="slider"></span></label><span>'+escH(f.label)+'</span></div>';
+  }).join('') || '<div class="empty">Aucune.</div>';
+}
+async function loadIdeas(){
+  var qs = new URLSearchParams({ q: document.getElementById('ideaQ').value, status: document.getElementById('ideaStatus').value, category: document.getElementById('ideaCat').value });
+  var r = await fetch('/api/admin/suggestions?' + qs);
+  if (!r.ok){ document.getElementById('ideasList').innerHTML = '<div class="empty">Accès refusé.</div>'; return; }
+  var d = await r.json();
+  var ns = d.counts.nouvelle || 0;
+  document.getElementById('ideasBadge').textContent = ns ? '('+ns+')' : '';
+  document.getElementById('ideasList').innerHTML = d.suggestions.map(function(s){
+    var opts = d.statuses.map(function(st){ return '<option value="'+st+'"'+(st===s.status?' selected':'')+'>'+IDEA_STATUS[st]+'</option>'; }).join('');
+    return '<div class="idea" data-id="'+s.id+'">' +
+      '<div class="idea-head"><span class="chip-st st-'+escH(s.status)+'">'+escH(IDEA_STATUS[s.status]||s.status)+'</span><span class="chip-st cat">'+escH(IDEA_CAT[s.category]||s.category)+'</span>' +
+      '<b style="color:var(--ink)">'+escH(s.author_name || '')+'</b> '+escH(s.author_email || 'compte supprimé')+' · '+new Date(s.created_at).toLocaleString('fr-FR')+
+      (s.updated_at ? ' · modifiée '+new Date(s.updated_at).toLocaleDateString('fr-FR') : '')+'</div>' +
+      '<div class="idea-msg">'+escH(s.message)+'</div>' +
+      '<div class="idea-tools"><select onchange="saveIdea('+s.id+', {status:this.value})">'+opts+'</select>' +
+      '<textarea placeholder="Notes internes (admin uniquement)…" onchange="saveIdea('+s.id+', {admin_notes:this.value})">'+escH(s.admin_notes)+'</textarea></div></div>';
+  }).join('') || '<div class="empty">Aucune idée pour ce filtre.</div>';
+}
+async function saveIdea(id, patch){
+  var r = await fetch('/api/admin/suggestions/'+id, {method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(patch)});
+  var msg = document.getElementById('saveMsg');
+  if (r.ok){ loadIdeas(); } else { alert('Erreur lors de l\'enregistrement.'); }
+}
+async function loadLevels(){
+  var lang = document.getElementById('lvLang').value;
+  if (!lang) return;
+  var qs = new URLSearchParams({ lang: lang, q: document.getElementById('lvQ').value, level: document.getElementById('lvLevel').value });
+  var r = await fetch('/api/admin/vocabulary?' + qs);
+  if (!r.ok) return;
+  var d = await r.json();
+  document.getElementById('lvCounts').innerHTML = '<span class="tb-label">Répartition</span>' + ['A1','A2','B1','B2','C1','C2'].map(function(l){ return '<span class="lv">'+l+'</span> '+(d.counts[l]||0); }).join(' &nbsp; ');
+  document.getElementById('lvTable').innerHTML = '<thead><tr><th>Mot</th><th>Traduction</th><th>Thème</th><th>Niveau du contenu</th><th>Niveau appliqué</th></tr></thead><tbody>' +
+    d.words.map(function(w){
+      var sel = '<select onchange="setWordLevel(\''+escH(lang)+'\', \''+escH(w.word_id)+'\', this.value)"><option value="">Par défaut ('+w.level+')</option>' +
+        ['A1','A2','B1','B2','C1','C2'].map(function(l){ return '<option'+(w.level_override===l?' selected':'')+'>'+l+'</option>'; }).join('') + '</select>';
+      return '<tr><td><b>'+escH(w.word)+'</b> <span style="color:var(--muted)">'+escH(w.romanization)+'</span></td><td>'+escH(w.gloss_fr)+'</td><td>'+escH(w.theme)+'</td><td><span class="lv">'+w.level+'</span></td><td>'+sel+'</td></tr>';
+    }).join('') + '</tbody>' + (d.words.length === 100 ? '<tfoot><tr><td colspan="5" class="empty">100 premiers résultats — affine la recherche.</td></tr></tfoot>' : '');
+}
+async function setWordLevel(lang, id, level){
+  var r = await fetch('/api/admin/vocabulary/'+encodeURIComponent(lang)+'/'+encodeURIComponent(id), {method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({level: level || null})});
+  if (!r.ok) alert('Erreur lors de l\'enregistrement du niveau.');
+  loadLevels();
+}
+function initAdminExtras(){
+  Object.keys(IDEA_STATUS).forEach(function(k){ document.getElementById('ideaStatus').insertAdjacentHTML('beforeend', '<option value="'+k+'">'+IDEA_STATUS[k]+'</option>'); });
+  Object.keys(IDEA_CAT).forEach(function(k){ document.getElementById('ideaCat').insertAdjacentHTML('beforeend', '<option value="'+k+'">'+IDEA_CAT[k]+'</option>'); });
+  var t; var deb = function(fn){ return function(){ clearTimeout(t); t = setTimeout(fn, 250); }; };
+  document.getElementById('ideaQ').addEventListener('input', deb(loadIdeas));
+  document.getElementById('ideaStatus').addEventListener('change', loadIdeas);
+  document.getElementById('ideaCat').addEventListener('change', loadIdeas);
+  document.getElementById('lvQ').addEventListener('input', deb(loadLevels));
+  document.getElementById('lvLevel').addEventListener('change', loadLevels);
+  document.getElementById('lvLang').addEventListener('change', loadLevels);
+  loadIdeas();
+}
 var STATE = { features: [], modules: [], langMeta: {}, langOrder: [], languageStatus: {} };
 
 async function loadStats(){
@@ -169,6 +286,12 @@ async function loadFeatures(){
     }).join('');
 
   renderList();
+  renderGlobalFeatures();
+  var ls = document.getElementById('lvLang');
+  if (!ls.options.length){
+    ls.innerHTML = STATE.langOrder.map(function(c){ return '<option value="'+c+'">'+STATE.langMeta[c].flag+' '+escH(STATE.langMeta[c].name)+'</option>'; }).join('');
+    loadLevels();
+  }
 }
 
 function featuresByLang(code){
@@ -339,6 +462,7 @@ async function loadUsers(){
 loadStats();
 loadFeatures();
 loadUsers();
+initAdminExtras();
 </script>
 </body>
 </html>

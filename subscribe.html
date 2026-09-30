@@ -47,31 +47,56 @@ a.back{display:block;margin-top:18px;color:var(--muted);font-size:var(--ig27-fs-
 <div class="shell">
   <div class="pitch">
     <span class="badge">Premium</span>
-    <h1>Débloque le contenu avancé</h1>
-    <p>Les 39 langues sont déjà accessibles gratuitement à toi. Premium ajoute du feedback plus poussé, des leçons approfondies et des exercices avancés sur chacune d'elles — sans engagement.</p>
+    <h1 data-i18n="premium_title">Premium</h1>
+    <p data-i18n="premium_sub">Tout ce qu'il faut pour aller jusqu'au bout, dans les 39 langues.</p>
     <div class="flags"><span>🇫🇷</span><span>🇰🇷</span><span>🇸🇦</span><span>🇻🇳</span><span>🖖</span></div>
   </div>
   <div class="panel">
     <ul>
-      <li>Feedback avancé sur chaque langue</li>
-      <li>Leçons et exercices approfondis</li>
-      <li>Sans engagement, annulable à tout moment</li>
+      <li data-i18n="feat_levels-c">Niveaux C1 et C2 (mots, leçons, examens)</li>
+      <li data-i18n="feat_lessons-unlimited">Leçons illimitées</li>
+      <li data-i18n="feat_srs-advanced">Révision espacée avancée (SM-2, prévisions, sans limite)</li>
+      <li data-i18n="feat_pronunciation-ai">Prononciation avec reconnaissance vocale et score</li>
+      <li data-i18n="feat_stats-advanced">Statistiques avancées</li>
+      <li data-i18n="feat_progress-detailed">Progression détaillée mot par mot</li>
+      <li data-i18n="feat_certificates">Certificats de niveau</li>
+      <li data-i18n="feat_badges">Badges et succès</li>
+      <li data-i18n="feat_offline">Mode hors-ligne</li>
+      <li data-i18n="feat_custom-words">Mots personnels illimités</li>
+      <li data-i18n="feat_exam">Examens blancs par niveau</li>
+      <li data-i18n="feat_export">Export de la progression (CSV)</li>
+      <li data-i18n="feat_exercices-avances">Exercices avancés (écriture, dictée, texte à trous, remise en ordre, conjugaison)</li>
+      <li data-i18n="feat_lecons-avancees">Leçons avancées (B1 et plus)</li>
+      <li data-i18n="feat_feedback-avance">Feedback avancé (explications, analyse des erreurs)</li>
+      <li data-i18n="sub_no_ads">Aucune publicité, jamais</li>
+      <li data-i18n="sub_no_commit">Sans engagement, annulable à tout moment</li>
     </ul>
-    <button id="goBtn" onclick="startCheckout()">S'abonner</button>
+    <button id="goBtn" onclick="startCheckout()" data-i18n="sub_btn">S'abonner</button>
     <div class="msg" id="msg"></div>
-    <a class="back" href="/">‹ Retour à l'application</a>
+    <a class="back" href="/">‹ <span data-i18n="back_home">Retour à l'accueil</span></a>
   </div>
 </div>
+<script src="/course/i18n.js"></script>
 <script>
+var BASE = 'fr';
+function tr(k){ return window.I18N ? I18N.t(BASE, k) : k; }
 var params = new URLSearchParams(location.search);
 var msg = document.getElementById('msg');
-if (params.get('canceled')) { msg.textContent = "Paiement annulé."; }
-if (params.get('success')) { msg.textContent = "Paiement reçu, merci ! Ton accès premium est actif."; msg.classList.add('ok'); }
+function showStatus(){
+  if (params.get('canceled')) { msg.textContent = tr('sub_canceled'); }
+  if (params.get('success')) { msg.textContent = tr('sub_success'); msg.classList.add('ok'); }
+}
+showStatus();
+// Interface in the account's base language (profile setting).
+fetch('/api/me').then(function(r){ return r.ok ? r.json() : null; }).then(function(me){
+  var code = (me && me.user && me.user.baseLang) || (me && me.baseLang) || 'fr';
+  return I18N.load(code).then(function(c){ BASE = c; document.documentElement.lang = c; document.documentElement.dir = I18N.rtl(c) ? 'rtl' : 'ltr'; I18N.apply(c); showStatus(); });
+}).catch(function(){});
 
 async function startCheckout(){
   var btn = document.getElementById('goBtn');
   btn.disabled = true;
-  btn.textContent = 'Redirection…';
+  btn.textContent = tr('sub_redirect');
   try {
     var r = await fetch('/api/checkout', {method:'POST'});
     var data = await r.json();
@@ -79,12 +104,12 @@ async function startCheckout(){
       window.location.href = data.url;
       return;
     }
-    msg.textContent = data.error || "Le paiement n'est pas encore disponible.";
+    msg.textContent = data.error || tr('sub_unavailable');
   } catch(e){
-    msg.textContent = "Erreur réseau.";
+    msg.textContent = tr('net_error');
   }
   btn.disabled = false;
-  btn.textContent = "S'abonner";
+  btn.textContent = tr('sub_btn');
 }
 </script>
 </body>

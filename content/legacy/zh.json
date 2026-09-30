@@ -1,0 +1,833 @@
+{
+ "themes": [
+  {
+   "id": "salutations",
+   "fr": "Salutations"
+  },
+  {
+   "id": "nombres",
+   "fr": "Nombres"
+  },
+  {
+   "id": "famille",
+   "fr": "Famille"
+  },
+  {
+   "id": "nourriture",
+   "fr": "Nourriture"
+  },
+  {
+   "id": "voyage",
+   "fr": "Voyage"
+  },
+  {
+   "id": "temps",
+   "fr": "Temps"
+  },
+  {
+   "id": "couleurs",
+   "fr": "Couleurs"
+  },
+  {
+   "id": "verbes-courants",
+   "fr": "Verbes courants"
+  }
+ ],
+ "words": [
+  {
+   "t": "你好",
+   "r": "nǐ hǎo",
+   "level": "A1",
+   "theme": "salutations",
+   "g": {
+    "fr": "bonjour"
+   }
+  },
+  {
+   "t": "再见",
+   "r": "zàijiàn",
+   "level": "A1",
+   "theme": "salutations",
+   "g": {
+    "fr": "au revoir"
+   }
+  },
+  {
+   "t": "谢谢",
+   "r": "xièxie",
+   "level": "A1",
+   "theme": "salutations",
+   "g": {
+    "fr": "merci"
+   }
+  },
+  {
+   "t": "不客气",
+   "r": "bú kèqi",
+   "level": "A1",
+   "theme": "salutations",
+   "g": {
+    "fr": "de rien"
+   }
+  },
+  {
+   "t": "请",
+   "r": "qǐng",
+   "level": "A1",
+   "theme": "salutations",
+   "g": {
+    "fr": "s'il te plaît"
+   }
+  },
+  {
+   "t": "对不起",
+   "r": "duìbuqǐ",
+   "level": "A1",
+   "theme": "salutations",
+   "g": {
+    "fr": "pardon"
+   }
+  },
+  {
+   "t": "是",
+   "r": "shì",
+   "level": "A1",
+   "theme": "salutations",
+   "g": {
+    "fr": "oui / être"
+   }
+  },
+  {
+   "t": "不",
+   "r": "bù",
+   "level": "A1",
+   "theme": "salutations",
+   "g": {
+    "fr": "non"
+   }
+  },
+  {
+   "t": "早上好",
+   "r": "zǎoshang hǎo",
+   "level": "A1",
+   "theme": "salutations",
+   "g": {
+    "fr": "bonjour (matin)"
+   }
+  },
+  {
+   "t": "晚安",
+   "r": "wǎn'ān",
+   "level": "A1",
+   "theme": "salutations",
+   "g": {
+    "fr": "bonne nuit"
+   }
+  },
+  {
+   "t": "一",
+   "r": "yī",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "un"
+   }
+  },
+  {
+   "t": "二",
+   "r": "èr",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "deux"
+   }
+  },
+  {
+   "t": "三",
+   "r": "sān",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "trois"
+   }
+  },
+  {
+   "t": "四",
+   "r": "sì",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "quatre"
+   }
+  },
+  {
+   "t": "五",
+   "r": "wǔ",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "cinq"
+   }
+  },
+  {
+   "t": "六",
+   "r": "liù",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "six"
+   }
+  },
+  {
+   "t": "七",
+   "r": "qī",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "sept"
+   }
+  },
+  {
+   "t": "八",
+   "r": "bā",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "huit"
+   }
+  },
+  {
+   "t": "九",
+   "r": "jiǔ",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "neuf"
+   }
+  },
+  {
+   "t": "十",
+   "r": "shí",
+   "level": "A1",
+   "theme": "nombres",
+   "g": {
+    "fr": "dix"
+   }
+  },
+  {
+   "t": "家人",
+   "r": "jiārén",
+   "level": "A1",
+   "theme": "famille",
+   "g": {
+    "fr": "famille"
+   }
+  },
+  {
+   "t": "妈妈",
+   "r": "māma",
+   "level": "A1",
+   "theme": "famille",
+   "g": {
+    "fr": "maman"
+   }
+  },
+  {
+   "t": "爸爸",
+   "r": "bàba",
+   "level": "A1",
+   "theme": "famille",
+   "g": {
+    "fr": "papa"
+   }
+  },
+  {
+   "t": "哥哥",
+   "r": "gēge",
+   "level": "A1",
+   "theme": "famille",
+   "g": {
+    "fr": "grand frère"
+   }
+  },
+  {
+   "t": "姐姐",
+   "r": "jiějie",
+   "level": "A1",
+   "theme": "famille",
+   "g": {
+    "fr": "grande sœur"
+   }
+  },
+  {
+   "t": "弟弟",
+   "r": "dìdi",
+   "level": "A1",
+   "theme": "famille",
+   "g": {
+    "fr": "petit frère"
+   }
+  },
+  {
+   "t": "妹妹",
+   "r": "mèimei",
+   "level": "A1",
+   "theme": "famille",
+   "g": {
+    "fr": "petite sœur"
+   }
+  },
+  {
+   "t": "孩子",
+   "r": "háizi",
+   "level": "A1",
+   "theme": "famille",
+   "g": {
+    "fr": "enfant"
+   }
+  },
+  {
+   "t": "朋友",
+   "r": "péngyou",
+   "level": "A1",
+   "theme": "famille",
+   "g": {
+    "fr": "ami"
+   }
+  },
+  {
+   "t": "丈夫",
+   "r": "zhàngfu",
+   "level": "A1",
+   "theme": "famille",
+   "g": {
+    "fr": "mari"
+   }
+  },
+  {
+   "t": "米饭",
+   "r": "mǐfàn",
+   "level": "A1",
+   "theme": "nourriture",
+   "g": {
+    "fr": "riz"
+   }
+  },
+  {
+   "t": "面条",
+   "r": "miàntiáo",
+   "level": "A1",
+   "theme": "nourriture",
+   "g": {
+    "fr": "nouilles"
+   }
+  },
+  {
+   "t": "茶",
+   "r": "chá",
+   "level": "A1",
+   "theme": "nourriture",
+   "g": {
+    "fr": "thé"
+   }
+  },
+  {
+   "t": "水",
+   "r": "shuǐ",
+   "level": "A1",
+   "theme": "nourriture",
+   "g": {
+    "fr": "eau"
+   }
+  },
+  {
+   "t": "鸡蛋",
+   "r": "jīdàn",
+   "level": "A1",
+   "theme": "nourriture",
+   "g": {
+    "fr": "œuf"
+   }
+  },
+  {
+   "t": "鱼",
+   "r": "yú",
+   "level": "A1",
+   "theme": "nourriture",
+   "g": {
+    "fr": "poisson"
+   }
+  },
+  {
+   "t": "蔬菜",
+   "r": "shūcài",
+   "level": "A1",
+   "theme": "nourriture",
+   "g": {
+    "fr": "légumes"
+   }
+  },
+  {
+   "t": "水果",
+   "r": "shuǐguǒ",
+   "level": "A1",
+   "theme": "nourriture",
+   "g": {
+    "fr": "fruit"
+   }
+  },
+  {
+   "t": "面包",
+   "r": "miànbāo",
+   "level": "A1",
+   "theme": "nourriture",
+   "g": {
+    "fr": "pain"
+   }
+  },
+  {
+   "t": "咖啡",
+   "r": "kāfēi",
+   "level": "A1",
+   "theme": "nourriture",
+   "g": {
+    "fr": "café"
+   }
+  },
+  {
+   "t": "飞机",
+   "r": "fēijī",
+   "level": "A1",
+   "theme": "voyage",
+   "g": {
+    "fr": "avion"
+   }
+  },
+  {
+   "t": "火车",
+   "r": "huǒchē",
+   "level": "A1",
+   "theme": "voyage",
+   "g": {
+    "fr": "train"
+   }
+  },
+  {
+   "t": "酒店",
+   "r": "jiǔdiàn",
+   "level": "A1",
+   "theme": "voyage",
+   "g": {
+    "fr": "hôtel"
+   }
+  },
+  {
+   "t": "机场",
+   "r": "jīchǎng",
+   "level": "A1",
+   "theme": "voyage",
+   "g": {
+    "fr": "aéroport"
+   }
+  },
+  {
+   "t": "护照",
+   "r": "hùzhào",
+   "level": "A1",
+   "theme": "voyage",
+   "g": {
+    "fr": "passeport"
+   }
+  },
+  {
+   "t": "地图",
+   "r": "dìtú",
+   "level": "A1",
+   "theme": "voyage",
+   "g": {
+    "fr": "carte"
+   }
+  },
+  {
+   "t": "票",
+   "r": "piào",
+   "level": "A1",
+   "theme": "voyage",
+   "g": {
+    "fr": "billet"
+   }
+  },
+  {
+   "t": "出租车",
+   "r": "chūzūchē",
+   "level": "A1",
+   "theme": "voyage",
+   "g": {
+    "fr": "taxi"
+   }
+  },
+  {
+   "t": "行李",
+   "r": "xíngli",
+   "level": "A1",
+   "theme": "voyage",
+   "g": {
+    "fr": "bagages"
+   }
+  },
+  {
+   "t": "旅行",
+   "r": "lǚxíng",
+   "level": "A1",
+   "theme": "voyage",
+   "g": {
+    "fr": "voyage"
+   }
+  },
+  {
+   "t": "今天",
+   "r": "jīntiān",
+   "level": "A1",
+   "theme": "temps",
+   "g": {
+    "fr": "aujourd'hui"
+   }
+  },
+  {
+   "t": "明天",
+   "r": "míngtiān",
+   "level": "A1",
+   "theme": "temps",
+   "g": {
+    "fr": "demain"
+   }
+  },
+  {
+   "t": "昨天",
+   "r": "zuótiān",
+   "level": "A1",
+   "theme": "temps",
+   "g": {
+    "fr": "hier"
+   }
+  },
+  {
+   "t": "现在",
+   "r": "xiànzài",
+   "level": "A1",
+   "theme": "temps",
+   "g": {
+    "fr": "maintenant"
+   }
+  },
+  {
+   "t": "早上",
+   "r": "zǎoshang",
+   "level": "A1",
+   "theme": "temps",
+   "g": {
+    "fr": "matin"
+   }
+  },
+  {
+   "t": "晚上",
+   "r": "wǎnshang",
+   "level": "A1",
+   "theme": "temps",
+   "g": {
+    "fr": "soir"
+   }
+  },
+  {
+   "t": "星期一",
+   "r": "xīngqīyī",
+   "level": "A1",
+   "theme": "temps",
+   "g": {
+    "fr": "lundi"
+   }
+  },
+  {
+   "t": "星期天",
+   "r": "xīngqītiān",
+   "level": "A1",
+   "theme": "temps",
+   "g": {
+    "fr": "dimanche"
+   }
+  },
+  {
+   "t": "小时",
+   "r": "xiǎoshí",
+   "level": "A1",
+   "theme": "temps",
+   "g": {
+    "fr": "heure"
+   }
+  },
+  {
+   "t": "分钟",
+   "r": "fēnzhōng",
+   "level": "A1",
+   "theme": "temps",
+   "g": {
+    "fr": "minute"
+   }
+  },
+  {
+   "t": "红色",
+   "r": "hóngsè",
+   "level": "A1",
+   "theme": "couleurs",
+   "g": {
+    "fr": "rouge"
+   }
+  },
+  {
+   "t": "蓝色",
+   "r": "lánsè",
+   "level": "A1",
+   "theme": "couleurs",
+   "g": {
+    "fr": "bleu"
+   }
+  },
+  {
+   "t": "绿色",
+   "r": "lǜsè",
+   "level": "A1",
+   "theme": "couleurs",
+   "g": {
+    "fr": "vert"
+   }
+  },
+  {
+   "t": "黄色",
+   "r": "huángsè",
+   "level": "A1",
+   "theme": "couleurs",
+   "g": {
+    "fr": "jaune"
+   }
+  },
+  {
+   "t": "黑色",
+   "r": "hēisè",
+   "level": "A1",
+   "theme": "couleurs",
+   "g": {
+    "fr": "noir"
+   }
+  },
+  {
+   "t": "白色",
+   "r": "báisè",
+   "level": "A1",
+   "theme": "couleurs",
+   "g": {
+    "fr": "blanc"
+   }
+  },
+  {
+   "t": "紫色",
+   "r": "zǐsè",
+   "level": "A1",
+   "theme": "couleurs",
+   "g": {
+    "fr": "violet"
+   }
+  },
+  {
+   "t": "橙色",
+   "r": "chéngsè",
+   "level": "A1",
+   "theme": "couleurs",
+   "g": {
+    "fr": "orange"
+   }
+  },
+  {
+   "t": "灰色",
+   "r": "huīsè",
+   "level": "A1",
+   "theme": "couleurs",
+   "g": {
+    "fr": "gris"
+   }
+  },
+  {
+   "t": "粉色",
+   "r": "fěnsè",
+   "level": "A1",
+   "theme": "couleurs",
+   "g": {
+    "fr": "rose"
+   }
+  },
+  {
+   "t": "是",
+   "r": "shì",
+   "level": "A1",
+   "theme": "verbes-courants",
+   "g": {
+    "fr": "être"
+   }
+  },
+  {
+   "t": "有",
+   "r": "yǒu",
+   "level": "A1",
+   "theme": "verbes-courants",
+   "g": {
+    "fr": "avoir"
+   }
+  },
+  {
+   "t": "去",
+   "r": "qù",
+   "level": "A1",
+   "theme": "verbes-courants",
+   "g": {
+    "fr": "aller"
+   }
+  },
+  {
+   "t": "来",
+   "r": "lái",
+   "level": "A1",
+   "theme": "verbes-courants",
+   "g": {
+    "fr": "venir"
+   }
+  },
+  {
+   "t": "吃",
+   "r": "chī",
+   "level": "A1",
+   "theme": "verbes-courants",
+   "g": {
+    "fr": "manger"
+   }
+  },
+  {
+   "t": "喝",
+   "r": "hē",
+   "level": "A1",
+   "theme": "verbes-courants",
+   "g": {
+    "fr": "boire"
+   }
+  },
+  {
+   "t": "说",
+   "r": "shuō",
+   "level": "A1",
+   "theme": "verbes-courants",
+   "g": {
+    "fr": "parler"
+   }
+  },
+  {
+   "t": "看",
+   "r": "kàn",
+   "level": "A1",
+   "theme": "verbes-courants",
+   "g": {
+    "fr": "regarder/lire"
+   }
+  },
+  {
+   "t": "做",
+   "r": "zuò",
+   "level": "A1",
+   "theme": "verbes-courants",
+   "g": {
+    "fr": "faire"
+   }
+  },
+  {
+   "t": "想",
+   "r": "xiǎng",
+   "level": "A1",
+   "theme": "verbes-courants",
+   "g": {
+    "fr": "vouloir/penser"
+   }
+  }
+ ],
+ "grammar": [
+  {
+   "id": "g0",
+   "level": "A1",
+   "title": {
+    "fr": "Ordre des mots"
+   },
+   "body": {
+    "fr": "<p>Le chinois suit l'ordre Sujet-Verbe-Objet, comme le français : 我喝茶 (wǒ hē chá) = « je bois du thé ».</p>"
+   }
+  },
+  {
+   "id": "g1",
+   "level": "A1",
+   "title": {
+    "fr": "Pas de conjugaison"
+   },
+   "body": {
+    "fr": "<p>Les verbes ne changent jamais de forme selon la personne ou le temps : 我是, 你是, 他是 utilisent tous 是 (shì).</p>"
+   }
+  },
+  {
+   "id": "g2",
+   "level": "A1",
+   "title": {
+    "fr": "Le temps par les mots, pas les verbes"
+   },
+   "body": {
+    "fr": "<p>On indique le passé/futur avec des mots comme 昨天 (hier) ou le marqueur 了 (le) après le verbe pour une action accomplie : 我吃了 (j'ai mangé).</p>"
+   }
+  },
+  {
+   "id": "g3",
+   "level": "A1",
+   "title": {
+    "fr": "Pas de pluriel marqué"
+   },
+   "body": {
+    "fr": "<p>米饭 veut dire « du riz » ou « des riz » selon le contexte ; on précise avec un nombre + classificateur : 三个人 (trois personnes).</p>"
+   }
+  },
+  {
+   "id": "g4",
+   "level": "A2",
+   "title": {
+    "fr": "La négation"
+   },
+   "body": {
+    "fr": "<p>On place 不 (bù) avant le verbe : 我不喝茶 (je ne bois pas de thé). Avec 有 (avoir), on utilise 没 (méi) : 我没有钱.</p>"
+   }
+  },
+  {
+   "id": "g5",
+   "level": "A2",
+   "title": {
+    "fr": "Poser une question"
+   },
+   "body": {
+    "fr": "<p>On ajoute simplement 吗 (ma) à la fin d'une phrase affirmative : 你是学生吗？ (Es-tu étudiant ?).</p>"
+   }
+  }
+ ],
+ "readings": [
+  {
+   "id": "r0",
+   "level": "A1",
+   "title": "Lecture",
+   "t": "你好！我叫玛丽。我是法国人。 今天天气很好，我想去公园。 我喜欢喝茶，不喜欢喝咖啡。 我的家人有爸爸，妈妈和一个哥哥。",
+   "r": "",
+   "tr": {
+    "fr": "Bonjour ! Je m'appelle Marie. Je suis française. Aujourd'hui il fait beau, je veux aller au parc. J'aime boire du thé, je n'aime pas le café. Dans ma famille il y a papa, maman et un grand frère."
+   },
+   "q": []
+  }
+ ]
+}

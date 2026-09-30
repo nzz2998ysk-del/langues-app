@@ -1,0 +1,7 @@
+const { C } = require("./_helpers");
+module.exports = { culture: [
+  C("en-c1", "A1", "☕", ["Small talk", "Small talk"], ["<p>Au Royaume-Uni, la météo est le sujet de conversation par excellence ; « How are you? » appelle une réponse courte, pas un récit.</p>", "<p>In the UK the weather is the classic conversation topic; 'How are you?' expects a short answer, not a story.</p>"]),
+  C("en-c2", "A2", "🇺🇸", ["Anglais britannique et américain", "British and American English"], ["<p><i>flat / apartment</i>, <i>lift / elevator</i>, <i>colour / color</i>, <i>autumn / fall</i> : le sens est le même, l'usage change.</p>", "<p><i>flat / apartment</i>, <i>lift / elevator</i>, <i>colour / color</i>, <i>autumn / fall</i>: same meaning, different usage.</p>"]),
+  C("en-c3", "B1", "🙏", ["Please, sorry, thank you", "Please, sorry, thank you"], ["<p>La politesse passe par des formules indirectes : <i>Could you possibly…?</i>, <i>Would you mind…?</i> ; « sorry » s'emploie très souvent.</p>", "<p>Politeness relies on indirect phrasing: <i>Could you possibly…?</i>, <i>Would you mind…?</i>; 'sorry' is used very often.</p>"]),
+  C("en-c4", "B2", "🌍", ["Une langue mondiale", "A global language"], ["<p>Environ 1,5 milliard de personnes parlent anglais, dont une majorité comme langue seconde : Inde, Nigeria, Singapour ont leurs propres variétés.</p>", "<p>Around 1.5 billion people speak English, most as a second language: India, Nigeria and Singapore have their own varieties.</p>"]),
+] };

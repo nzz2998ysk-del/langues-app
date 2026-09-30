@@ -1,0 +1,31 @@
+const { g, ex, q, G, R, C } = require("./_helpers");
+const A = (c, name, sound, t, r, fr, en) => ({ c, final: "", name, sound, ex: { t, r, g: g(fr, en) } });
+module.exports = {
+  replace: ["grammar", "readings"],
+  note: g("Le vietnamien s'écrit en alphabet latin (quốc ngữ) avec des signes qui notent six tons (dialecte du Nord). Changer de ton change le mot : ma, má, mà, mả, mã, mạ.", "Vietnamese uses a Latin alphabet (quốc ngữ) with marks for six tones (northern dialect). Changing tone changes the word: ma, má, mà, mả, mã, mạ."),
+  alphabetNote: g("Les six tons du vietnamien du Nord, avec le même support « ma ».", "The six tones of northern Vietnamese, shown on the syllable 'ma'."),
+  alphabet: [
+    A("a", "ngang", "plat, moyen / level", "ma", "ma", "fantôme", "ghost"), A("á", "sắc", "montant / rising", "má", "má", "joue ; maman (Sud)", "cheek; mum (South)"),
+    A("à", "huyền", "descendant grave / falling", "mà", "mà", "mais", "but"), A("ả", "hỏi", "descendant-remontant / dipping", "mả", "mả", "tombe", "tomb"),
+    A("ã", "ngã", "montant cassé / broken rising", "mã", "mã", "cheval (sino-viet.) ; code", "horse (Sino-Viet.); code"), A("ạ", "nặng", "bas et bref / heavy", "mạ", "mạ", "jeune plant de riz", "rice seedling"),
+    A("đ", "đê", "d", "đi", "đi", "aller", "to go"), A("ơ", "ơ", "ə", "mơ", "mơ", "rêver", "to dream"), A("ư", "ư", "ɯ", "sữa", "sữa", "lait", "milk"), A("ô", "ô", "o fermé", "cô", "cô", "tante, mademoiselle", "aunt, miss"),
+  ],
+  grammar: [
+    G("vi-invariable", "A1", "🧱", ["Des mots invariables", "Invariable words"], ["<p>Pas de conjugaison ni d'accord. Le temps se marque avec <b>đã</b> (passé), <b>đang</b> (en cours), <b>sẽ</b> (futur) : <i>Tôi đã ăn</i> (j'ai mangé).</p>", "<p>No conjugation or agreement. Time is marked with <b>đã</b> (past), <b>đang</b> (ongoing), <b>sẽ</b> (future): <i>Tôi đã ăn</i> (I ate).</p>"], [ex("Ngày mai tôi sẽ đi Hà Nội.", "", "Demain j'irai à Hanoï.", "Tomorrow I'll go to Hanoi.")]),
+    G("vi-pronoms", "A1", "👪", ["Pronoms de parenté", "Kinship pronouns"], ["<p>On s'adresse aux gens selon l'âge relatif : <i>anh</i> (grand frère), <i>chị</i> (grande sœur), <i>em</i> (plus jeune), <i>cô/chú</i> (tante/oncle), <i>ông/bà</i> (monsieur/madame âgés).</p>", "<p>People are addressed by relative age: <i>anh</i> (older brother), <i>chị</i> (older sister), <i>em</i> (younger), <i>cô/chú</i> (aunt/uncle), <i>ông/bà</i> (older man/woman).</p>"], [ex("Chị khỏe không?", "", "Tu vas bien ? (à une femme un peu plus âgée)", "How are you? (to a slightly older woman)")]),
+    G("vi-adj", "A1", "🎨", ["L'adjectif suit le nom", "Adjectives follow nouns"], ["<p><i>nhà đẹp</i> (belle maison). L'adjectif sert aussi de verbe : <i>Nhà này đẹp</i> (cette maison est belle), sans verbe « être ».</p>", "<p><i>nhà đẹp</i> (beautiful house). Adjectives also act as verbs: <i>Nhà này đẹp</i> (this house is beautiful), no 'to be'.</p>"], [ex("Phở này rất ngon.", "", "Ce phở est très bon.", "This phở is very tasty.")]),
+    G("vi-question", "A1", "❓", ["Questions avec không", "Questions with không"], ["<p><i>… không?</i> en fin de phrase = question fermée : <i>Anh có đói không?</i> (as-tu faim ?).</p>", "<p><i>… không?</i> at the end = yes/no question: <i>Anh có đói không?</i> (are you hungry?).</p>"], [ex("Bạn có nói tiếng Anh không?", "", "Parles-tu anglais ?", "Do you speak English?")]),
+    G("vi-classif", "A2", "📏", ["Les classificateurs", "Classifiers"], ["<p>Entre un nombre et le nom : <i>con</i> (animaux), <i>cái</i> (objets), <i>quyển</i> (livres) : <i>hai con mèo</i> (deux chats).</p>", "<p>Between a number and a noun: <i>con</i> (animals), <i>cái</i> (objects), <i>quyển</i> (books): <i>hai con mèo</i> (two cats).</p>"], [ex("Tôi mua ba quyển sách.", "", "J'achète trois livres.", "I'm buying three books.")]),
+  ],
+  readings: [
+    R("vi-r1", "A1", "Hà Nội", "Tôi tên là Lan. Tôi sống ở Hà Nội. Buổi sáng tôi ăn phở và uống cà phê sữa đá. Tôi đi làm bằng xe máy. Cuối tuần tôi đi dạo quanh hồ Hoàn Kiếm.", "", ["Je m'appelle Lan. J'habite à Hanoï. Le matin, je mange un phở et je bois un café au lait glacé. Je vais au travail en scooter. Le week-end, je me promène autour du lac Hoàn Kiếm.", "My name is Lan. I live in Hanoi. In the morning I eat phở and drink iced milk coffee. I go to work by motorbike. At weekends I walk around Hoàn Kiếm lake."],
+      [q("Comment Lan va-t-elle au travail ?", "How does Lan get to work?", [["En scooter", "By motorbike"], ["En bus", "By bus"], ["À pied", "On foot"]], 0)]),
+    R("vi-r2", "A2", "Tết", "Tết là ngày lễ quan trọng nhất ở Việt Nam. Mọi người về quê thăm gia đình. Họ dọn nhà, nấu bánh chưng và tặng tiền lì xì cho trẻ em. Hoa đào và hoa mai được bày trong nhà.", "", ["Le Têt est la fête la plus importante au Viêt Nam. Tout le monde rentre au village voir sa famille. On nettoie la maison, on cuit des bánh chưng et on offre de l'argent porte-bonheur aux enfants. On décore la maison de fleurs de pêcher et d'abricotier.", "Tết is the most important holiday in Vietnam. Everyone goes home to see their family. People clean the house, cook bánh chưng and give lucky money to children. Peach and apricot blossoms decorate the home."],
+      [q("Qu'offre-t-on aux enfants ?", "What do children receive?", [["De l'argent porte-bonheur", "Lucky money"], ["Des livres", "Books"], ["Des jouets", "Toys"]], 0)]),
+  ],
+  culture: [
+    C("vi-c1", "A1", "🍜", ["Le phở", "Phở"], ["<p>Soupe de nouilles de riz au bœuf ou au poulet, née dans le Nord, mangée surtout au petit-déjeuner.</p>", "<p>Rice-noodle soup with beef or chicken, born in the North, eaten mostly for breakfast.</p>"]),
+    C("vi-c2", "A2", "🛵", ["Les scooters", "Motorbikes"], ["<p>Des millions de deux-roues circulent en ville : pour traverser, marchez lentement et régulièrement.</p>", "<p>Millions of motorbikes fill the cities: to cross, walk slowly and steadily.</p>"]),
+    C("vi-c3", "B1", "✍️", ["Le quốc ngữ", "Quốc ngữ"], ["<p>L'alphabet latin, codifié par des missionnaires au XVII<sup>e</sup> siècle, a remplacé les caractères chinois (chữ Nôm) au XX<sup>e</sup> siècle.</p>", "<p>The Latin script, codified by missionaries in the 17th century, replaced Chinese-based characters (chữ Nôm) in the 20th century.</p>"]),
+  ],
+};

@@ -13,6 +13,7 @@ const {
   resetPasswordEmailHtml,
   logEmailConfig,
 } = require("./lib/email");
+const { LEVELS, PREMIUM_FEATURES, loadCourse, courseForUser, syncVocabulary } = require("./lib/course");
 const stripeLib = require("./lib/stripe");
 
 const PORT = process.env.PORT || 3000;
@@ -221,7 +222,57 @@ async function initDb() {
   // Make sure the designated admin account is always an admin, if it already signed up.
   await pool.query(`UPDATE users SET is_admin = TRUE WHERE email = $1`, [ADMIN_EMAIL]);
 
-  console.log("Database ready (users, features, languages, payments, suggestions tables ok).");
+  // ---- Boîte à idées: moderation fields for the admin dashboard ----
+  await pool.query(`ALTER TABLE suggestions ADD COLUMN IF NOT EXISTS category TEXT NOT NULL DEFAULT 'autre';`);
+  await pool.query(`ALTER TABLE suggestions ADD COLUMN IF NOT EXISTS status TEXT NOT NULL DEFAULT 'nouvelle';`);
+  await pool.query(`ALTER TABLE suggestions ADD COLUMN IF NOT EXISTS admin_notes TEXT NOT NULL DEFAULT '';`);
+  await pool.query(`ALTER TABLE suggestions ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ;`);
+
+  // ---- Global premium features (one switch each in /admin) ----
+  let psort = 10000;
+  for (const f of PREMIUM_FEATURES) {
+    await pool.query(
+      `INSERT INTO features (key, label, category, is_premium, sort_order)
+       VALUES ($1, $2, 'global', TRUE, $3)
+       ON CONFLICT (key) DO UPDATE SET label = EXCLUDED.label, category = 'global'`,
+      [f.key, f.label, psort++]
+    );
+  }
+
+  // ---- Course content: every word with its CEFR level (A1..C2) ----
+  // Synced from course/data/*.json at startup (lib/course.js). level_override is
+  // set from /admin and wins over the content's level everywhere in the app.
+  await pool.query(`CREATE TABLE IF NOT EXISTS app_meta (key TEXT PRIMARY KEY, value TEXT NOT NULL);`);
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS course_words (
+      lang TEXT NOT NULL,
+      word_id TEXT NOT NULL,
+      word TEXT NOT NULL,
+      romanization TEXT NOT NULL DEFAULT '',
+      gloss_fr TEXT NOT NULL DEFAULT '',
+      theme TEXT NOT NULL DEFAULT '',
+      level TEXT NOT NULL CHECK (level IN ('A1','A2','B1','B2','C1','C2')),
+      level_override TEXT CHECK (level_override IN ('A1','A2','B1','B2','C1','C2')),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      PRIMARY KEY (lang, word_id)
+    );
+  `);
+  await pool.query(`CREATE INDEX IF NOT EXISTS course_words_level_idx ON course_words (lang, (COALESCE(level_override, level)));`);
+
+  // ---- Per-account learning progress (SRS state, stats, badges...) per language ----
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS user_progress (
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      lang TEXT NOT NULL,
+      data JSONB NOT NULL DEFAULT '{}'::jsonb,
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      PRIMARY KEY (user_id, lang)
+    );
+  `);
+  const synced = await syncVocabulary(pool);
+  if (synced) console.log(`Course vocabulary synced (${synced} words).`);
+
+  console.log("Database ready (users, features, languages, payments, suggestions, course_words, user_progress tables ok).");
 }
 
 const app = express();
@@ -318,6 +369,17 @@ app.use("/design-system", express.static(path.join(__dirname, "design-system"), 
   maxAge: isProd ? "1h" : 0,
   index: false,
 }));
+
+// ---- course engine assets (JS/CSS/i18n). The content itself (course/data)
+// is only reachable through /api/course/:lang, which enforces premium access.
+app.use("/course", (req, res, next) => (req.path.startsWith("/data/") ? res.status(404).end() : next()));
+app.use("/course", express.static(path.join(__dirname, "course"), { maxAge: isProd ? "1h" : 0, index: false }));
+// Offline mode (premium): the service worker must be served from the root to
+// control the whole app.
+app.get("/sw.js", (req, res) => {
+  res.setHeader("Cache-Control", "no-cache");
+  res.sendFile(path.join(__dirname, "course", "sw.js"));
+});
 
 // ---- very small in-memory rate limiter for auth endpoints (per IP) ----
 const attempts = new Map();
@@ -673,6 +735,193 @@ app.get("/api/features", async (req, res) => {
 
 // Full per-language × per-module grid, plus the language metadata (flag/name)
 // admin.html needs to render it without hard-coding 39 languages itself.
+// ---- Course engine API --------------------------------------------------------
+// Access for one account: `features[key] === true` means LOCKED for this account.
+async function accessFor(userId) {
+  const u = await pool.query("SELECT id, name, subscribed, is_admin, base_lang FROM users WHERE id = $1", [userId]);
+  const user = u.rows[0];
+  if (!user) return null;
+  const unlocked = Boolean(user.subscribed || user.is_admin);
+  const f = await pool.query("SELECT key, is_premium FROM features WHERE category IN ('global', 'module')");
+  const features = {};
+  f.rows.forEach((r) => { features[r.key] = r.is_premium && !unlocked; });
+  return { user, unlocked, features };
+}
+
+app.get("/api/course/:lang", async (req, res) => {
+  if (!req.userId) return res.status(401).json({ error: "Connecte-toi d'abord." });
+  const code = String(req.params.lang);
+  if (!LANG_META[code]) return res.status(404).json({ error: "Langue inconnue." });
+  try {
+    const access = await accessFor(req.userId);
+    if (!access) return res.status(401).json({ error: "Session invalide." });
+    const status = await pool.query("SELECT status FROM languages WHERE code = $1", [code]);
+    if (status.rows[0] && status.rows[0].status === "development" && !access.user.is_admin) {
+      return res.status(403).json({ error: "Cette langue est en cours de préparation." });
+    }
+    const course = loadCourse(code);
+    if (!course) return res.status(404).json({ error: "Contenu indisponible." });
+    const ov = await pool.query(
+      "SELECT word_id, level_override FROM course_words WHERE lang = $1 AND level_override IS NOT NULL", [code]
+    );
+    const overrides = new Map(ov.rows.map((r) => [r.word_id, r.level_override]));
+    const data = courseForUser(course, { overrides, levelsLocked: Boolean(access.features["premium:levels-c"]) });
+    res.setHeader("Cache-Control", "private, no-cache");
+    return res.json({
+      course: data,
+      access: { premium: access.unlocked, isAdmin: access.user.is_admin, features: access.features },
+      me: { name: access.user.name || "", baseLang: access.user.base_lang || "fr", id: access.user.id },
+    });
+  } catch (err) {
+    console.error("course error:", err);
+    return res.status(500).json({ error: "Erreur serveur." });
+  }
+});
+
+// Learning progress (SRS boxes, answers history, lessons done, badges...) is an
+// opaque JSON document per account and language, owned by course/engine.js.
+app.get("/api/progress/:lang", async (req, res) => {
+  if (!req.userId) return res.status(401).json({ error: "Connecte-toi d'abord." });
+  if (!LANG_META[req.params.lang]) return res.status(404).json({ error: "Langue inconnue." });
+  try {
+    const r = await pool.query("SELECT data, updated_at FROM user_progress WHERE user_id = $1 AND lang = $2", [req.userId, req.params.lang]);
+    return res.json(r.rows[0] ? { data: r.rows[0].data, updatedAt: r.rows[0].updated_at } : { data: null });
+  } catch (err) {
+    console.error("progress get error:", err);
+    return res.status(500).json({ error: "Erreur serveur." });
+  }
+});
+app.put("/api/progress/:lang", async (req, res) => {
+  if (!req.userId) return res.status(401).json({ error: "Connecte-toi d'abord." });
+  if (!LANG_META[req.params.lang]) return res.status(404).json({ error: "Langue inconnue." });
+  if (rateLimited("progress:" + req.userId, 240, 15 * 60 * 1000)) return res.status(429).json({ error: "Trop de sauvegardes." });
+  const data = req.body && req.body.data;
+  if (!data || typeof data !== "object" || Array.isArray(data)) return res.status(400).json({ error: "Données invalides." });
+  try {
+    await pool.query(
+      `INSERT INTO user_progress (user_id, lang, data, updated_at) VALUES ($1, $2, $3, NOW())
+       ON CONFLICT (user_id, lang) DO UPDATE SET data = EXCLUDED.data, updated_at = NOW()`,
+      [req.userId, req.params.lang, JSON.stringify(data)]
+    );
+    return res.json({ ok: true });
+  } catch (err) {
+    console.error("progress put error:", err);
+    return res.status(500).json({ error: "Erreur serveur." });
+  }
+});
+
+// Words of a language filtered/sorted by CEFR level, straight from the
+// course_words table (admin overrides applied). C1/C2 need Premium.
+app.get("/api/vocabulary", async (req, res) => {
+  if (!req.userId) return res.status(401).json({ error: "Connecte-toi d'abord." });
+  const lang = String(req.query.lang || "");
+  if (!LANG_META[lang]) return res.status(400).json({ error: "Langue inconnue." });
+  const levels = String(req.query.level || "").split(",").filter((l) => LEVELS.includes(l));
+  const q = String(req.query.q || "").trim().slice(0, 60);
+  const sort = { level: "eff_level, word", alpha: "word", theme: "theme, eff_level, word" }[req.query.sort] || "eff_level, word";
+  const limit = Math.min(parseInt(req.query.limit, 10) || 200, 500);
+  const offset = Math.max(parseInt(req.query.offset, 10) || 0, 0);
+  try {
+    const access = await accessFor(req.userId);
+    const allowed = access.features["premium:levels-c"] ? ["A1", "A2", "B1", "B2"] : LEVELS;
+    const want = (levels.length ? levels : LEVELS).filter((l) => allowed.includes(l));
+    const r = await pool.query(
+      `SELECT * FROM (SELECT word_id, word, romanization, gloss_fr, theme, COALESCE(level_override, level) AS eff_level
+         FROM course_words WHERE lang = $1) w
+       WHERE eff_level = ANY($2::text[]) AND ($3 = '' OR word ILIKE '%' || $3 || '%' OR gloss_fr ILIKE '%' || $3 || '%')
+       ORDER BY ${sort} LIMIT $4 OFFSET $5`,
+      [lang, want, q, limit, offset]
+    );
+    const counts = await pool.query(
+      "SELECT COALESCE(level_override, level) AS level, COUNT(*)::int AS n FROM course_words WHERE lang = $1 GROUP BY 1", [lang]
+    );
+    return res.json({
+      words: r.rows.map((w) => ({ id: w.word_id, t: w.word, r: w.romanization, fr: w.gloss_fr, theme: w.theme, level: w.eff_level })),
+      counts: Object.fromEntries(counts.rows.map((c) => [c.level, c.n])),
+    });
+  } catch (err) {
+    console.error("vocabulary error:", err);
+    return res.status(500).json({ error: "Erreur serveur." });
+  }
+});
+
+// ---- Admin: CEFR level of any word ----
+app.get("/api/admin/vocabulary", requireAdmin, async (req, res) => {
+  const lang = String(req.query.lang || "");
+  if (!LANG_META[lang]) return res.status(400).json({ error: "Langue inconnue." });
+  const q = String(req.query.q || "").trim().slice(0, 60);
+  const level = LEVELS.includes(req.query.level) ? req.query.level : "";
+  const r = await pool.query(
+    `SELECT word_id, word, romanization, gloss_fr, theme, level, level_override FROM course_words
+     WHERE lang = $1 AND ($2 = '' OR word ILIKE '%' || $2 || '%' OR gloss_fr ILIKE '%' || $2 || '%')
+       AND ($3 = '' OR COALESCE(level_override, level) = $3)
+     ORDER BY COALESCE(level_override, level), word LIMIT 100`,
+    [lang, q, level]
+  );
+  const counts = await pool.query(
+    "SELECT COALESCE(level_override, level) AS level, COUNT(*)::int AS n FROM course_words WHERE lang = $1 GROUP BY 1 ORDER BY 1", [lang]
+  );
+  return res.json({ words: r.rows, counts: Object.fromEntries(counts.rows.map((c) => [c.level, c.n])) });
+});
+app.put("/api/admin/vocabulary/:lang/:wordId", requireAdmin, async (req, res) => {
+  const level = req.body && req.body.level;
+  if (level !== null && !LEVELS.includes(level)) return res.status(400).json({ error: "Niveau invalide." });
+  const r = await pool.query(
+    "UPDATE course_words SET level_override = $1, updated_at = NOW() WHERE lang = $2 AND word_id = $3 RETURNING word_id, level, level_override",
+    [level, req.params.lang, req.params.wordId]
+  );
+  if (!r.rows[0]) return res.status(404).json({ error: "Mot introuvable." });
+  return res.json({ ok: true, word: r.rows[0] });
+});
+
+// ---- Admin: boîte à idées ----
+const SUGGESTION_STATUSES = ["nouvelle", "vue", "en_cours", "acceptee", "refusee"];
+const SUGGESTION_CATEGORIES = ["langue", "contenu", "fonctionnalite", "design", "bug", "autre"];
+app.get("/api/admin/suggestions", requireAdmin, async (req, res) => {
+  const status = SUGGESTION_STATUSES.includes(req.query.status) ? req.query.status : "";
+  const category = SUGGESTION_CATEGORIES.includes(req.query.category) ? req.query.category : "";
+  const q = String(req.query.q || "").trim().slice(0, 100);
+  try {
+    const r = await pool.query(
+      `SELECT s.id, s.message, s.category, s.status, s.admin_notes, s.created_at, s.updated_at, s.sent_at,
+              u.email AS author_email, u.name AS author_name
+         FROM suggestions s LEFT JOIN users u ON u.id = s.user_id
+        WHERE ($1 = '' OR s.status = $1) AND ($2 = '' OR s.category = $2)
+          AND ($3 = '' OR s.message ILIKE '%' || $3 || '%' OR u.email ILIKE '%' || $3 || '%')
+        ORDER BY s.created_at DESC LIMIT 500`,
+      [status, category, q]
+    );
+    const counts = await pool.query("SELECT status, COUNT(*)::int AS n FROM suggestions GROUP BY status");
+    return res.json({
+      suggestions: r.rows,
+      counts: Object.fromEntries(counts.rows.map((c) => [c.status, c.n])),
+      statuses: SUGGESTION_STATUSES,
+      categories: SUGGESTION_CATEGORIES,
+    });
+  } catch (err) {
+    console.error("admin suggestions error:", err);
+    return res.status(500).json({ error: "Erreur serveur." });
+  }
+});
+app.put("/api/admin/suggestions/:id", requireAdmin, async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  const body = req.body || {};
+  if (body.status !== undefined && !SUGGESTION_STATUSES.includes(body.status)) return res.status(400).json({ error: "Statut invalide." });
+  if (body.admin_notes !== undefined && typeof body.admin_notes !== "string") return res.status(400).json({ error: "Notes invalides." });
+  try {
+    const r = await pool.query(
+      `UPDATE suggestions SET status = COALESCE($1, status), admin_notes = COALESCE($2, admin_notes), updated_at = NOW()
+       WHERE id = $3 RETURNING id, status, admin_notes, updated_at`,
+      [body.status === undefined ? null : body.status, body.admin_notes === undefined ? null : body.admin_notes.slice(0, 5000), id]
+    );
+    if (!r.rows[0]) return res.status(404).json({ error: "Idée introuvable." });
+    return res.json({ ok: true, suggestion: r.rows[0] });
+  } catch (err) {
+    console.error("admin suggestion update error:", err);
+    return res.status(500).json({ error: "Erreur serveur." });
+  }
+});
+
 app.get("/api/admin/features", requireAdmin, async (req, res) => {
   const result = await pool.query(
     "SELECT key, label, category, lang_code, module, is_premium, sort_order FROM features ORDER BY sort_order"
@@ -836,7 +1085,8 @@ app.post("/api/suggestions", async (req, res) => {
     return res.status(400).json({ error: "Décris un peu plus ton idée." });
   }
   try {
-    await pool.query("INSERT INTO suggestions (user_id, message) VALUES ($1, $2)", [req.userId, message]);
+    const category = SUGGESTION_CATEGORIES.includes(req.body && req.body.category) ? req.body.category : "autre";
+    await pool.query("INSERT INTO suggestions (user_id, message, category) VALUES ($1, $2, $3)", [req.userId, message, category]);
     return res.status(201).json({ ok: true });
   } catch (err) {
     console.error("suggestions error:", err);
@@ -850,7 +1100,7 @@ app.post("/api/suggestions", async (req, res) => {
 // by the external-trigger endpoint (POST /api/internal/send-digest).
 async function sendSuggestionsDigest() {
   const pending = await pool.query(
-    `SELECT s.id, s.message, s.created_at, u.email AS user_email
+    `SELECT s.id, s.message, s.category, s.created_at, u.email AS user_email
      FROM suggestions s LEFT JOIN users u ON u.id = s.user_id
      WHERE s.sent_at IS NULL ORDER BY s.created_at ASC LIMIT 500`
   );
