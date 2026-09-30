@@ -180,6 +180,7 @@ function stub(code, page) {
 <link rel="stylesheet" href="/design-system/ios27-liquid-glass.css">
 <link rel="stylesheet" href="/course/engine.css">
 <link rel="stylesheet" href="/design-system/ios27-app.css">
+<link rel="stylesheet" href="/design-system/papote.css">
 </head><body data-lang="${code}" data-page="${page}"><div id="app"></div>
 <script src="/course/i18n.js"></script><script src="/course/engine.js"></script>
 </body></html>`;

@@ -1,0 +1,233 @@
+/*!
+ * Papote brand layer — the look of the public landing page (brand indigo,
+ * gradient pills, glass cards that lift, staggered entrance animations),
+ * applied to every other screen. Loaded LAST, after ios27-liquid-glass.css and
+ * ios27-app.css. Scopes:
+ *   body[data-page]  the 936 course-module pages (course/engine.js)
+ *   #homeHub, #tabbar  the signed-in home and tab bar (app.html)
+ *   body.pp-page     profile, ideas, subscribe, reset password, legal, admin
+ * Everything respects prefers-reduced-motion.
+ */
+:root{
+  --brand:var(--ig27-indigo);
+  --brand-grad:linear-gradient(135deg,var(--ig27-accent),var(--brand));
+  --brand-grad-3:linear-gradient(120deg,var(--ig27-accent),var(--brand) 55%,var(--ig27-pink));
+  --pp-card-bg:var(--ig27-glass-regular-bg);
+  --pp-rim:var(--ig27-glass-rim-color);
+  --pp-shadow:0 20px 40px -28px color-mix(in srgb,var(--ig27-black) 40%,transparent);
+  --pp-shadow-hover:0 26px 50px -24px color-mix(in srgb,var(--brand) 45%,transparent);
+  --pp-ease:cubic-bezier(.34,1.56,.64,1);
+}
+
+@keyframes pp-rise{from{opacity:0;transform:translateY(18px) scale(.985)}to{opacity:1;transform:none}}
+@keyframes pp-pop{0%{opacity:0;transform:scale(.85)}100%{opacity:1;transform:none}}
+@keyframes pp-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes pp-drift{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(30px,-20px) scale(1.08)}66%{transform:translate(-20px,15px) scale(.95)}}
+@keyframes pp-shimmer{from{background-position:-200% 0}to{background-position:200% 0}}
+@keyframes pp-grow-x{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes pp-grow-y{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+@keyframes pp-underline{from{width:0}to{width:56px}}
+
+/* ======================================================================
+   Shared page background (course modules + secondary pages)
+   ====================================================================== */
+body.in-lang,body.pp-page{
+  background:
+    radial-gradient(1100px 600px at 10% -12%, color-mix(in srgb,var(--brand) 15%,transparent), transparent 60%),
+    radial-gradient(900px 560px at 105% 20%, color-mix(in srgb,var(--ig27-accent) 11%,transparent), transparent 60%),
+    radial-gradient(800px 520px at -5% 100%, color-mix(in srgb,var(--ig27-pink) 7%,transparent), transparent 60%),
+    var(--ig27-bg-grouped-primary);
+  background-attachment:fixed;
+}
+/* Course pages are transparent iframes: the app's background shows through. */
+html:has(> body[data-page]),body[data-page]{background:transparent}
+
+/* ======================================================================
+   Course modules (course/engine.js)
+   ====================================================================== */
+body[data-page] .hdr{background:color-mix(in srgb,var(--ig27-bg-grouped-primary) 60%,transparent);
+  -webkit-backdrop-filter:blur(var(--ig27-glass-regular-blur)) saturate(var(--ig27-glass-regular-saturate));backdrop-filter:blur(var(--ig27-glass-regular-blur)) saturate(var(--ig27-glass-regular-saturate));
+  border-bottom:1px solid var(--pp-rim)}
+body[data-page] .logo{background:var(--brand-grad);box-shadow:0 8px 18px -8px var(--brand)}
+body[data-page] .lt small{color:var(--brand)}
+body[data-page] .navmenu{background:color-mix(in srgb,var(--ig27-bg-grouped-primary) 70%,transparent);-webkit-backdrop-filter:blur(var(--ig27-glass-regular-blur));backdrop-filter:blur(var(--ig27-glass-regular-blur))}
+body[data-page] .navmenu button{border-radius:999px;transition:transform .25s var(--pp-ease),background .2s}
+body[data-page] .navmenu button:hover{transform:translateY(-2px)}
+body[data-page] .navmenu button.on{background:var(--brand-grad);border-color:transparent;box-shadow:0 8px 18px -10px var(--brand)}
+
+/* hero: brand gradient, drifting light, floating watermark */
+body[data-page] .hero{background:
+    radial-gradient(520px 280px at 92% 0%, color-mix(in srgb,var(--ig27-pink) 40%,transparent), transparent 60%),
+    linear-gradient(135deg,var(--ig27-accent),var(--brand) 70%);
+  box-shadow:0 30px 60px -30px var(--brand);border-radius:34px;animation:pp-rise .6s var(--ig27-ease-standard) both}
+body[data-page] .hero::before{content:"";position:absolute;width:260px;height:260px;left:-60px;bottom:-120px;border-radius:50%;
+  background:radial-gradient(circle,color-mix(in srgb,var(--ig27-white) 22%,transparent),transparent 70%);animation:pp-drift 16s ease-in-out infinite;pointer-events:none}
+body[data-page] .hero::after{animation:pp-drift 20s ease-in-out infinite reverse}
+body[data-page] .hero h1{font-weight:800;letter-spacing:-.03em}
+body[data-page] .hero .stat-box:is(*){background:color-mix(in srgb,var(--ig27-white) 16%,transparent);border:1px solid color-mix(in srgb,var(--ig27-white) 24%,transparent);box-shadow:none;border-radius:22px;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);animation:pp-pop .5s var(--pp-ease) both}
+body[data-page] .hero .stat-box:nth-child(2){animation-delay:.08s}
+body[data-page] .hero .stat-box:nth-child(3){animation-delay:.16s}
+body[data-page] .hero .stat-box:nth-child(4){animation-delay:.24s}
+
+/* titles */
+body[data-page] .ttl{font-weight:800;letter-spacing:-.035em;position:relative;padding-bottom:10px;margin-bottom:10px;animation:pp-rise .5s var(--ig27-ease-standard) both}
+body[data-page] .ttl::after{content:"";position:absolute;left:0;bottom:0;height:4px;width:56px;border-radius:4px;background:var(--brand-grad-3);animation:pp-underline .7s var(--ig27-ease-standard) .15s both}
+[dir=rtl] body[data-page] .ttl::after{left:auto;right:0}
+body[data-page] .sub{animation:pp-rise .5s var(--ig27-ease-standard) .05s both}
+body[data-page] .secttit::before{background:var(--brand-grad-3)}
+
+/* glass cards that lift */
+body[data-page] :is(.navcard,.lvlcard,.box,.rule-card,.read-card,.stat-box,.badge-card,.abc-card,.prow,.premium-card,.conj-table,.quiz-card,.abc-detail){
+  background:var(--pp-card-bg);border:1px solid var(--pp-rim);box-shadow:var(--pp-shadow);
+  -webkit-backdrop-filter:blur(var(--ig27-glass-regular-blur));backdrop-filter:blur(var(--ig27-glass-regular-blur))}
+body[data-page] :is(.navcard,.lvlcard,.box,.rule-card,.read-card,.stat-box,.badge-card,.prow){border-radius:24px}
+body[data-page] :is(.navcard,.lvlcard,.badge-card,.abc-card,.stat-box,.prow,.rule-card){transition:transform .3s var(--ig27-ease-standard),box-shadow .3s,border-color .3s}
+body[data-page] :is(.navcard,.lvlcard,.badge-card,.abc-card,.stat-box,.prow,.rule-card):hover{transform:translateY(-4px);box-shadow:var(--pp-shadow-hover);border-color:color-mix(in srgb,var(--brand) 30%,transparent)}
+body[data-page] :is(.navcard,.lvlcard):active{transform:scale(.98)}
+body[data-page] .navcard .ic{border-radius:16px;background:color-mix(in srgb,var(--pp-c,var(--brand)) 16%,transparent);transition:transform .35s var(--pp-ease)}
+body[data-page] .navcard:hover .ic{transform:rotate(-8deg) scale(1.08)}
+body[data-page] .navcard .arrow{transition:transform .3s var(--pp-ease)}
+body[data-page] .navcard:hover .arrow{transform:translateX(4px);color:var(--brand)}
+body[data-page] :is(.grid,.modes)>.navcard:nth-child(6n+1){--pp-c:var(--ig27-accent)}
+body[data-page] :is(.grid,.modes)>.navcard:nth-child(6n+2){--pp-c:var(--ig27-green)}
+body[data-page] :is(.grid,.modes)>.navcard:nth-child(6n+3){--pp-c:var(--ig27-purple)}
+body[data-page] :is(.grid,.modes)>.navcard:nth-child(6n+4){--pp-c:var(--ig27-orange)}
+body[data-page] :is(.grid,.modes)>.navcard:nth-child(6n+5){--pp-c:var(--ig27-pink)}
+body[data-page] :is(.grid,.modes)>.navcard:nth-child(6n+6){--pp-c:var(--ig27-cyan)}
+body[data-page] .lvlcard .badge{border-radius:12px;box-shadow:0 6px 14px -6px currentColor}
+
+/* staggered entrance of lists and grids (first 18 items; the rest appear at once) */
+body[data-page] :is(.grid,.vlist,.badges,.abc-grid,.modes,.stat-grid,.exlist,.premium-list)>*,
+body[data-page] :is(.rule-card,.read-card,.prow,.box){animation:pp-rise .5s var(--ig27-ease-standard) both}
+body[data-page] :is(.grid,.vlist,.badges,.abc-grid,.modes,.stat-grid)>:nth-child(2){animation-delay:.04s}
+body[data-page] :is(.grid,.vlist,.badges,.abc-grid,.modes,.stat-grid)>:nth-child(3){animation-delay:.08s}
+body[data-page] :is(.grid,.vlist,.badges,.abc-grid,.modes,.stat-grid)>:nth-child(4){animation-delay:.12s}
+body[data-page] :is(.grid,.vlist,.badges,.abc-grid,.modes,.stat-grid)>:nth-child(5){animation-delay:.16s}
+body[data-page] :is(.grid,.vlist,.badges,.abc-grid,.modes,.stat-grid)>:nth-child(6){animation-delay:.2s}
+body[data-page] :is(.grid,.vlist,.badges,.abc-grid,.modes,.stat-grid)>:nth-child(7){animation-delay:.24s}
+body[data-page] :is(.grid,.vlist,.badges,.abc-grid,.modes,.stat-grid)>:nth-child(8){animation-delay:.28s}
+body[data-page] :is(.grid,.vlist,.badges,.abc-grid,.modes,.stat-grid)>:nth-child(9){animation-delay:.32s}
+body[data-page] :is(.grid,.vlist,.badges,.abc-grid,.modes,.stat-grid)>:nth-child(10){animation-delay:.36s}
+body[data-page] :is(.grid,.vlist,.badges,.abc-grid,.modes,.stat-grid)>:nth-child(11){animation-delay:.4s}
+body[data-page] :is(.grid,.vlist,.badges,.abc-grid,.modes,.stat-grid)>:nth-child(12){animation-delay:.44s}
+body[data-page] :is(.grid,.vlist,.badges,.abc-grid,.modes,.stat-grid)>:nth-child(n+13):nth-child(-n+18){animation-delay:.48s}
+body[data-page] :is(.grid,.vlist,.badges,.abc-grid,.modes,.stat-grid)>:nth-child(n+19){animation-duration:.3s;animation-delay:.5s}
+
+/* vocabulary rows */
+body[data-page] .vrow{border-radius:16px;background:var(--pp-card-bg);border-color:var(--pp-rim);transition:transform .25s var(--ig27-ease-standard),box-shadow .25s,border-color .25s}
+body[data-page] .vrow:hover{transform:translateY(-2px);box-shadow:0 14px 26px -18px var(--brand);border-color:color-mix(in srgb,var(--brand) 30%,transparent)}
+body[data-page] .vrow.open{box-shadow:var(--pp-shadow-hover)}
+
+/* buttons */
+body[data-page] .bpr{background:var(--brand-grad);border-radius:999px;box-shadow:0 12px 26px -12px var(--brand);transition:transform .25s var(--pp-ease),box-shadow .25s}
+body[data-page] .bpr:hover{transform:translateY(-2px);box-shadow:0 16px 32px -12px var(--brand)}
+body[data-page] .bpr:active{transform:scale(.97)}
+body[data-page] .btn2,body[data-page] .bbk,body[data-page] .profbadge,body[data-page] .navtoggle{border-radius:999px;background:var(--pp-card-bg);border-color:var(--pp-rim);
+  -webkit-backdrop-filter:blur(var(--ig27-glass-regular-blur));backdrop-filter:blur(var(--ig27-glass-regular-blur));transition:transform .25s var(--pp-ease),border-color .2s}
+body[data-page] .btn2:hover,body[data-page] .navtoggle:hover{transform:translateY(-2px);border-color:color-mix(in srgb,var(--brand) 35%,transparent)}
+body[data-page] .pill{border-radius:999px;transition:transform .25s var(--pp-ease),background .2s}
+body[data-page] .pill:hover{transform:translateY(-1px)}
+body[data-page] .pill.on{background:var(--brand-grad);border-color:transparent;box-shadow:0 8px 18px -10px var(--brand)}
+body[data-page] .soundbtn{transition:transform .25s var(--pp-ease),background .2s}
+body[data-page] .soundbtn:hover{transform:scale(1.12);background:var(--brand-grad)}
+body[data-page] .field,body[data-page] .sel{border-radius:14px;background:var(--pp-card-bg);border-color:var(--pp-rim)}
+body[data-page] .field:focus,body[data-page] .sel:focus{outline:none;box-shadow:0 0 0 4px var(--ig27-accent-soft)}
+body[data-page] .filters{background:transparent}
+
+/* numbers & meters */
+body[data-page] .stat-num{background:linear-gradient(120deg,var(--ig27-accent),var(--brand));-webkit-background-clip:text;background-clip:text;color:transparent}
+body[data-page] .hero .stat-num{background:none;color:var(--ig27-on-accent)}
+body[data-page] .meter>i,body[data-page] .duo-progress-fill{background:linear-gradient(90deg,var(--ig27-accent),var(--brand),var(--ig27-pink),var(--ig27-accent));background-size:200% 100%;animation:pp-shimmer 3s linear infinite}
+body[data-page] .meter>i{transform-origin:left;animation:pp-grow-x .9s var(--ig27-ease-standard) both,pp-shimmer 3s linear infinite}
+body[data-page] .bars>div{background:var(--brand-grad);transform-origin:bottom;animation:pp-grow-y .7s var(--ig27-ease-standard) both}
+body[data-page] .bars>div:nth-child(3n){animation-delay:.05s}body[data-page] .bars>div:nth-child(3n+1){animation-delay:.1s}
+
+/* quiz */
+body[data-page] .duo-bar{background:color-mix(in srgb,var(--ig27-bg-grouped-primary) 65%,transparent);-webkit-backdrop-filter:blur(var(--ig27-glass-regular-blur));backdrop-filter:blur(var(--ig27-glass-regular-blur))}
+body[data-page] .quiz-card{border-radius:34px;animation:pp-pop .45s var(--pp-ease) both}
+body[data-page] .quiz-q{font-weight:800;letter-spacing:-.02em}
+body[data-page] .quiz-opt{border-radius:18px;background:var(--pp-card-bg);border-color:var(--pp-rim);transition:transform .25s var(--pp-ease),border-color .2s,box-shadow .25s;animation:pp-rise .4s var(--ig27-ease-standard) both}
+body[data-page] .quiz-opt:nth-child(2){animation-delay:.05s}body[data-page] .quiz-opt:nth-child(3){animation-delay:.1s}body[data-page] .quiz-opt:nth-child(4){animation-delay:.15s}
+body[data-page] .quiz-opt:hover{transform:translateY(-3px);border-color:var(--brand);box-shadow:0 12px 24px -16px var(--brand)}
+body[data-page] .quiz-opt.correct{animation:pp-pop .35s var(--pp-ease) both;box-shadow:0 0 0 4px var(--ig27-green-soft)}
+body[data-page] .answer-input,body[data-page] .order-chip,body[data-page] .kbtn{border-radius:16px}
+body[data-page] .order-chip{transition:transform .2s var(--pp-ease)}
+body[data-page] .order-chip:hover{transform:translateY(-2px)}
+body[data-page] .feedback{border-radius:18px;animation:pp-pop .35s var(--pp-ease) both}
+body[data-page] .complete h2{font-weight:800;letter-spacing:-.03em;background:var(--brand-grad-3);-webkit-background-clip:text;background-clip:text;color:transparent}
+body[data-page] .complete .big{animation:pp-pop .6s var(--pp-ease) both,pp-float 4s ease-in-out .6s infinite;display:inline-block}
+
+/* alphabet & reading */
+body[data-page] .abc-card{border-radius:22px}
+body[data-page] .abc-card:hover{transform:translateY(-6px) rotate(-2deg) scale(1.04)}
+body[data-page] .abc-letter,body[data-page] .abc-detail .big{background:var(--brand-grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+body[data-page] .read-text{border-radius:24px}
+body[data-page] .read-card{border-radius:30px}
+body[data-page] .rule-card[open]{box-shadow:var(--pp-shadow-hover)}
+body[data-page] .rule-card[open] .rule-body{animation:pp-rise .35s var(--ig27-ease-standard) both}
+
+/* premium & gates */
+body[data-page] .premium-card{background:radial-gradient(500px 240px at 90% 0%,color-mix(in srgb,var(--ig27-pink) 30%,transparent),transparent 60%),linear-gradient(135deg,color-mix(in srgb,var(--ig27-accent) 18%,transparent),color-mix(in srgb,var(--brand) 22%,transparent));border-radius:30px}
+body[data-page] .gate .big{display:inline-block;animation:pp-float 4s ease-in-out infinite}
+body[data-page] .badge-card:not(.off) .ic{display:inline-block;transition:transform .35s var(--pp-ease)}
+body[data-page] .badge-card:not(.off):hover .ic{transform:scale(1.2) rotate(-8deg)}
+
+/* ======================================================================
+   Signed-in home & tab bar (app.html)
+   ====================================================================== */
+#homeHub .hub-title-text{font-weight:800;letter-spacing:-.04em;background:var(--brand-grad-3);-webkit-background-clip:text;background-clip:text;color:transparent}
+#homeHub .hub-card{transition:transform .35s var(--pp-ease),box-shadow .35s}
+#homeHub .hub-card:not(.dev):hover{transform:translateY(-6px) rotate(-1deg);box-shadow:0 30px 50px -26px var(--brand)}
+#homeHub .hub-grid>*{animation:pp-rise .5s var(--ig27-ease-standard) both}
+#homeHub .hub-grid>:nth-child(n+2){animation-delay:.03s}#homeHub .hub-grid>:nth-child(n+4){animation-delay:.08s}
+#homeHub .hub-grid>:nth-child(n+7){animation-delay:.13s}#homeHub .hub-grid>:nth-child(n+11){animation-delay:.18s}
+#homeHub .hub-grid>:nth-child(n+16){animation-delay:.23s}#homeHub .hub-grid>:nth-child(n+22){animation-delay:.28s}
+#homeHub .hub-premium-cta a{background:var(--brand-grad);box-shadow:0 12px 28px -12px var(--brand);border-radius:999px}
+#homeHub .hub-admin-link,#homeHub .hub-logout{border-radius:999px;transition:transform .25s var(--pp-ease)}
+#homeHub .hub-admin-link:hover,#homeHub .hub-logout:hover{transform:translateY(-2px)}
+#tabbar .tabbtn{transition:transform .25s var(--pp-ease),color .2s}
+#tabbar .tabbtn:hover{transform:translateY(-2px)}
+#tabbar .tabbtn.on{background:var(--brand-grad)!important;color:var(--ig27-on-accent)!important;box-shadow:0 8px 20px -10px var(--brand)}
+
+/* ======================================================================
+   Secondary pages (profile, ideas, subscribe, reset password, legal, admin)
+   ====================================================================== */
+.pp-page h1{font-weight:800;letter-spacing:-.035em;animation:pp-rise .5s var(--ig27-ease-standard) both}
+.pp-page h1 .grad,.pp-page .grad,.pp-page h1 span[data-i18n]{background:var(--brand-grad-3);-webkit-background-clip:text;background-clip:text;color:transparent}
+.pp-page .lead{animation:pp-rise .5s var(--ig27-ease-standard) .05s both}
+.pp-page .card,.pp-page .note{border-radius:28px;box-shadow:var(--pp-shadow);border-color:var(--pp-rim);animation:pp-rise .55s var(--ig27-ease-standard) both;transition:box-shadow .3s}
+.pp-page .card:nth-of-type(2){animation-delay:.08s}.pp-page .card:nth-of-type(3){animation-delay:.16s}.pp-page .note{animation-delay:.2s}
+.pp-page .card:hover{box-shadow:var(--pp-shadow-hover)}
+.pp-page button:not(.secondary):not(.danger):not(.btn):not(.pill),.pp-page .pp-btn{background:var(--brand-grad);border-radius:999px;box-shadow:0 12px 26px -12px var(--brand);transition:transform .25s var(--pp-ease),box-shadow .25s}
+.pp-page button:not(.btn):not(.pill):hover{transform:translateY(-2px)}
+.pp-page button:not(.btn):not(.pill):active{transform:scale(.97)}
+.pp-page button.secondary,.pp-page button.danger{border-radius:999px}
+.pp-page input[type=text],.pp-page input[type=password],.pp-page input[type=email],.pp-page select,.pp-page textarea{border-radius:16px}
+.pp-page .ig27-back,.pp-page .back{border-radius:999px;transition:transform .25s var(--pp-ease)}
+.pp-page .ig27-back:hover,.pp-page .back:hover{transform:translateX(-3px)}
+
+/* brand bar at the top of secondary pages */
+.pp-top{display:flex;align-items:center;gap:10px;margin-bottom:18px;animation:pp-rise .45s var(--ig27-ease-standard) both}
+.pp-top .pp-brand{display:flex;align-items:center;gap:7px;font-weight:800;font-size:20px;letter-spacing:-.02em;text-decoration:none;color:var(--ig27-label-primary)}
+.pp-top .pp-brand .brand-logo{height:34px;width:auto}
+.pp-top .pp-brand:has(.brand-logo) .pp-word{display:none}
+.pp-word{display:flex;align-items:center;gap:7px}
+.pp-word i{display:inline-block;width:26px;height:21px;border-radius:11px;background:var(--brand);position:relative}
+.pp-word i::after{content:"";position:absolute;left:5px;bottom:-4px;width:8px;height:8px;background:var(--brand);border-radius:0 0 0 7px;transform:skewX(-18deg)}
+.pp-top .spacer{flex:1}
+
+/* admin */
+.pp-page.pp-admin .btn{border-radius:999px;transition:transform .25s var(--pp-ease),box-shadow .25s}
+.pp-page.pp-admin .btn:hover{transform:translateY(-2px)}
+.pp-page.pp-admin .btn.primary{background:var(--brand-grad);border-color:transparent;color:var(--ig27-on-accent);box-shadow:0 10px 22px -12px var(--brand)}
+.pp-page.pp-admin .stats>*{animation:pp-pop .45s var(--pp-ease) both}
+
+/* subscribe */
+.pp-page .pitch{background:radial-gradient(600px 300px at 90% 0%,color-mix(in srgb,var(--ig27-pink) 45%,transparent),transparent 60%),linear-gradient(135deg,var(--ig27-accent),var(--brand))!important}
+.pp-page .panel li{animation:pp-rise .4s var(--ig27-ease-standard) both}
+.pp-page .panel li:nth-child(n+3){animation-delay:.05s}.pp-page .panel li:nth-child(n+6){animation-delay:.1s}.pp-page .panel li:nth-child(n+9){animation-delay:.15s}.pp-page .panel li:nth-child(n+12){animation-delay:.2s}
+
+@media (prefers-reduced-motion: reduce){
+  body[data-page] *,body[data-page] *::before,body[data-page] *::after,
+  #homeHub *,#tabbar *,.pp-page *,.pp-page *::before,.pp-page *::after{animation:none!important;transition:none!important}
+}
