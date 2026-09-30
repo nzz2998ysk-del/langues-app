@@ -124,7 +124,7 @@ input:checked + .slider:before{transform:translateX(16px)}
       <div class="sub" style="margin-bottom:10px">Les mots de passe sont hachés (bcrypt) au moment de l'inscription et ne sont jamais stockés en clair — même un compte administrateur ne peut donc pas les afficher ici. Un utilisateur qui a oublié le sien doit utiliser « Mot de passe oublié ? » sur la page de connexion.</div>
       <div class="card" style="overflow-x:auto">
         <table class="users-table" id="usersTable">
-          <thead><tr><th>Email</th><th>Nom</th><th>Inscrit le</th><th>Premium</th><th>Admin</th></tr></thead>
+          <thead><tr><th>Email</th><th>Nom</th><th>Inscrit le</th><th>Premium</th><th>Admin</th><th></th></tr></thead>
           <tbody><tr><td colspan="5" class="empty">Chargement…</td></tr></tbody>
         </table>
       </div>
@@ -275,6 +275,28 @@ async function bulk(payload, isPremium){
   }
 }
 
+// Manually grant/revoke Premium for one account — no payment involved,
+// this just flips the same flag a real Stripe payment would set.
+async function togglePremium(btn){
+  var userId = btn.getAttribute('data-user-id');
+  var next = btn.getAttribute('data-next') === 'true';
+  var msg = document.getElementById('saveMsg');
+  btn.disabled = true;
+  var r = await fetch('/api/admin/users/'+encodeURIComponent(userId), {
+    method: 'PATCH',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({subscribed: next})
+  });
+  btn.disabled = false;
+  if (r.ok){
+    msg.textContent = (next ? 'Premium offert ✓' : 'Premium retiré ✓');
+    setTimeout(function(){ msg.textContent=''; }, 2000);
+    loadUsers();
+  } else {
+    msg.textContent = 'Erreur lors de la mise à jour du compte';
+  }
+}
+
 function escHtml(s){
   return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){
     return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
@@ -285,24 +307,27 @@ async function loadUsers(){
   var tbody = document.querySelector('#usersTable tbody');
   var r = await fetch('/api/admin/users');
   if (!r.ok){
-    tbody.innerHTML = '<tr><td colspan="5" class="empty">Accès refusé.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" class="empty">Accès refusé.</td></tr>';
     return;
   }
   var data = await r.json();
   var users = data.users || [];
   if (!users.length){
-    tbody.innerHTML = '<tr><td colspan="5" class="empty">Aucun compte pour l\'instant.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" class="empty">Aucun compte pour l\'instant.</td></tr>';
     return;
   }
   tbody.innerHTML = users.map(function(u){
     var date = new Date(u.created_at);
     var dateStr = date.toLocaleDateString('fr-FR', {year:'numeric', month:'short', day:'numeric'});
-    return '<tr>' +
+    return '<tr data-user-id="'+u.id+'">' +
       '<td>'+escHtml(u.email)+'</td>' +
       '<td>'+escHtml(u.name || '—')+'</td>' +
       '<td>'+dateStr+'</td>' +
       '<td>'+(u.subscribed ? '<span class="badge-yes">✓ Oui</span>' : '<span class="badge-no">Non</span>')+'</td>' +
       '<td>'+(u.is_admin ? '<span class="badge-yes">✓ Oui</span>' : '<span class="badge-no">Non</span>')+'</td>' +
+      '<td><button type="button" class="btn'+(u.subscribed?'':' primary')+'" style="font-size:11px;padding:6px 11px" ' +
+        'data-user-id="'+u.id+'" data-next="'+(!u.subscribed)+'" onclick="togglePremium(this)">' +
+        (u.subscribed ? '🔓 Retirer premium' : '✨ Offrir premium') + '</button></td>' +
       '</tr>';
   }).join('');
 }

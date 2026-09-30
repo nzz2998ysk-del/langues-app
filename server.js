@@ -769,6 +769,25 @@ app.get("/api/admin/users", requireAdmin, async (req, res) => {
   return res.json({ users: result.rows });
 });
 
+// Manually grant or revoke Premium access for one account, with no payment
+// involved — e.g. for a friend, a tester, or a support gesture. This just
+// flips the same `subscribed` flag that a real Stripe payment would set, so
+// the account immediately unlocks the same premium features either way;
+// nothing here talks to Stripe, charges a card, or creates any payment record.
+app.patch("/api/admin/users/:id", requireAdmin, async (req, res) => {
+  const userId = parseInt(req.params.id, 10);
+  if (!Number.isInteger(userId)) return res.status(400).json({ error: "Identifiant invalide." });
+  if (typeof req.body.subscribed !== "boolean") {
+    return res.status(400).json({ error: "Paramètre 'subscribed' (booléen) requis." });
+  }
+  const result = await pool.query(
+    "UPDATE users SET subscribed = $1 WHERE id = $2 RETURNING id, email, subscribed",
+    [req.body.subscribed, userId]
+  );
+  if (!result.rows[0]) return res.status(404).json({ error: "Compte introuvable." });
+  return res.json({ user: result.rows[0] });
+});
+
 // ---- payment (Stripe Checkout) ----
 app.post("/api/checkout", async (req, res) => {
   if (!req.userId) return res.status(401).json({ error: "Connecte-toi d'abord." });
