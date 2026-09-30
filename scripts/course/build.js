@@ -176,7 +176,7 @@ function stub(code, page) {
   ${THEME_INIT}
 }catch(e){}})();</script>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>${META[code].name}</title>
+<title>${code === "@@CODE@@" ? "@@TITLE@@" : META[code].name}</title>
 <link rel="stylesheet" href="/design-system/ios27-liquid-glass.css">
 <link rel="stylesheet" href="/course/engine.css">
 <link rel="stylesheet" href="/design-system/ios27-app.css">
@@ -186,18 +186,23 @@ function stub(code, page) {
 </body></html>`;
 }
 function writeAppPages() {
+  // The course pages only differ by language, page and title: app.html gets one
+  // template and builds the 24 x 39 pages in the browser (it used to embed all
+  // of them, ~850 KB). The line keeps its "var ALL_PAGES = " prefix: the server
+  // adds the CSP nonce and the asset versions to that line (see server.js).
   const appPath = path.join(ROOT, "app.html");
   let src = fs.readFileSync(appPath, "utf8");
   const PREFIX = "var ALL_PAGES = ";
   const start = src.indexOf(PREFIX);
   if (start === -1) throw new Error("ALL_PAGES not found in app.html");
   const lineEnd = src.indexOf("\n", start);
-  const pages = {};
-  for (const code of CODES) for (const p of PAGES) pages[`${code}__${p}.html`] = stub(code, p);
-  const out = JSON.stringify(pages).replace(/<\//g, "<\\/");
-  src = src.slice(0, start) + PREFIX + out + ";" + src.slice(lineEnd);
+  const tpl = JSON.stringify(stub("@@CODE@@", "@@PAGE@@")).replace(/<\//g, "<\\/");
+  const titles = JSON.stringify(Object.fromEntries(CODES.map((c) => [c, META[c].name])));
+  const js = `(function(){var T=${tpl},N=${titles},P=${JSON.stringify(PAGES)},o={};` +
+    `Object.keys(N).forEach(function(c){P.forEach(function(p){o[c+"__"+p+".html"]=T.split("@@CODE@@").join(c).split("@@PAGE@@").join(p).split("@@TITLE@@").join(N[c]);});});return o;})()`;
+  src = src.slice(0, start) + PREFIX + js + ";" + src.slice(lineEnd);
   fs.writeFileSync(appPath, src);
-  return Object.keys(pages).length;
+  return CODES.length * PAGES.length;
 }
 
 // ---------------------------------------------------------------- main

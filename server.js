@@ -1,4 +1,5 @@
 const express = require("express");
+const compression = require("compression");
 const path = require("path");
 const crypto = require("crypto");
 const cookieParser = require("cookie-parser");
@@ -482,6 +483,8 @@ app.use((req, res, next) => {
 // per-request nonce, and no page uses inline event handlers (onclick=...).
 // Only style="" attributes stay allowed (style-src-attr): they cannot run code.
 app.disable("x-powered-by");
+// gzip/brotli for HTML, JSON (a course is ~400 KB of JSON, ~60 KB compressed), JS, CSS.
+app.use(compression({ threshold: 1024 }));
 app.use((req, res, next) => {
   const nonce = crypto.randomBytes(16).toString("base64");
   res.locals.nonce = nonce;
@@ -636,15 +639,19 @@ app.post("/api/csp-report", express.json({ type: ["application/csp-report", "app
 // embedded as srcdoc iframes in app.html (they resolve "/design-system/..."
 // against the parent page's URL). Mounted before any auth check so the
 // login/reset-password pages can use it too.
-app.use("/design-system", express.static(path.join(__dirname, "design-system"), {
-  maxAge: isProd ? "1h" : 0,
-  index: false,
-}));
+// Pages reference these files as "?v=<content hash>" (see versionAssets): such
+// URLs never change content, so browsers may keep them for a year.
+const staticDir = (dir) => {
+  const short = express.static(dir, { maxAge: isProd ? "1h" : 0, index: false });
+  const forever = express.static(dir, { maxAge: isProd ? "365d" : 0, immutable: isProd, index: false });
+  return (req, res, next) => (req.query.v ? forever : short)(req, res, next);
+};
+app.use("/design-system", staticDir(path.join(__dirname, "design-system")));
 
 // ---- course engine assets (JS/CSS/i18n). The content itself (course/data)
 // is only reachable through /api/course/:lang, which enforces premium access.
 app.use("/course", (req, res, next) => (req.path.startsWith("/data/") ? res.status(404).end() : next()));
-app.use("/course", express.static(path.join(__dirname, "course"), { maxAge: isProd ? "1h" : 0, index: false }));
+app.use("/course", staticDir(path.join(__dirname, "course")));
 // Offline mode (premium): the service worker must be served from the root to
 // control the whole app.
 app.get("/sw.js", (req, res) => {
