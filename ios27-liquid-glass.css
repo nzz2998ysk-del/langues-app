@@ -1,0 +1,306 @@
+/*!
+ * iOS 27 "Liquid Glass" design tokens — CSS custom properties + utility classes.
+ *
+ * Source: seunghan91/ios27-design-system (packages/tokens/src/{colors,typography,
+ * materials,spacing,animations}.json), measured from Apple's official iOS 27 UI
+ * Kit for Figma (kit 27.0.2, 2026-07-16) via the Figma REST API on 2026-07-29.
+ * Apple publishes no numeric spec for the Liquid Glass material itself; the
+ * `--ig27-glass-*` values below approximate the kit's own Figma reproduction of
+ * it (see "Web approximation" section) — closest available reference, not a
+ * guarantee of pixel-identical output to a native iOS renderer.
+ *
+ * Naming: all tokens are prefixed `--ig27-*` (kept short; the upstream project's
+ * own convention is `--ios27-*`) to avoid clashing with any of this app's
+ * existing `--ink/--bg/--primary/...` variable names when both are loaded.
+ * Nothing here is auto-applied to any element — it's a token/utility layer.
+ * Re-theming existing pages means mapping the OLD variable names to these new
+ * ones (see design-system/README.md), not deleting the old names outright.
+ *
+ * Dark mode: this app toggles a `data-theme="dark"` attribute on <html> (see
+ * app.html's own inline theme-init script), so tokens are re-defined under
+ * `html[data-theme="dark"]` rather than only `@media (prefers-color-scheme)`.
+ * A prefers-color-scheme block is included too, for any page that has no JS
+ * theme toggle and should still follow the OS setting.
+ */
+
+:root{
+  color-scheme: light;
+
+  /* ===== Accents (12 semantic colors) ===== */
+  --ig27-red:#ff383c; --ig27-orange:#ff8d28; --ig27-yellow:#ffcc00;
+  --ig27-green:#34c759; --ig27-mint:#00c8b3; --ig27-teal:#00c3d0;
+  --ig27-cyan:#00c0e8; --ig27-blue:#0088ff; --ig27-indigo:#6155f5;
+  --ig27-purple:#cb30e0; --ig27-pink:#ff2d55; --ig27-brown:#ac7f5e;
+
+  /* ===== Labels (text) ===== */
+  --ig27-label-primary: rgba(0,0,0,1);
+  --ig27-label-secondary: rgba(60,60,67,.6);
+  --ig27-label-tertiary: rgba(60,60,67,.3);
+  --ig27-label-quaternary: rgba(60,60,67,.18);
+
+  /* ===== Backgrounds (plain) ===== */
+  --ig27-bg-primary:#ffffff;
+  --ig27-bg-secondary:#f2f2f7;
+  --ig27-bg-tertiary:#ffffff;
+  --ig27-bg-primary-elevated:#ffffff;
+  --ig27-bg-secondary-elevated:#f2f2f7;
+  --ig27-bg-tertiary-elevated:#ffffff;
+
+  /* ===== Backgrounds (grouped / Settings-style) ===== */
+  --ig27-bg-grouped-primary:#f2f2f7;
+  --ig27-bg-grouped-secondary:#ffffff;
+  --ig27-bg-grouped-tertiary:#f2f2f7;
+
+  /* ===== Fills (control backgrounds over content) ===== */
+  --ig27-fill-primary: rgba(120,120,128,.2);
+  --ig27-fill-secondary: rgba(120,120,128,.16);
+  --ig27-fill-tertiary: rgba(118,118,128,.12);
+  --ig27-fill-quaternary: rgba(116,116,128,.08);
+
+  /* ===== Grays ===== */
+  --ig27-gray:#8e8e93; --ig27-gray2:#aeaeb2; --ig27-gray3:#c7c7cc;
+  --ig27-gray4:#d1d1d6; --ig27-gray5:#e5e5ea; --ig27-gray6:#f2f2f7;
+
+  /* ===== Separators ===== */
+  --ig27-separator-opaque:#c6c6c8;
+  --ig27-separator: rgba(0,0,0,.12);
+
+  /* ===== Typography ===== */
+  --ig27-font-family:"SF Pro", -apple-system, system-ui, sans-serif;
+  --ig27-fs-large-title:34px; --ig27-lh-large-title:41px; --ig27-ls-large-title:0.4px;
+  --ig27-fs-title1:28px;      --ig27-lh-title1:34px;      --ig27-ls-title1:0.38px;
+  --ig27-fs-title2:22px;      --ig27-lh-title2:28px;      --ig27-ls-title2:-0.26px;
+  --ig27-fs-title3:20px;      --ig27-lh-title3:25px;      --ig27-ls-title3:-0.45px;
+  --ig27-fs-headline:17px;    --ig27-lh-headline:22px;    --ig27-ls-headline:-0.43px;
+  --ig27-fs-body:17px;        --ig27-lh-body:22px;        --ig27-ls-body:-0.43px;
+  --ig27-fs-callout:16px;     --ig27-lh-callout:21px;     --ig27-ls-callout:-0.31px;
+  --ig27-fs-subheadline:15px; --ig27-lh-subheadline:20px; --ig27-ls-subheadline:-0.23px;
+  --ig27-fs-footnote:13px;    --ig27-lh-footnote:18px;    --ig27-ls-footnote:-0.08px;
+  --ig27-fs-caption1:12px;    --ig27-lh-caption1:16px;    --ig27-ls-caption1:0px;
+  --ig27-fs-caption2:11px;    --ig27-lh-caption2:13px;    --ig27-ls-caption2:0.06px;
+  --ig27-weight-regular:400; --ig27-weight-medium:500; --ig27-weight-semibold:600;
+  --ig27-weight-bold:700; --ig27-weight-heavy:800;
+
+  /* ===== Spacing (8pt grid) ===== */
+  --ig27-space-0:0px;  --ig27-space-1:4px;  --ig27-space-2:8px;  --ig27-space-3:12px;
+  --ig27-space-4:16px; --ig27-space-5:20px; --ig27-space-6:24px; --ig27-space-8:32px;
+  --ig27-space-10:40px; --ig27-space-12:48px; --ig27-space-16:64px; --ig27-space-20:80px;
+  --ig27-content-margin: 16px; /* iPhone side margin; 20px on iPad widths */
+
+  /* ===== Radius ===== */
+  --ig27-radius-none:0px; --ig27-radius-xs:4px; --ig27-radius-sm:8px;
+  --ig27-radius-md:10px; --ig27-radius-lg:12px; --ig27-radius-xl:16px;
+  --ig27-radius-xxl:20px; --ig27-radius-xxxl:26px;
+  --ig27-radius-glass:34px;      /* Liquid Glass regular (medium+large) */
+  --ig27-radius-glass-clear:23px;
+  --ig27-radius-alert:34px; --ig27-radius-menu:34px; --ig27-radius-popover:38px;
+  --ig27-radius-sheet-top-large:38px; --ig27-radius-sheet-top-medium:34px;
+  --ig27-radius-sheet-bottom-medium:58px;
+  --ig27-radius-full:9999px;
+
+  /* ===== Component metrics ===== */
+  --ig27-navbar-height:54px;
+  --ig27-navbar-large-title-height:125px;
+  --ig27-tabbar-content-height:54px;
+  --ig27-tabbar-glass-height:62px;
+  --ig27-tabbar-total-height:95px;
+  --ig27-touch-target-min:44px;
+  --ig27-button-height-small:28px;
+  --ig27-button-height-medium:34px;
+  --ig27-button-height-large:50px;
+
+  /* ===== Liquid Glass — transparency slider model =====
+     0 = fully tinted (opaque) .. 1 = ultra clear (max see-through). Default 0.5. */
+  --ig27-glass-transparency: 0.5;
+  --ig27-glass-opacity-scale: calc(1.6 + (-1.1) * var(--ig27-glass-transparency));
+  --ig27-glass-blur-scale: calc(0.5 + 0.8 * var(--ig27-glass-transparency));
+
+  /* Regular glass (toolbars, tab bars, floating controls, sheet chrome) */
+  --ig27-glass-regular-bg: rgba(255,255,255,.7);
+  --ig27-glass-regular-overlay: rgba(191,191,191,.1);
+  --ig27-glass-regular-shadow: 0 8px 48px rgba(0,0,0,.25);
+  --ig27-glass-regular-blur: 6px;      /* backdrop-filter blur radius (web approximation, sigma-fit) */
+  --ig27-glass-regular-saturate: 1.8;
+
+  /* Small glass platter (compact pill controls, e.g. a floating icon button) */
+  --ig27-glass-small-bg: rgba(116,116,128,.08);
+  --ig27-glass-small-shadow: 0 8px 15px rgba(0,0,0,.02);
+  --ig27-glass-small-blur: 3.6px;
+
+  /* Clear glass — ONLY over media-rich/colorful content with a high-contrast fg */
+  --ig27-glass-clear-bg: rgba(16,16,16,1);
+  --ig27-glass-clear-overlay: rgba(255,255,255,.04);
+  --ig27-glass-clear-shadow: 0 8px 15px rgba(0,0,0,.02);
+  --ig27-glass-clear-blur: 1.6px;
+
+  /* Rim (light ring outlining a glass surface) */
+  --ig27-glass-rim-color: #dbdbdb;
+  --ig27-glass-edge-color: rgba(0,0,0,.05); /* uniform-toolbar top edge, light */
+
+  /* Background materials (chrome/thick/regular/thin/ultrathin) */
+  --ig27-material-chrome-bg: rgba(255,255,255,.75);
+  --ig27-material-chrome-blur: 50px;
+  --ig27-material-thick-bg: rgba(255,255,255,.84);
+  --ig27-material-thick-blur: 100px;
+  --ig27-material-regular-bg: rgba(255,255,255,.6);
+  --ig27-material-regular-blur: 100px;
+  --ig27-material-thin-bg: rgba(255,255,255,.4);
+  --ig27-material-thin-blur: 100px;
+  --ig27-material-ultrathin-bg: rgba(255,255,255,.07);
+  --ig27-material-ultrathin-blur: 100px;
+
+  /* Animation */
+  --ig27-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ig27-ease-standard: cubic-bezier(0.4, 0.0, 0.2, 1.0);
+  --ig27-duration-fast: .15s;
+  --ig27-duration-base: .25s;
+}
+
+/* ===== Dark mode: same tokens, dark values ===== */
+html[data-theme="dark"]{
+  color-scheme: dark;
+
+  --ig27-red:#ff4245; --ig27-orange:#ff9230; --ig27-yellow:#ffd600;
+  --ig27-green:#30d158; --ig27-mint:#00dac3; --ig27-teal:#00d2e0;
+  --ig27-cyan:#3cd3fe; --ig27-blue:#0091ff; --ig27-indigo:#6d7cff;
+  --ig27-purple:#db34f2; --ig27-pink:#ff375f; --ig27-brown:#b78a66;
+
+  --ig27-label-primary: rgba(255,255,255,1);
+  --ig27-label-secondary: rgba(235,235,245,.7);
+  --ig27-label-tertiary: rgba(235,235,245,.3);
+  --ig27-label-quaternary: rgba(235,235,245,.16);
+
+  --ig27-bg-primary:#000000;
+  --ig27-bg-secondary:#1c1c1e;
+  --ig27-bg-tertiary:#2c2c2e;
+  --ig27-bg-primary-elevated:#1c1c1e;
+  --ig27-bg-secondary-elevated:#2c2c2e;
+  --ig27-bg-tertiary-elevated:#3a3a3c;
+
+  --ig27-bg-grouped-primary:#000000;
+  --ig27-bg-grouped-secondary:#1c1c1e;
+  --ig27-bg-grouped-tertiary:#2c2c2e;
+
+  --ig27-fill-primary: rgba(120,120,128,.36);
+  --ig27-fill-secondary: rgba(120,120,128,.32);
+  --ig27-fill-tertiary: rgba(118,118,128,.24);
+  --ig27-fill-quaternary: rgba(118,118,128,.18);
+
+  --ig27-gray:#8e8e93; --ig27-gray2:#636366; --ig27-gray3:#48484a;
+  --ig27-gray4:#3a3a3c; --ig27-gray5:#2c2c2e; --ig27-gray6:#1c1c1e;
+
+  --ig27-separator-opaque:#38383a;
+  --ig27-separator: rgba(255,255,255,.17);
+
+  --ig27-glass-regular-bg: rgba(26,26,26,.7);
+  --ig27-glass-regular-overlay: rgba(26,26,26,.9);
+  --ig27-glass-regular-shadow: 0 8px 48px rgba(0,0,0,.45);
+
+  --ig27-glass-small-bg: rgba(118,118,128,.12);
+  --ig27-glass-small-shadow: 0 8px 15px rgba(0,0,0,.04);
+
+  --ig27-glass-rim-color: #a6a6a6;
+  --ig27-glass-edge-color: rgba(0,0,0,.1);
+
+  --ig27-material-chrome-bg: rgba(28,28,28,.9);
+  --ig27-material-thick-bg: rgba(0,0,0,.6);
+  --ig27-material-regular-bg: rgba(0,0,0,.41);
+  --ig27-material-thin-bg: rgba(0,0,0,.26);
+  --ig27-material-ultrathin-bg: rgba(0,0,0,.02);
+}
+
+/* Fallback for any page with no JS theme toggle: follow the OS setting,
+   but a page-level [data-theme] attribute (light OR dark) always wins. */
+@media (prefers-color-scheme: dark){
+  html:not([data-theme]){
+    color-scheme: dark;
+    --ig27-label-primary: rgba(255,255,255,1);
+    --ig27-label-secondary: rgba(235,235,245,.7);
+    --ig27-label-tertiary: rgba(235,235,245,.3);
+    --ig27-label-quaternary: rgba(235,235,245,.16);
+    --ig27-bg-primary:#000000; --ig27-bg-secondary:#1c1c1e; --ig27-bg-tertiary:#2c2c2e;
+    --ig27-bg-primary-elevated:#1c1c1e; --ig27-bg-secondary-elevated:#2c2c2e; --ig27-bg-tertiary-elevated:#3a3a3c;
+    --ig27-bg-grouped-primary:#000000; --ig27-bg-grouped-secondary:#1c1c1e; --ig27-bg-grouped-tertiary:#2c2c2e;
+    --ig27-fill-primary: rgba(120,120,128,.36); --ig27-fill-secondary: rgba(120,120,128,.32);
+    --ig27-fill-tertiary: rgba(118,118,128,.24); --ig27-fill-quaternary: rgba(118,118,128,.18);
+    --ig27-separator-opaque:#38383a; --ig27-separator: rgba(255,255,255,.17);
+    --ig27-glass-regular-bg: rgba(26,26,26,.7); --ig27-glass-regular-overlay: rgba(26,26,26,.9);
+    --ig27-glass-regular-shadow: 0 8px 48px rgba(0,0,0,.45);
+    --ig27-glass-small-bg: rgba(118,118,128,.12); --ig27-glass-small-shadow: 0 8px 15px rgba(0,0,0,.04);
+    --ig27-glass-rim-color: #a6a6a6; --ig27-glass-edge-color: rgba(0,0,0,.1);
+    --ig27-material-regular-bg: rgba(0,0,0,.41);
+  }
+}
+
+/* Respect Reduce Transparency / Increase Contrast: collapse glass to a near-
+   opaque flat panel and drop the blur, at equal specificity but later in
+   source order so it always wins over a .ig27-glass-* utility class. */
+@media (prefers-reduced-transparency: reduce){
+  .ig27-glass-regular,.ig27-glass-small,.ig27-glass-clear{
+    backdrop-filter:none; -webkit-backdrop-filter:none;
+    background: var(--ig27-bg-secondary);
+  }
+}
+
+/* =========================================================================
+   Typography utility classes (`.ig27-text-*`)
+   ========================================================================= */
+.ig27-text-large-title{ font:var(--ig27-weight-regular) var(--ig27-fs-large-title)/var(--ig27-lh-large-title) var(--ig27-font-family); letter-spacing:var(--ig27-ls-large-title); }
+.ig27-text-title1{ font:var(--ig27-weight-regular) var(--ig27-fs-title1)/var(--ig27-lh-title1) var(--ig27-font-family); letter-spacing:var(--ig27-ls-title1); }
+.ig27-text-title2{ font:var(--ig27-weight-regular) var(--ig27-fs-title2)/var(--ig27-lh-title2) var(--ig27-font-family); letter-spacing:var(--ig27-ls-title2); }
+.ig27-text-title3{ font:var(--ig27-weight-semibold) var(--ig27-fs-title3)/var(--ig27-lh-title3) var(--ig27-font-family); letter-spacing:var(--ig27-ls-title3); }
+.ig27-text-headline{ font:var(--ig27-weight-semibold) var(--ig27-fs-headline)/var(--ig27-lh-headline) var(--ig27-font-family); letter-spacing:var(--ig27-ls-headline); }
+.ig27-text-body{ font:var(--ig27-weight-regular) var(--ig27-fs-body)/var(--ig27-lh-body) var(--ig27-font-family); letter-spacing:var(--ig27-ls-body); }
+.ig27-text-callout{ font:var(--ig27-weight-regular) var(--ig27-fs-callout)/var(--ig27-lh-callout) var(--ig27-font-family); letter-spacing:var(--ig27-ls-callout); }
+.ig27-text-subheadline{ font:var(--ig27-weight-regular) var(--ig27-fs-subheadline)/var(--ig27-lh-subheadline) var(--ig27-font-family); letter-spacing:var(--ig27-ls-subheadline); }
+.ig27-text-footnote{ font:var(--ig27-weight-regular) var(--ig27-fs-footnote)/var(--ig27-lh-footnote) var(--ig27-font-family); letter-spacing:var(--ig27-ls-footnote); }
+.ig27-text-caption1{ font:var(--ig27-weight-regular) var(--ig27-fs-caption1)/var(--ig27-lh-caption1) var(--ig27-font-family); letter-spacing:var(--ig27-ls-caption1); }
+.ig27-text-caption2{ font:var(--ig27-weight-regular) var(--ig27-fs-caption2)/var(--ig27-lh-caption2) var(--ig27-font-family); letter-spacing:var(--ig27-ls-caption2); }
+
+/* =========================================================================
+   Liquid Glass material utility classes
+   Placement rule (per Apple's own guidance): a FLOATING navigation/controls
+   layer ABOVE content — toolbars, tab bars, floating buttons, sheet chrome.
+   Never as a large content background, and never stacked glass-on-glass.
+   ========================================================================= */
+.ig27-glass-regular{
+  background: var(--ig27-glass-regular-bg);
+  backdrop-filter: blur(var(--ig27-glass-regular-blur)) saturate(var(--ig27-glass-regular-saturate));
+  -webkit-backdrop-filter: blur(var(--ig27-glass-regular-blur)) saturate(var(--ig27-glass-regular-saturate));
+  border-radius: var(--ig27-radius-glass);
+  box-shadow: var(--ig27-glass-regular-shadow), inset 0 0 0 .5px var(--ig27-glass-rim-color);
+}
+.ig27-glass-small{
+  background: var(--ig27-glass-small-bg);
+  backdrop-filter: blur(var(--ig27-glass-small-blur)) saturate(var(--ig27-glass-regular-saturate));
+  -webkit-backdrop-filter: blur(var(--ig27-glass-small-blur)) saturate(var(--ig27-glass-regular-saturate));
+  border-radius: var(--ig27-radius-full);
+  box-shadow: var(--ig27-glass-small-shadow), inset 0 0 0 .5px var(--ig27-glass-rim-color);
+}
+.ig27-glass-clear{
+  background: var(--ig27-glass-clear-bg);
+  backdrop-filter: blur(var(--ig27-glass-clear-blur)) saturate(var(--ig27-glass-regular-saturate));
+  -webkit-backdrop-filter: blur(var(--ig27-glass-clear-blur)) saturate(var(--ig27-glass-regular-saturate));
+  border-radius: var(--ig27-radius-glass-clear);
+  box-shadow: var(--ig27-glass-clear-shadow);
+}
+
+/* Uniform toolbar edge (top bar once content has scrolled under it) */
+.ig27-toolbar-edge{ box-shadow: inset 0 -1px 0 var(--ig27-glass-edge-color); }
+
+/* Background material utilities (content-level frosted panels, not floating chrome) */
+.ig27-material-chrome{ background:var(--ig27-material-chrome-bg); backdrop-filter:blur(var(--ig27-material-chrome-blur)); -webkit-backdrop-filter:blur(var(--ig27-material-chrome-blur)); }
+.ig27-material-thick{ background:var(--ig27-material-thick-bg); backdrop-filter:blur(var(--ig27-material-thick-blur)); -webkit-backdrop-filter:blur(var(--ig27-material-thick-blur)); }
+.ig27-material-regular{ background:var(--ig27-material-regular-bg); backdrop-filter:blur(var(--ig27-material-regular-blur)); -webkit-backdrop-filter:blur(var(--ig27-material-regular-blur)); }
+.ig27-material-thin{ background:var(--ig27-material-thin-bg); backdrop-filter:blur(var(--ig27-material-thin-blur)); -webkit-backdrop-filter:blur(var(--ig27-material-thin-blur)); }
+.ig27-material-ultrathin{ background:var(--ig27-material-ultrathin-bg); backdrop-filter:blur(var(--ig27-material-ultrathin-blur)); -webkit-backdrop-filter:blur(var(--ig27-material-ultrathin-blur)); }
+
+/* =========================================================================
+   Component shape/shell utilities (radius + metrics only — no color opinions,
+   compose with a .ig27-glass-* class for the material)
+   ========================================================================= */
+.ig27-navbar{ height:var(--ig27-navbar-height); padding:0 var(--ig27-content-margin); }
+.ig27-tabbar{ height:var(--ig27-tabbar-total-height); padding-top:var(--ig27-space-4); padding-bottom:25px; border-radius:var(--ig27-radius-full); }
+.ig27-sheet{ border-radius:var(--ig27-radius-sheet-top-large) var(--ig27-radius-sheet-top-large) 0 0; }
+.ig27-alert{ border-radius:var(--ig27-radius-alert); }
+.ig27-button{ border-radius:var(--ig27-radius-full); min-height:var(--ig27-touch-target-min); }

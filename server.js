@@ -289,6 +289,17 @@ app.use((req, res, next) => {
   res.setHeader("X-Content-Type-Options", "nosniff");
   res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
   res.setHeader("Permissions-Policy", "geolocation=(), microphone=(), camera=()");
+  // Defense-in-depth against XSS: no external origins are ever loaded (everything
+  // is same-origin or inline), so a same-origin-only CSP costs nothing today but
+  // stops an accidentally-introduced injection from loading attacker script/data
+  // from elsewhere. 'unsafe-inline' is kept because the pages use inline <script>
+  // blocks without a nonce; tightening that further would need a template rework.
+  res.setHeader(
+    "Content-Security-Policy",
+    "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; " +
+    "img-src 'self' data:; font-src 'self' data:; connect-src 'self'; " +
+    "object-src 'none'; base-uri 'self'; frame-ancestors 'self'"
+  );
   if (isProd) {
     res.setHeader("Strict-Transport-Security", "max-age=15552000; includeSubDomains");
   }
@@ -416,6 +427,13 @@ app.post("/api/login", async (req, res) => {
       return res.status(400).json({ error: "Email ou mot de passe incorrect." });
     }
 
+    // Per-account limit in addition to per-IP: an attacker spreading login
+    // attempts across many source IPs against one known email is otherwise
+    // not slowed down at all.
+    if (rateLimited("login-acct:" + email, 10, 15 * 60 * 1000)) {
+      return res.status(429).json({ error: "Trop de tentatives. Réessaie dans quelques minutes." });
+    }
+
     const result = await pool.query(
       "SELECT id, email, password_hash FROM users WHERE email = $1",
       [email]
@@ -466,6 +484,11 @@ app.post("/api/forgot-password", async (req, res) => {
     // Always answer the same way whether or not the address has an account,
     // so this endpoint can't be used to check who has signed up.
     const genericOk = { ok: true, message: "Si un compte existe avec cet email, un lien a été envoyé." };
+    // Per-account limit (same generic response either way, so this doesn't
+    // reopen the enumeration question it just closed above).
+    if (email && rateLimited("forgot-acct:" + email, 5, 15 * 60 * 1000)) {
+      return res.json(genericOk);
+    }
     if (!EMAIL_RE.test(email) || email.length > 254) {
       return res.json(genericOk);
     }
