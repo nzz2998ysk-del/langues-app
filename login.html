@@ -133,6 +133,14 @@ section{padding:56px 0}
 .mascots img{width:clamp(84px,12vw,128px);height:auto;transition:transform .35s cubic-bezier(.34,1.56,.64,1)}
 .mascots img:hover{transform:translateY(-8px) rotate(-4deg) scale(1.06)}
 #mascotSection:not(:has(.mascots img)){display:none}
+.auth-masc{display:block;width:88px;height:88px;object-fit:contain;margin:-6px auto 6px;transform-origin:60% 90%;
+  animation:waveHi 1.6s ease-in-out .3s 2}
+@keyframes waveHi{0%,100%{transform:none}20%{transform:rotate(-6deg)}40%{transform:rotate(5deg)}60%{transform:rotate(-4deg)}80%{transform:rotate(2deg)}}
+.premium .prem-mascs{display:flex;gap:4px;margin-bottom:8px}
+.premium .prem-mascs:empty{display:none}
+.premium .prem-masc{width:120px;height:120px;object-fit:contain;animation:float 5s ease-in-out infinite;filter:drop-shadow(0 12px 20px rgba(0,0,0,.25))}
+.premium .prem-heart{animation-delay:-2.5s}
+@media (prefers-reduced-motion: reduce){.auth-masc,.premium .prem-masc{animation:none}}
 
 .steps{display:grid;gap:16px;margin-top:34px;grid-template-columns:1fr}
 @media(min-width:820px){.steps{grid-template-columns:repeat(3,1fr)}}
@@ -265,7 +273,7 @@ footer a{text-decoration:none}footer a:hover{color:var(--ig27-label-primary)}
   <section id="mascotSection">
     <div class="wrap">
       <h2 class="sec-title reveal">Papote t'accompagne</h2>
-      <p class="sec-lead reveal">Il fête tes bonnes réponses, te console quand tu te trompes et fait la sieste quand tu as tout révisé.</p>
+      <p class="sec-lead reveal">Il fête tes bonnes réponses, t'encourage quand tu te trompes et fait la sieste quand tu as tout révisé.</p>
       <div class="mascots reveal"><!--BRAND_MASCOTS--></div>
     </div>
   </section>
@@ -285,6 +293,7 @@ footer a{text-decoration:none}footer a:hover{color:var(--ig27-label-primary)}
     <div class="wrap">
       <div class="premium reveal">
         <div>
+          <div class="prem-mascs"><!--BRAND_PREMIUM--></div>
           <h2>Envie d'aller plus loin ?</h2>
           <p>Tout le contenu A1 → B2 est gratuit. Premium débloque le reste, dans les 39 langues, sans engagement.</p>
           <button type="button" class="pill big" data-click="openAuth" data-arg="signup">Essayer Papote</button>
@@ -317,6 +326,7 @@ footer a{text-decoration:none}footer a:hover{color:var(--ig27-label-primary)}
     <form id="authForm" class="auth-card" novalidate>
       <button type="button" class="pill glass icon-btn auth-close" data-click="closeAuth" aria-label="Fermer">✕</button>
       <div class="auth-header">
+        <!--BRAND_WAVE-->
         <div class="auth-title" id="authTitle">Bon retour 👋</div>
         <div class="auth-subtitle" id="authSubtitle">Connecte-toi pour continuer à papoter.</div>
       </div>

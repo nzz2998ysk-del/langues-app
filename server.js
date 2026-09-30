@@ -540,18 +540,30 @@ function brandInfo() {
   }
   return brandCache.data;
 }
+// Mascot expressions: design-system/brand/mascotte/mascotte-<mood>.png
+function mascotSrc(mood) {
+  return `/design-system/brand/mascotte/mascotte-${mood}.png`;
+}
 function brandMarkup() {
   const b = brandInfo();
+  const has = (m) => b.mascot.includes(m);
+  const img = (m, size, cls, loading) =>
+    `<img${cls ? ` class="${cls}"` : ""} src="${mascotSrc(m)}" alt="" width="${size}" height="${size}"${loading ? ` loading="${loading}"` : ""} decoding="async">`;
   return {
     "<!--BRAND_HEAD-->": b.icons
       ? '<link rel="icon" type="image/png" href="/design-system/brand/favicon-32.png"><link rel="apple-touch-icon" href="/design-system/brand/apple-touch-icon.png"><link rel="manifest" href="/manifest.webmanifest">'
       : "",
     "<!--BRAND_LOGO-->": b.logo ? '<img class="brand-logo" src="/design-system/brand/logo-512.png" alt="Papote">' : "",
-    "<!--BRAND_SPLASH-->": b.logo ? '<img class="intro-logo" src="/design-system/brand/logo-512.png" alt="">' : "",
+    // Opening animation: Papote asleep, then wakes up amazed.
+    "<!--BRAND_SPLASH-->": has("sleeping") && has("amazed")
+      ? `<div class="intro-masc">${img("sleeping", 200, "im-sleep")}${img("amazed", 200, "im-awake")}</div>`
+      : b.logo ? '<img class="intro-logo" src="/design-system/brand/logo-512.png" alt="">' : "",
+    "<!--BRAND_LOADING-->": has("sleeping") ? img("sleeping", 120, "load-masc") : "",
+    "<!--BRAND_WAVE-->": has("wave") ? img("wave", 96, "auth-masc") : "",
+    "<!--BRAND_PREMIUM-->": ["cool", "heart"].filter(has).map((m) => img(m, 120, "prem-masc prem-" + m)).join(""),
     "<!--BRAND_HERO-->": b.logo ? '<img class="hero-logo" src="/design-system/brand/logo-512.png" alt="Papote" fetchpriority="high">' : "",
-    "<!--BRAND_MASCOTS-->": ["wave", "laugh", "question", "cool", "love", "celebrate"]
-      .filter((m) => b.mascot.includes(m))
-      .map((m) => `<img src="/design-system/brand/mascot/${m}.png" alt="" loading="lazy" width="128" height="128">`).join(""),
+    "<!--BRAND_MASCOTS-->": ["wave", "happy", "thinking", "heart", "cool", "sleeping"]
+      .filter(has).map((m) => img(m, 128, "", "lazy")).join(""),
   };
 }
 

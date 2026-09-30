@@ -53,8 +53,59 @@ body{min-height:100vh;min-height:100dvh}
 .intro-logo{width:min(62vw,260px);height:auto;animation:logoIn .8s cubic-bezier(.34,1.56,.64,1) both;filter:drop-shadow(0 18px 30px color-mix(in srgb,var(--ig27-accent) 35%,transparent))}
 @keyframes logoIn{0%{opacity:0;transform:scale(.4) rotate(-8deg)}60%{opacity:1}100%{transform:none}}
 .intro-wrap:has(.intro-logo) .intro-bubble,.intro-wrap:has(.intro-logo) .intro-name{display:none}
+/* Mascot splash: Papote naps ("zzz"), then wakes up amazed as the name pops in */
+.intro-wrap:has(.intro-masc) .intro-bubble{display:none}
+.intro-masc{position:relative;width:min(48vw,200px);aspect-ratio:1;animation:logoIn .7s cubic-bezier(.34,1.56,.64,1) both;
+  filter:drop-shadow(0 18px 30px color-mix(in srgb,var(--ig27-accent) 30%,transparent))}
+.intro-masc img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+.intro-masc .im-sleep{animation:napOut .35s ease 1.05s forwards,nap 1.6s ease-in-out infinite}
+.intro-masc .im-awake{opacity:0;transform:scale(.8);animation:wakeIn .5s cubic-bezier(.34,1.56,.64,1) 1.1s forwards}
+@keyframes nap{0%,100%{scale:1}50%{scale:1.03 .97}}
+@keyframes napOut{to{opacity:0;transform:scale(.9)}}
+@keyframes wakeIn{0%{opacity:0;transform:scale(.8) translateY(8px)}100%{opacity:1;transform:none}}
+/* Plain loading sheet: the sleeping mascot breathes instead of the spinner */
+#loadingOverlay:has(.load-masc) .spin{display:none}
+#loadingOverlay.intro .load-masc{display:none}
+.load-masc{width:120px;height:120px;object-fit:contain;animation:nap 1.6s ease-in-out infinite}
 .hub-title .brand-logo{display:block;width:min(46vw,190px);height:auto;margin:0 auto}
 .hub-title:has(.brand-logo) .hub-title-text{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+/* ===== Language opening: a disc in the language colour grows from the tapped
+   card, flag + name + Papote waving, then it melts into the course ===== */
+#langPortal{position:fixed;inset:0;z-index:9000;display:none;align-items:center;justify-content:center;pointer-events:none;
+  background:radial-gradient(120% 90% at var(--lp-x,50%) var(--lp-y,50%),color-mix(in srgb,var(--lp-color,var(--ig27-accent)) 88%,var(--ig27-white)) 0%,var(--lp-color,var(--ig27-accent)) 45%,color-mix(in srgb,var(--lp-color,var(--ig27-accent)) 70%,var(--ig27-indigo)) 100%);
+  clip-path:circle(0 at var(--lp-x,50%) var(--lp-y,50%))}
+#langPortal.go{display:flex;animation:lpOpen .55s cubic-bezier(.65,0,.35,1) forwards}
+#langPortal.out{display:flex;clip-path:circle(150% at var(--lp-x,50%) var(--lp-y,50%));animation:lpOut .45s var(--ig27-ease-standard) forwards}
+@keyframes lpOpen{to{clip-path:circle(150% at var(--lp-x,50%) var(--lp-y,50%))}}
+@keyframes lpOut{to{opacity:0;transform:scale(1.08)}}
+.lp-inner{display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--ig27-white);text-align:center}
+.lp-flag{font-size:clamp(84px,20vw,132px);line-height:1;filter:drop-shadow(0 14px 24px rgba(0,0,0,.28));opacity:0;animation:lpFlag .7s cubic-bezier(.34,1.56,.64,1) .18s forwards}
+@keyframes lpFlag{0%{opacity:0;transform:scale(.2) rotate(-25deg)}100%{opacity:1;transform:none}}
+.lp-name{font-size:clamp(30px,7vw,46px);font-weight:800;letter-spacing:-.03em;text-shadow:0 4px 16px rgba(0,0,0,.2)}
+.lp-name span{display:inline-block;opacity:0;transform:translateY(22px);animation:letterIn .5s cubic-bezier(.34,1.56,.64,1) forwards;animation-delay:calc(.3s + var(--i) * .035s)}
+#langPortal .auth-masc{width:92px;height:92px;object-fit:contain;order:3;margin-top:16px;opacity:0;animation:lpMasc .6s cubic-bezier(.34,1.56,.64,1) .42s forwards;filter:drop-shadow(0 10px 18px rgba(0,0,0,.25))}
+@keyframes lpMasc{0%{opacity:0;transform:translateY(40px) scale(.6)}70%{opacity:1;transform:translateY(-6px) rotate(-5deg)}100%{opacity:1;transform:none}}
+.lp-sparks{position:absolute;left:var(--lp-x,50%);top:var(--lp-y,50%)}
+.lp-sparks i{position:absolute;width:12px;height:12px;border-radius:50%;background:var(--ig27-white);opacity:0;
+  animation:lpSpark .8s cubic-bezier(.2,.7,.3,1) .12s forwards;--a:calc(var(--n) * 45deg)}
+.lp-sparks i:nth-child(odd){background:var(--ig27-yellow);width:9px;height:9px}
+.lp-sparks i:nth-child(1){--n:0}.lp-sparks i:nth-child(2){--n:1}.lp-sparks i:nth-child(3){--n:2}.lp-sparks i:nth-child(4){--n:3}
+.lp-sparks i:nth-child(5){--n:4}.lp-sparks i:nth-child(6){--n:5}.lp-sparks i:nth-child(7){--n:6}.lp-sparks i:nth-child(8){--n:7}
+@keyframes lpSpark{0%{opacity:1;transform:rotate(var(--a)) translateX(0) scale(1)}100%{opacity:0;transform:rotate(var(--a)) translateX(150px) scale(.3)}}
+.hub-card.lp-tap{animation:lpTap .3s cubic-bezier(.34,1.56,.64,1)}
+@keyframes lpTap{40%{transform:scale(.9)}100%{transform:scale(1.06)}}
+/* Course chrome slides in, the hub comes back softly, tabs pop */
+body.in-lang #appTop{animation:chromeDown .5s var(--ig27-ease-standard) both}
+body.in-lang #tabbar{animation:chromeUp .55s cubic-bezier(.34,1.56,.64,1) .08s both}
+@keyframes chromeDown{from{opacity:0;transform:translateY(-24px)}to{opacity:1;transform:none}}
+@keyframes chromeUp{from{opacity:0;transform:translate(-50%,40px)}to{opacity:1;transform:translate(-50%,0)}}
+#homeHub .hub-header{animation:fadeUp .5s var(--ig27-ease-standard) both}
+.tabbtn.on{animation:tabPop .4s cubic-bezier(.34,1.56,.64,1)}
+@keyframes tabPop{40%{transform:scale(.9)}100%{transform:none}}
+@media (prefers-reduced-motion: reduce){
+  #langPortal{display:none !important}
+  body.in-lang #appTop,body.in-lang #tabbar,#homeHub .hub-header,.tabbtn.on,.hub-card.lp-tap{animation:none}
+}
 @keyframes typing{0%,60%,100%{transform:translateY(0);opacity:.55}30%{transform:translateY(-7px);opacity:1}}
 .intro-name{display:flex;font-size:clamp(44px,11vw,72px);font-weight:800;letter-spacing:-.03em;line-height:1;color:var(--ig27-label-primary)}
 .intro-name span{display:inline-block;opacity:0;transform:translateY(28px) scale(.6);
@@ -66,7 +117,8 @@ body{min-height:100vh;min-height:100dvh}
 @keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 #loadingOverlay.intro.hide{opacity:0;transform:scale(1.06);transition:opacity .45s var(--ig27-ease-standard),transform .45s var(--ig27-ease-standard)}
 @media (prefers-reduced-motion: reduce){
-  .intro-bubble,.intro-bubble i,.intro-name span,.intro-hello,.intro-logo{animation:none;opacity:1;transform:none}
+  .intro-bubble,.intro-bubble i,.intro-name span,.intro-hello,.intro-logo,.intro-masc,.load-masc{animation:none;opacity:1;transform:none}
+  .intro-masc .im-sleep{animation:none;opacity:0}.intro-masc .im-awake{animation:none;opacity:1;transform:none}
   #loadingOverlay.intro.hide{transform:none}
 }
 
@@ -243,7 +295,7 @@ body.in-lang > .themeToggle{display:none !important}
 </script>
 <script src="/course/i18n.js"></script>
 <div id="loadingOverlay" class="intro" role="status" aria-label="Papote">
-  <div class="spin"></div><div class="lbl" data-i18n="loading">Chargement…</div>
+  <!--BRAND_LOADING--><div class="spin"></div><div class="lbl" data-i18n="loading">Chargement…</div>
   <div class="intro-wrap" aria-hidden="true">
     <!--BRAND_SPLASH-->
     <div class="intro-bubble"><i></i><i></i><i></i></div>
@@ -299,6 +351,11 @@ body.in-lang > .themeToggle{display:none !important}
   <div id="appTopLabel"><span class="lgflag" id="appTopFlag"></span><span id="appTopName"></span></div>
 </div>
 <div id="frames"></div>
+<!-- Transition shown when a language is opened (see openLang) -->
+<div id="langPortal" aria-hidden="true">
+  <div class="lp-sparks"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  <div class="lp-inner"><!--BRAND_WAVE--><div class="lp-flag" id="lpFlag"></div><div class="lp-name" id="lpName"></div></div>
+</div>
 <div id="tabbar">
 <button class="tabbtn on" data-page="hub.html" data-click="showModule" data-arg="hub.html"><span class="ti">&#127968;</span><span data-i18n="mod_hub">Accueil</span></button>
 <button class="tabbtn" data-page="vocabulaire.html" data-click="showModule" data-arg="vocabulaire.html"><span class="ti">&#128218;</span><span data-i18n="mod_vocabulaire">Vocabulaire</span></button>
@@ -446,10 +503,38 @@ function showPage(key){
 // Toutes les langues sont accessibles gratuitement au niveau de base ; seuls le
 // feedback, les leçons et les exercices avancés sont réservés au Premium (géré
 // page par page via /api/features, pas au niveau de la langue elle-même).
-function openLang(lang){
+function enterLang(lang){
   document.body.classList.add("in-lang");
   var page = lastPage[lang] || "hub.html";
   showPage(lang + "__" + page);
+}
+// Opening a language plays a short transition (skipped with reduced motion):
+// a disc in the language colour grows from the tapped card, then melts away
+// once the course is underneath.
+var portalBusy = false;
+function openLang(lang, fromEl){
+  var pt = document.getElementById("langPortal"), meta = LANG_META[lang];
+  var reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (!pt || !meta || reduce){ enterLang(lang); return; }
+  if (portalBusy) return;
+  portalBusy = true;
+  var x = "50%", y = "50%";
+  if (fromEl && fromEl.getBoundingClientRect){
+    var r = fromEl.getBoundingClientRect();
+    x = Math.round(r.left + r.width / 2) + "px"; y = Math.round(r.top + r.height / 2) + "px";
+    fromEl.classList.remove("lp-tap"); void fromEl.offsetWidth; fromEl.classList.add("lp-tap");
+  }
+  pt.style.setProperty("--lp-x", x); pt.style.setProperty("--lp-y", y);
+  pt.style.setProperty("--lp-color", meta.color);
+  document.getElementById("lpFlag").textContent = meta.flag;
+  var nm = document.getElementById("lpName"); nm.textContent = "";
+  Array.from(meta.name).forEach(function(ch, i){
+    var sp = document.createElement("span"); sp.textContent = ch === " " ? "\u00a0" : ch; sp.style.setProperty("--i", i); nm.appendChild(sp);
+  });
+  pt.classList.remove("go", "out"); void pt.offsetWidth; pt.classList.add("go");
+  setTimeout(function(){ enterLang(lang); }, 520);
+  setTimeout(function(){ pt.classList.remove("go"); pt.classList.add("out"); }, 1150);
+  setTimeout(function(){ pt.classList.remove("out"); portalBusy = false; if (fromEl) fromEl.classList.remove("lp-tap"); }, 1650);
 }
 
 var currentOrder = LANG_ORDER_DEFAULT.slice();
@@ -474,7 +559,7 @@ function renderHubGrid(order){
     btn.addEventListener("click", function(){
       if (reordering) return;
       if (btn.classList.contains("hub-card-dev")) return;
-      openLang(code);
+      openLang(code, btn);
     });
     btn.addEventListener("dragstart", function(e){ dragSrc = code; btn.classList.add("dragging"); try{ e.dataTransfer.setData("text/plain", code); }catch(err){} });
     btn.addEventListener("dragend", function(){ btn.classList.remove("dragging"); document.querySelectorAll(".hub-card.drag-over").forEach(function(c){ c.classList.remove("drag-over"); }); });

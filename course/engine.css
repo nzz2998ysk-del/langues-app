@@ -282,12 +282,32 @@ input,select,textarea{font-family:inherit;color:var(--ink)}
 @keyframes mascFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
 .complete .big .masc-big{display:block;margin:0 auto}
 .feedback.with-masc{display:flex;align-items:center;gap:var(--ig27-space-3)}
-.feedback.ko .masc-fb{animation:mascIn .55s cubic-bezier(.34,1.56,.64,1) both,mascShake .5s ease .1s}
-@keyframes mascShake{0%,100%{transform:none}25%{transform:rotate(-7deg)}75%{transform:rotate(7deg)}}
+/* Mistake: a gentle, curious head tilt (never a "no no" shake) */
+.feedback.ko .masc-fb{animation:mascIn .55s cubic-bezier(.34,1.56,.64,1) both,mascTilt 1.4s ease-in-out .5s both}
+@keyframes mascTilt{0%,100%{transform:none}40%,70%{transform:rotate(-8deg)}}
+.feedback.ok .masc-fb{animation:mascIn .55s cubic-bezier(.34,1.56,.64,1) both,mascHop .6s ease .5s}
+@keyframes mascHop{0%,100%{transform:none}40%{transform:translateY(-8px) scale(1.04)}}
 .with-masc{display:flex;align-items:center;gap:var(--ig27-space-3)}
 p.with-masc{justify-content:center}
 .masc-hero{float:right;margin:-8px 0 0 var(--ig27-space-3);width:104px;height:104px}
 .rtl-ui .masc-hero,[dir=rtl] .masc-hero{float:left;margin:-8px var(--ig27-space-3) 0 0}
 .masc-toast{width:40px;height:40px;vertical-align:middle;margin-inline-end:8px;animation:none}
+/* "Papote is typing": the faces take turns, the dots bounce */
+.masc-typing{display:inline-flex;align-items:center;gap:8px;vertical-align:middle}
+.mt-faces{position:relative;width:44px;height:44px;flex:none}
+.mt-faces .mt-face{position:absolute;inset:0;width:44px;height:44px;opacity:0;animation:mtFace 2.7s infinite}
+.mt-faces.n2 .mt-face{animation-duration:1.8s}
+.mt-faces .mt-face:nth-child(2){animation-delay:.9s}
+.mt-faces .mt-face:nth-child(3){animation-delay:1.8s}
+.mt-faces.n1 .mt-face{opacity:1;animation:mascFloat 2s ease-in-out infinite}
+@keyframes mtFace{0%{opacity:0;transform:scale(.85) rotate(-4deg)}6%,30%{opacity:1;transform:none}36%,100%{opacity:0;transform:scale(.9)}}
+.mt-faces.n2 .mt-face{animation-name:mtFace2}
+@keyframes mtFace2{0%{opacity:0;transform:scale(.85)}8%,45%{opacity:1;transform:none}53%,100%{opacity:0}}
+.typing-dots{display:inline-flex;gap:4px;padding:8px 11px;border-radius:14px 14px 14px 4px;
+  background:var(--ig27-glass-bg,rgba(255,255,255,.7));box-shadow:0 2px 10px rgba(80,70,200,.14);backdrop-filter:blur(10px)}
+.typing-dots i{width:7px;height:7px;border-radius:50%;background:var(--ig27-accent,#5b4ff5);animation:mtDot 1.05s ease-in-out infinite}
+.typing-dots i:nth-child(2){animation-delay:.15s}.typing-dots i:nth-child(3){animation-delay:.3s}
+@keyframes mtDot{0%,60%,100%{transform:translateY(0);opacity:.5}30%{transform:translateY(-5px);opacity:1}}
 @media (max-width:520px){.masc-hero{width:76px;height:76px}.masc-big{width:112px;height:112px}}
-@media (prefers-reduced-motion: reduce){.masc,.masc-big,.feedback.ko .masc-fb{animation:none}}
+@media (prefers-reduced-motion: reduce){.masc,.masc-big,.feedback.ko .masc-fb,.feedback.ok .masc-fb,.typing-dots i{animation:none}
+  .mt-faces .mt-face{animation:none}.mt-faces .mt-face:first-child{opacity:1}}

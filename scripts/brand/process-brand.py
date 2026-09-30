@@ -6,30 +6,38 @@ Inputs (drop them in design-system/brand/):
   mascotte.png  the mascot sheet: a 4 x 4 grid of expressions (row by row)
 
 Outputs (design-system/brand/):
-  mascot/<mood>.png   16 trimmed, transparent expressions (max 360 px)
+  mascotte/mascotte-<name>.png   16 trimmed, transparent expressions (max 360 px)
   logo-512.png        logo, max 512 px (login page, splash)
   icon-512.png, icon-192.png, apple-touch-icon.png, favicon-32.png
   brand.json          which files exist (read by the server)
 
-AI-generated sheets often have a fake "transparency" checkerboard painted in:
-light, unsaturated pixels connected to the border are made transparent.
+AI-generated sheets often have a fake "transparency" checkerboard painted in.
+The sheet is cut with a silhouette mask: light unsaturated pixels are
+background, the drawing's outline is closed morphologically and its inside
+filled (so the white fur stays opaque), enclosed pockets that still look like
+the grey checkerboard are dropped, and every connected piece (cat, "zzz",
+sparkles, hearts...) goes to the cell that holds its centre - so nothing from
+a neighbouring expression leaks into a cut.
 
-  pip install pillow && python3 scripts/brand/process-brand.py
+  pip install pillow numpy scipy && python3 scripts/brand/process-brand.py
 """
 import json
 import os
 import sys
 from collections import deque
 
+import numpy as np
 from PIL import Image
+from scipy import ndimage
 
 ROOT = os.environ.get("BRAND_DIR") or os.path.join(os.path.dirname(__file__), "..", "..", "design-system", "brand")
-# Order of the expressions in the 4 x 4 sheet, row by row.
+# Order of the expressions in the 4 x 4 sheet, row by row -> file names
+# design-system/brand/mascotte/mascotte-<name>.png
 MOODS = [
-    "hello", "wave", "question", "wink",
-    "sleep", "amazed", "shy", "laugh",
-    "surprised", "cool", "stretch", "love",
-    "cheer", "peek", "sad", "celebrate",
+    "happy", "wave", "thinking", "wink",
+    "sleeping", "amazed", "curious", "laughing",
+    "surprised", "cool", "stretching", "heart",
+    "excited", "peek", "sad", "playful",
 ]
 
 
@@ -96,12 +104,56 @@ def square(img, size, bg=None, margin=0.08):
     return canvas
 
 
+def cut_sheet(sheet, rows=4, cols=4):
+    """Return one transparent RGBA image per cell of the sheet (row by row)."""
+    rgb = np.asarray(sheet.convert("RGB")).astype(np.int16)
+    hi, lo = rgb.max(axis=2), rgb.min(axis=2)
+    bg = (lo >= 222) & (hi - lo <= 16)
+    fg = ndimage.binary_opening(~bg, iterations=1)
+    disk = np.hypot(*np.mgrid[-5:6, -5:6]) <= 5
+    closed = ndimage.binary_closing(fg, structure=disk)
+    filled = ndimage.binary_fill_holes(closed)
+    # Pockets enclosed by the drawing (between an arm and the body...) are
+    # background again when they carry the checkerboard's grey squares.
+    holes, n = ndimage.label(filled & ~closed)
+    grey = (lo >= 228) & (hi <= 244) & (hi - lo <= 8)
+    for i, sl in enumerate(ndimage.find_objects(holes), 1):
+        region = holes[sl] == i
+        if region.sum() > 900 and grey[sl][region].mean() > 0.3:
+            filled[sl][region] = False
+    labels, n = ndimage.label(filled, structure=np.ones((3, 3)))
+    sizes = ndimage.sum(filled, labels, range(1, n + 1))
+    centres = ndimage.center_of_mass(filled, labels, range(1, n + 1))
+    h, w = filled.shape
+    cells = [[] for _ in range(rows * cols)]
+    for i, (size, (cy, cx)) in enumerate(zip(sizes, centres), 1):
+        if size < 120:
+            continue
+        cells[min(rows - 1, int(cy * rows / h)) * cols + min(cols - 1, int(cx * cols / w))].append(i)
+    # Pull the edge in by 1 px: the painted outline's anti-aliasing is light grey.
+    alpha_all = ndimage.gaussian_filter(ndimage.binary_erosion(filled, iterations=2).astype(np.float32), 0.8)
+    src = np.asarray(sheet.convert("RGBA")).copy()
+    out = []
+    for ids in cells:
+        mask = np.isin(labels, ids)
+        near = ndimage.binary_dilation(mask, iterations=2)
+        a = np.where(near, alpha_all, 0) * 255
+        ys, xs = np.nonzero(mask)
+        img = src.copy()
+        img[..., 3] = a.clip(0, 255).astype(np.uint8)
+        out.append(Image.fromarray(img).crop((xs.min() - 6, ys.min() - 6, xs.max() + 7, ys.max() + 7)))
+    return out
+
+
 def main():
     out = {"logo": False, "mascot": [], "icons": False}
     logo_path = os.path.join(ROOT, "logo.png")
     sheet_path = os.path.join(ROOT, "mascotte.png")
     if os.path.exists(logo_path):
-        logo = trim(remove_background(Image.open(logo_path)))
+        logo = Image.open(logo_path).convert("RGBA")
+        if logo.getextrema()[3][0] == 255:  # no real transparency: remove a painted background
+            logo = remove_background(logo)
+        logo = trim(logo)
         fit(logo, 512).save(os.path.join(ROOT, "logo-512.png"), optimize=True)
         square(logo, 512, (255, 255, 255, 255)).convert("RGB").save(os.path.join(ROOT, "icon-512.png"), optimize=True)
         square(logo, 192, (255, 255, 255, 255)).convert("RGB").save(os.path.join(ROOT, "icon-192.png"), optimize=True)
@@ -112,14 +164,9 @@ def main():
     else:
         print("logo.png missing - skipped")
     if os.path.exists(sheet_path):
-        sheet = remove_background(Image.open(sheet_path))
-        os.makedirs(os.path.join(ROOT, "mascot"), exist_ok=True)
-        cw, ch = sheet.width / 4, sheet.height / 4
-        for i, mood in enumerate(MOODS):
-            r, c = divmod(i, 4)
-            cell = sheet.crop((int(c * cw), int(r * ch), int((c + 1) * cw), int((r + 1) * ch)))
-            cell = fit(trim(cell), 360)
-            cell.save(os.path.join(ROOT, "mascot", mood + ".png"), optimize=True)
+        os.makedirs(os.path.join(ROOT, "mascotte"), exist_ok=True)
+        for mood, cell in zip(MOODS, cut_sheet(Image.open(sheet_path))):
+            fit(cell, 360).save(os.path.join(ROOT, "mascotte", "mascotte-" + mood + ".png"), optimize=True)
             out["mascot"].append(mood)
         print("mascot: %d expressions" % len(out["mascot"]))
     else:
