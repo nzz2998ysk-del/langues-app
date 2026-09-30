@@ -6,11 +6,14 @@
 const fs = require("fs");
 const path = require("path");
 const DATA = require("./lang-data-v2");
+const { themeHtml } = require("./liquid-glass");
 
 function esc(s) { return String(s).replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c])); }
 
 function shell(lang, meta, title, bodyHtml, extraScript) {
-  return `<!DOCTYPE html>
+  // themeHtml(): links the design-system stylesheets and normalizes anything
+  // left literal, so generated pages match the rest of the app exactly.
+  return themeHtml(`<!DOCTYPE html>
 <html lang="fr"><head><script>(function(){try{
   var t = localStorage.getItem('lang_theme');
   if(t==='dark') document.documentElement.setAttribute('data-theme','dark');
@@ -18,51 +21,48 @@ function shell(lang, meta, title, bodyHtml, extraScript) {
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${esc(meta.name)} - ${esc(title)}</title>
 <style>
+/* iOS 27 Liquid Glass: every value is a design-system token (design-system/
+   ios27-liquid-glass.css); --ink/--bg/--primary/... are bridged to tokens by
+   design-system/ios27-app.css. themeHtml() below adds both stylesheets. */
 *{box-sizing:border-box;margin:0;padding:0}
 html{height:100%}
-:root{
-  --ink:#201C2E; --muted:#726C8A; --bg:#F5F1EC; --surface:#FFFFFF;
-  --primary:${meta.color}; --primary-dark:#241F5C; --accent:#EF8A2E;
-  --line:rgba(32,28,46,.1); --green:#2E9E6D; --green-soft:#DFF3EA; --red:#E1524B; --red-soft:#FBE2E0;
-}
-:root[data-theme="dark"]{--ink:#F0EDF7;--muted:#A39CC4;--bg:#181521;--surface:#221E30;--line:rgba(255,255,255,.09)}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--ink);
-  min-height:100vh;padding-bottom:30px}
-.wrap{max-width:720px;margin:0 auto;padding:20px 16px}
-.top{display:flex;align-items:center;gap:12px;margin-bottom:18px}
-.top .flag{font-size:28px}
-.top h1{font-size:19px;font-weight:800}
-.top .sub{font-size:12px;color:var(--muted)}
-.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px}
-.note{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:16px;background:var(--surface);
-  border:1px solid var(--line);border-radius:12px;padding:12px 14px}
-h2{font-size:15px;margin-bottom:10px}
+body{font-family:var(--ig27-font-family);background:var(--bg);color:var(--ink);
+  min-height:100vh;padding-bottom:var(--ig27-space-8)}
+.wrap{max-width:720px;margin:0 auto;padding:var(--ig27-space-5) var(--ig27-content-margin)}
+.top{display:flex;align-items:center;gap:var(--ig27-space-3);margin-bottom:var(--ig27-space-4)}
+.top .flag{font-size:var(--ig27-fs-title1);line-height:var(--ig27-lh-title1);letter-spacing:var(--ig27-ls-title1)}
+.top h1{font-size:var(--ig27-fs-title3);line-height:var(--ig27-lh-title3);letter-spacing:var(--ig27-ls-title3);font-weight:var(--ig27-weight-heavy)}
+.top .sub{font-size:var(--ig27-fs-caption1);line-height:var(--ig27-lh-caption1);letter-spacing:var(--ig27-ls-caption1);color:var(--muted)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--ig27-radius-xxl);padding:var(--ig27-space-4);margin-bottom:var(--ig27-space-3)}
+.note{font-size:var(--ig27-fs-footnote);line-height:var(--ig27-lh-footnote);letter-spacing:var(--ig27-ls-footnote);color:var(--muted);margin-bottom:var(--ig27-space-4);background:var(--surface);
+  border:1px solid var(--line);border-radius:var(--ig27-radius-xl);padding:var(--ig27-space-3) var(--ig27-space-4)}
+h2{font-size:var(--ig27-fs-subheadline);line-height:var(--ig27-lh-subheadline);letter-spacing:var(--ig27-ls-subheadline);margin-bottom:var(--ig27-space-2)}
 button{font-family:inherit;cursor:pointer;color:inherit}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.vocab-item{display:flex;flex-direction:column;gap:2px;padding:10px 12px;border-radius:10px;background:var(--bg);
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:var(--ig27-space-2)}
+.vocab-item{display:flex;flex-direction:column;gap:2px;padding:var(--ig27-space-2) var(--ig27-space-3);border-radius:var(--ig27-radius-xl);background:var(--bg);
   border:1px solid var(--line)}
-.vocab-item .w{font-size:16px;font-weight:700}
-.vocab-item .r{font-size:11.5px;color:var(--accent);font-weight:600}
-.vocab-item .f{font-size:12.5px;color:var(--muted)}
-.gram-item{padding:10px 0;border-bottom:1px solid var(--line)}
+.vocab-item .w{font-size:var(--ig27-fs-callout);line-height:var(--ig27-lh-callout);letter-spacing:var(--ig27-ls-callout);font-weight:var(--ig27-weight-bold)}
+.vocab-item .r{font-size:var(--ig27-fs-caption1);line-height:var(--ig27-lh-caption1);letter-spacing:var(--ig27-ls-caption1);color:var(--accent);font-weight:var(--ig27-weight-semibold)}
+.vocab-item .f{font-size:var(--ig27-fs-footnote);line-height:var(--ig27-lh-footnote);letter-spacing:var(--ig27-ls-footnote);color:var(--muted)}
+.gram-item{padding:var(--ig27-space-2) 0;border-bottom:1px solid var(--line)}
 .gram-item:last-child{border-bottom:none}
-.gram-item b{display:block;font-size:14px;margin-bottom:4px;color:var(--primary)}
-.gram-item p{font-size:13px;color:var(--muted);line-height:1.55}
-.ex-item{margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--line)}
+.gram-item b{display:block;font-size:var(--ig27-fs-subheadline);line-height:var(--ig27-lh-subheadline);letter-spacing:var(--ig27-ls-subheadline);margin-bottom:var(--ig27-space-1);color:var(--primary)}
+.gram-item p{font-size:var(--ig27-fs-footnote);line-height:var(--ig27-lh-footnote);letter-spacing:var(--ig27-ls-footnote);color:var(--muted)}
+.ex-item{margin-bottom:var(--ig27-space-3);padding-bottom:var(--ig27-space-3);border-bottom:1px solid var(--line)}
 .ex-item:last-child{border:none}
-.ex-q{font-size:14.5px;font-weight:600;margin-bottom:8px}
-.ex-opts{display:flex;flex-wrap:wrap;gap:8px}
-.ex-opt{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:8px 12px;font-size:13px}
+.ex-q{font-size:var(--ig27-fs-subheadline);line-height:var(--ig27-lh-subheadline);letter-spacing:var(--ig27-ls-subheadline);font-weight:var(--ig27-weight-semibold);margin-bottom:var(--ig27-space-2)}
+.ex-opts{display:flex;flex-wrap:wrap;gap:var(--ig27-space-2)}
+.ex-opt{border:1px solid var(--line);background:var(--surface);border-radius:var(--ig27-radius-full);padding:var(--ig27-space-2) var(--ig27-space-3);font-size:var(--ig27-fs-footnote);line-height:var(--ig27-lh-footnote);letter-spacing:var(--ig27-ls-footnote)}
 .ex-opt.correct{background:var(--green-soft);border-color:var(--green)}
 .ex-opt.wrong{background:var(--red-soft);border-color:var(--red)}
-.read-item{margin-bottom:14px}
-.read-native{font-size:15.5px;font-weight:600;margin-bottom:4px}
-.read-fr{font-size:12.5px;color:var(--muted);cursor:pointer;text-decoration:underline}
+.read-item{margin-bottom:var(--ig27-space-3)}
+.read-native{font-size:var(--ig27-fs-callout);line-height:var(--ig27-lh-callout);letter-spacing:var(--ig27-ls-callout);font-weight:var(--ig27-weight-semibold);margin-bottom:var(--ig27-space-1)}
+.read-fr{font-size:var(--ig27-fs-footnote);line-height:var(--ig27-lh-footnote);letter-spacing:var(--ig27-ls-footnote);color:var(--muted);cursor:pointer;text-decoration:underline}
 .read-fr.hide-fr{display:none}
-.score{font-size:13px;color:var(--muted);margin-bottom:10px}
-.premium-banner{background:linear-gradient(135deg,#4A3FA0,#241F5C);color:#fff;border-radius:14px;padding:14px 16px;
-  margin-bottom:14px;font-size:13px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
-.premium-banner a{color:#fff;font-weight:800;text-decoration:underline;white-space:nowrap}
+.score{font-size:var(--ig27-fs-footnote);line-height:var(--ig27-lh-footnote);letter-spacing:var(--ig27-ls-footnote);color:var(--muted);margin-bottom:var(--ig27-space-2)}
+.premium-banner{background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:var(--ig27-on-accent);border-radius:var(--ig27-radius-xxl);padding:var(--ig27-space-3) var(--ig27-space-4);
+  margin-bottom:var(--ig27-space-3);font-size:var(--ig27-fs-footnote);line-height:var(--ig27-lh-footnote);letter-spacing:var(--ig27-ls-footnote);display:flex;align-items:center;justify-content:space-between;gap:var(--ig27-space-2);flex-wrap:wrap}
+.premium-banner a{color:var(--ig27-on-accent);font-weight:var(--ig27-weight-heavy);text-decoration:underline;white-space:nowrap}
 </style></head>
 <body>
 <div class="wrap">
@@ -84,7 +84,7 @@ ${bodyHtml}
 })();
 <\/script>
 ${extraScript || ""}
-</body></html>`;
+</body></html>`);
 }
 
 function pageHub(lang, meta) {
@@ -181,27 +181,26 @@ for (const lang of NEW_LANGS) {
   entries[`${lang}__profil.html`] = pageProfil(lang, meta);
 }
 
-// Build the JS snippet to splice in: ", "key": "escaped"" pairs.
+// Splice into app.html's ALL_PAGES: parse the object, add/replace these keys
+// (re-running the generator updates pages instead of duplicating them), and
+// write it back as one JSON line.
 // IMPORTANT: JSON.stringify does NOT escape "/", so any literal "</script>"
-// inside the embedded HTML (there are some, in the inline <script> blocks
-// above) would prematurely close the *outer* <script> tag that wraps
-// ALL_PAGES in app.html. Replace "<\/" -> "<\\/" after stringifying, exactly
-// like the repair fix applied to the previous 5-language batch.
-let snippet = "";
-for (const [key, html] of Object.entries(entries)) {
-  const jsonStr = JSON.stringify(html).replace(/<\//g, "<\\/");
-  snippet += `, ${JSON.stringify(key)}: ${jsonStr}`;
-}
-
+// inside the embedded HTML would prematurely close the *outer* <script> tag
+// that wraps ALL_PAGES in app.html -> escape every "</" as "<\/".
 const appPath = path.join(__dirname, "..", "app.html");
 let content = fs.readFileSync(appPath, "utf8");
-const marker = '"};\n\n\nvar container = document.getElementById';
-const idx = content.indexOf(marker);
-if (idx === -1) {
-  console.error("Marker not found - aborting to avoid corrupting app.html");
+const PREFIX = "var ALL_PAGES = ";
+const start = content.indexOf(PREFIX);
+if (start === -1) {
+  console.error("ALL_PAGES not found - aborting to avoid corrupting app.html");
   process.exit(1);
 }
-const insertAt = idx + 1;
-content = content.slice(0, insertAt) + snippet + content.slice(insertAt);
+const lineEnd = content.indexOf("\n", start);
+let literal = content.slice(start + PREFIX.length, lineEnd).trim();
+if (literal.endsWith(";")) literal = literal.slice(0, -1);
+const pages = JSON.parse(literal);
+Object.assign(pages, entries);
+const out = JSON.stringify(pages).replace(/<\//g, "<\\/");
+content = content.slice(0, start) + PREFIX + out + ";" + content.slice(lineEnd);
 fs.writeFileSync(appPath, content);
-console.log(`Inserted ${Object.keys(entries).length} pages for ${NEW_LANGS.length} languages. New app.html size: ${(content.length / 1e6).toFixed(2)} MB`);
+console.log(`Wrote ${Object.keys(entries).length} pages for ${NEW_LANGS.length} languages. New app.html size: ${(content.length / 1e6).toFixed(2)} MB`);

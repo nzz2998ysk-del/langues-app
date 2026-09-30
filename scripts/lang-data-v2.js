@@ -9,10 +9,12 @@
 // Navajo, Zoulou, Hawaïen, Gaélique écossais...) have a smaller, more
 // conservative vocabulary set because reliable material is scarcer.
 
+// `color` = the language's hub-card tint: one of the iOS 27 system accent
+// tokens (design-system/ios27-liquid-glass.css), same as LANG_META in app.html.
 function v(rows) { return rows; } // [native, pron, fr]
 
 module.exports = {
-  fr: { name: "Français", flag: "🇫🇷", color: "#2E4A9E",
+  fr: { name: "Français", flag: "🇫🇷", color: "var(--ig27-blue)",
     scriptNote: "Le français s'écrit avec l'alphabet latin et des accents (é, è, ê, ç).",
     vocab: {
       "Salutations": v([["Bonjour","","bonjour"],["Merci","","merci"],["S'il te plaît","","s'il te plaît"],["Oui","","oui"],["Non","","non"],["Au revoir","","au revoir"]]),
@@ -26,7 +28,7 @@ module.exports = {
     ],
     reading: [["Bonjour, je m'appelle Léa. J'habite à Lyon et j'aime la lecture.","Traduction : « Hello, my name is Léa. I live in Lyon and I like reading. »"]]
   },
-  hi: { name: "हिन्दी (Hindi)", flag: "🇮🇳", color: "#C2622A",
+  hi: { name: "हिन्दी (Hindi)", flag: "🇮🇳", color: "var(--ig27-orange)",
     scriptNote: "Le hindi s'écrit en devanagari, de gauche à droite.",
     vocab: {
       "Salutations": v([["नमस्ते","namaste","bonjour"],["धन्यवाद","dhanyavād","merci"],["कृपया","kṛpayā","s'il te plaît"],["हाँ","hā̃","oui"],["नहीं","nahī̃","non"],["अलविदा","alvidā","au revoir"]]),
@@ -40,7 +42,7 @@ module.exports = {
     ],
     reading: [["मेरा नाम राज है। मैं दिल्ली में रहता हूँ।","Traduction : « Je m'appelle Raj. J'habite à Delhi. »"]]
   },
-  ko: { name: "한국어 (Coréen)", flag: "🇰🇷", color: "#4152B3",
+  ko: { name: "한국어 (Coréen)", flag: "🇰🇷", color: "var(--ig27-indigo)",
     scriptNote: "Le coréen s'écrit en hangeul, un alphabet phonétique organisé en blocs de syllabes.",
     vocab: {
       "Salutations": v([["안녕하세요","annyeonghaseyo","bonjour"],["감사합니다","gamsahamnida","merci"],["부탁합니다","butakhamnida","s'il te plaît"],["네","ne","oui"],["아니요","aniyo","non"],["안녕히 가세요","annyeonghi gaseyo","au revoir"]]),
@@ -54,7 +56,7 @@ module.exports = {
     ],
     reading: [["제 이름은 민수입니다. 저는 서울에 삽니다.","Traduction : « Je m'appelle Minsu. J'habite à Séoul. »"]]
   },
-  ar: { name: "العربية (Arabe)", flag: "🇸🇦", color: "#2E7D5B",
+  ar: { name: "العربية (Arabe)", flag: "🇸🇦", color: "var(--ig27-green)",
     scriptNote: "L'arabe s'écrit de droite à gauche, avec des lettres qui changent de forme selon leur position dans le mot.",
     vocab: {
       "Salutations": v([["مرحبا","marhaba","bonjour"],["شكرا","shukran","merci"],["من فضلك","min fadlik","s'il te plaît"],["نعم","na'am","oui"],["لا","lā","non"],["مع السلامة","ma'a salāma","au revoir"]]),
@@ -68,7 +70,7 @@ module.exports = {
     ],
     reading: [["اسمي أحمد. أسكن في القاهرة.","Traduction : « Je m'appelle Ahmed. J'habite au Caire. »"]]
   },
-  tr: { name: "Türkçe (Turc)", flag: "🇹🇷", color: "#C23B3B",
+  tr: { name: "Türkçe (Turc)", flag: "🇹🇷", color: "var(--ig27-red)",
     scriptNote: "Le turc utilise l'alphabet latin avec des lettres spécifiques (ç, ğ, ı, ö, ş, ü).",
     vocab: {
       "Salutations": v([["Merhaba","","bonjour"],["Teşekkürler","","merci"],["Lütfen","","s'il te plaît"],["Evet","","oui"],["Hayır","","non"],["Hoşça kal","","au revoir"]]),
@@ -82,7 +84,7 @@ module.exports = {
     ],
     reading: [["Benim adım Ali. İstanbul'da yaşıyorum.","Traduction : « Je m'appelle Ali. J'habite à Istanbul. »"]]
   },
-  nl: { name: "Nederlands (Néerlandais)", flag: "🇳🇱", color: "#D9862E",
+  nl: { name: "Nederlands (Néerlandais)", flag: "🇳🇱", color: "var(--ig27-orange)",
     scriptNote: "Le néerlandais utilise l'alphabet latin, proche de l'allemand et de l'anglais.",
     vocab: {
       "Salutations": v([["Hallo","","bonjour"],["Dank je","","merci"],["Alsjeblieft","","s'il te plaît"],["Ja","","oui"],["Nee","","non"],["Tot ziens","","au revoir"]]),
@@ -96,7 +98,7 @@ module.exports = {
     ],
     reading: [["Ik heet Jan. Ik woon in Amsterdam.","Traduction : « Je m'appelle Jan. J'habite à Amsterdam. »"]]
   },
-  el: { name: "Ελληνικά (Grec)", flag: "🇬🇷", color: "#2E6FA3",
+  el: { name: "Ελληνικά (Grec)", flag: "🇬🇷", color: "var(--ig27-cyan)",
     scriptNote: "Le grec moderne utilise son propre alphabet (24 lettres), différent du latin.",
     vocab: {
       "Salutations": v([["Γεια σου","yia sou","bonjour"],["Ευχαριστώ","efharistó","merci"],["Παρακαλώ","parakaló","s'il te plaît"],["Ναι","ne","oui"],["Όχι","óhi","non"],["Αντίο","adío","au revoir"]]),
@@ -110,7 +112,7 @@ module.exports = {
     ],
     reading: [["Με λένε Νίκο. Μένω στην Αθήνα.","Traduction : « Je m'appelle Níkos. J'habite à Athènes. »"]]
   },
-  pl: { name: "Polski (Polonais)", flag: "🇵🇱", color: "#B5453B",
+  pl: { name: "Polski (Polonais)", flag: "🇵🇱", color: "var(--ig27-red)",
     scriptNote: "Le polonais utilise l'alphabet latin avec des signes diacritiques (ł, ż, ą, ę, ś...).",
     vocab: {
       "Salutations": v([["Cześć","","bonjour/salut"],["Dziękuję","","merci"],["Proszę","","s'il te plaît"],["Tak","","oui"],["Nie","","non"],["Do widzenia","","au revoir"]]),
@@ -124,7 +126,7 @@ module.exports = {
     ],
     reading: [["Mam na imię Anna. Mieszkam w Warszawie.","Traduction : « Je m'appelle Anna. J'habite à Varsovie. »"]]
   },
-  sv: { name: "Svenska (Suédois)", flag: "🇸🇪", color: "#2E6FB3",
+  sv: { name: "Svenska (Suédois)", flag: "🇸🇪", color: "var(--ig27-blue)",
     scriptNote: "Le suédois utilise l'alphabet latin avec trois lettres supplémentaires : å, ä, ö.",
     vocab: {
       "Salutations": v([["Hej","","bonjour/salut"],["Tack","","merci"],["Snälla","","s'il te plaît"],["Ja","","oui"],["Nej","","non"],["Hej då","","au revoir"]]),
@@ -138,7 +140,7 @@ module.exports = {
     ],
     reading: [["Jag heter Eva. Jag bor i Stockholm.","Traduction : « Je m'appelle Eva. J'habite à Stockholm. »"]]
   },
-  vi: { name: "Tiếng Việt (Vietnamien)", flag: "🇻🇳", color: "#C2422E",
+  vi: { name: "Tiếng Việt (Vietnamien)", flag: "🇻🇳", color: "var(--ig27-red)",
     scriptNote: "Le vietnamien s'écrit en alphabet latin avec des signes de ton (6 tons).",
     vocab: {
       "Salutations": v([["Xin chào","","bonjour"],["Cảm ơn","","merci"],["Làm ơn","","s'il te plaît"],["Vâng","","oui"],["Không","","non"],["Tạm biệt","","au revoir"]]),
@@ -152,7 +154,7 @@ module.exports = {
     ],
     reading: [["Tôi tên là Lan. Tôi sống ở Hà Nội.","Traduction : « Je m'appelle Lan. J'habite à Hanoï. »"]]
   },
-  la: { name: "Latina (Latin)", flag: "📜", color: "#8A6A3D",
+  la: { name: "Latina (Latin)", flag: "📜", color: "var(--ig27-brown)",
     scriptNote: "Le latin classique s'écrit en alphabet latin (bien sûr) ; c'est la langue-mère du français.",
     vocab: {
       "Salutations": v([["Salve","","bonjour"],["Gratias tibi ago","","merci"],["Quaeso","","s'il te plaît"],["Ita / Sane","","oui"],["Non","","non"],["Vale","","au revoir"]]),
@@ -166,7 +168,7 @@ module.exports = {
     ],
     reading: [["Nomen mihi est Marcus. Romae habito.","Traduction : « Je m'appelle Marcus. J'habite à Rome. »"]]
   },
-  nb: { name: "Norsk bokmål (Norvégien)", flag: "🇳🇴", color: "#2E4A9E",
+  nb: { name: "Norsk bokmål (Norvégien)", flag: "🇳🇴", color: "var(--ig27-blue)",
     scriptNote: "Le norvégien bokmål utilise l'alphabet latin avec æ, ø, å.",
     vocab: {
       "Salutations": v([["Hei","","bonjour/salut"],["Takk","","merci"],["Vær så snill","","s'il te plaît"],["Ja","","oui"],["Nei","","non"],["Ha det","","au revoir"]]),
@@ -180,7 +182,7 @@ module.exports = {
     ],
     reading: [["Jeg heter Ola. Jeg bor i Oslo.","Traduction : « Je m'appelle Ola. J'habite à Oslo. »"]]
   },
-  ga: { name: "Gaeilge (Irlandais)", flag: "🇮🇪", color: "#2E7D46",
+  ga: { name: "Gaeilge (Irlandais)", flag: "🇮🇪", color: "var(--ig27-green)",
     scriptNote: "L'irlandais (gaélique irlandais) s'écrit en alphabet latin avec des accents longs (á, é, í, ó, ú).",
     vocab: {
       "Salutations": v([["Dia dhuit","dee-a gwit","bonjour"],["Go raibh maith agat","gur-uh mah ug-ut","merci"],["Le do thoil","le duh hull","s'il te plaît"],["Tá","taw","oui"],["Níl","neel","non"],["Slán","slawn","au revoir"]]),
@@ -194,7 +196,7 @@ module.exports = {
     ],
     reading: [["Is mise Séamas. Tá mé i mo chónaí i mBaile Átha Cliath.","Traduction : « Je suis Séamas. J'habite à Dublin. »"]]
   },
-  id: { name: "Bahasa Indonesia (Indonésien)", flag: "🇮🇩", color: "#B5322E",
+  id: { name: "Bahasa Indonesia (Indonésien)", flag: "🇮🇩", color: "var(--ig27-pink)",
     scriptNote: "L'indonésien utilise l'alphabet latin ; c'est une langue relativement régulière et facile à prononcer.",
     vocab: {
       "Salutations": v([["Halo","","bonjour"],["Terima kasih","","merci"],["Tolong","","s'il te plaît"],["Ya","","oui"],["Tidak","","non"],["Selamat tinggal","","au revoir"]]),
@@ -208,7 +210,7 @@ module.exports = {
     ],
     reading: [["Nama saya Budi. Saya tinggal di Jakarta.","Traduction : « Je m'appelle Budi. J'habite à Jakarta. »"]]
   },
-  val: { name: "High Valyrian (Haut Valyrien)", flag: "🐉", color: "#5A2E7D",
+  val: { name: "High Valyrian (Haut Valyrien)", flag: "🐉", color: "var(--ig27-indigo)",
     scriptNote: "Langue construite pour la série « Game of Thrones » par le linguiste David J. Peterson. Le vocabulaire publié est limité : ce module reste volontairement minimal.",
     vocab: {
       "Expressions connues": v([["Valar morghulis","","tous les hommes doivent mourir"],["Valar dohaeris","","tous les hommes doivent servir"],["Kirimvose","","merci"],["Skoros jaqagon nyke","","que dois-je faire ?"],["Dracarys","","feu de dragon (ordre de cracher le feu)"],["Rytsas","","salut / bien"]])
@@ -220,7 +222,7 @@ module.exports = {
     ],
     reading: [["Valar morghulis. Valar dohaeris.","Traduction : « Tous les hommes doivent mourir. Tous les hommes doivent servir. » (réplique culte de la série)"]]
   },
-  uk: { name: "Українська (Ukrainien)", flag: "🇺🇦", color: "#2E6FB3",
+  uk: { name: "Українська (Ukrainien)", flag: "🇺🇦", color: "var(--ig27-cyan)",
     scriptNote: "L'ukrainien s'écrit en alphabet cyrillique, proche du russe mais avec des différences notables.",
     vocab: {
       "Salutations": v([["Привіт","pryvit","bonjour/salut"],["Дякую","dyakuyu","merci"],["Будь ласка","bud laska","s'il te plaît"],["Так","tak","oui"],["Ні","ni","non"],["До побачення","do pobachennya","au revoir"]]),
@@ -234,7 +236,7 @@ module.exports = {
     ],
     reading: [["Мене звати Олена. Я живу в Києві.","Traduction : « Je m'appelle Olena. J'habite à Kyiv. »"]]
   },
-  fi: { name: "Suomi (Finnois)", flag: "🇫🇮", color: "#2E6FB3",
+  fi: { name: "Suomi (Finnois)", flag: "🇫🇮", color: "var(--ig27-teal)",
     scriptNote: "Le finnois utilise l'alphabet latin ; c'est une langue finno-ougrienne, très différente du français.",
     vocab: {
       "Salutations": v([["Hei","","bonjour/salut"],["Kiitos","","merci"],["Ole hyvä","","s'il te plaît"],["Kyllä","","oui"],["Ei","","non"],["Näkemiin","","au revoir"]]),
@@ -248,7 +250,7 @@ module.exports = {
     ],
     reading: [["Nimeni on Mikko. Asun Helsingissä.","Traduction : « Je m'appelle Mikko. J'habite à Helsinki. »"]]
   },
-  da: { name: "Dansk (Danois)", flag: "🇩🇰", color: "#B5322E",
+  da: { name: "Dansk (Danois)", flag: "🇩🇰", color: "var(--ig27-red)",
     scriptNote: "Le danois utilise l'alphabet latin avec æ, ø, å, proche du norvégien à l'écrit.",
     vocab: {
       "Salutations": v([["Hej","","bonjour/salut"],["Tak","","merci"],["Vær venlig","","s'il te plaît"],["Ja","","oui"],["Nej","","non"],["Farvel","","au revoir"]]),
@@ -262,7 +264,7 @@ module.exports = {
     ],
     reading: [["Jeg hedder Peter. Jeg bor i København.","Traduction : « Je m'appelle Peter. J'habite à Copenhague. »"]]
   },
-  ro: { name: "Română (Roumain)", flag: "🇷🇴", color: "#2E4A9E",
+  ro: { name: "Română (Roumain)", flag: "🇷🇴", color: "var(--ig27-blue)",
     scriptNote: "Le roumain est une langue romane (comme le français) qui s'écrit en alphabet latin.",
     vocab: {
       "Salutations": v([["Bună","","bonjour/salut"],["Mulțumesc","","merci"],["Te rog","","s'il te plaît"],["Da","","oui"],["Nu","","non"],["La revedere","","au revoir"]]),
@@ -276,7 +278,7 @@ module.exports = {
     ],
     reading: [["Mă numesc Ana. Locuiesc în București.","Traduction : « Je m'appelle Ana. J'habite à Bucarest. »"]]
   },
-  cs: { name: "Čeština (Tchèque)", flag: "🇨🇿", color: "#B5322E",
+  cs: { name: "Čeština (Tchèque)", flag: "🇨🇿", color: "var(--ig27-red)",
     scriptNote: "Le tchèque s'écrit en alphabet latin avec de nombreux signes diacritiques (č, ř, š, ž...).",
     vocab: {
       "Salutations": v([["Ahoj","","bonjour/salut"],["Děkuji","","merci"],["Prosím","","s'il te plaît"],["Ano","","oui"],["Ne","","non"],["Na shledanou","","au revoir"]]),
@@ -290,7 +292,7 @@ module.exports = {
     ],
     reading: [["Jmenuji se Petr. Bydlím v Praze.","Traduction : « Je m'appelle Petr. J'habite à Prague. »"]]
   },
-  zu: { name: "isiZulu (Zoulou)", flag: "🇿🇦", color: "#C2622A",
+  zu: { name: "isiZulu (Zoulou)", flag: "🇿🇦", color: "var(--ig27-orange)",
     scriptNote: "Le zoulou est une langue bantoue d'Afrique du Sud, à système de classes nominales. Vocabulaire best-effort.",
     vocab: {
       "Salutations": v([["Sawubona","","bonjour"],["Ngiyabonga","","merci"],["Ngicela","","s'il te plaît"],["Yebo","","oui"],["Cha","","non"],["Sala kahle","","au revoir"]]),
@@ -303,7 +305,7 @@ module.exports = {
     ],
     reading: [["Igama lami nginguThabo. Ngihlala eThekwini.","Traduction (best-effort) : « Je m'appelle Thabo. J'habite à Durban. »"]]
   },
-  haw: { name: "ʻŌlelo Hawaiʻi (Hawaïen)", flag: "🌺", color: "#2E9E6D",
+  haw: { name: "ʻŌlelo Hawaiʻi (Hawaïen)", flag: "🌺", color: "var(--ig27-mint)",
     scriptNote: "L'hawaïen ne compte que 13 lettres (dont le ʻokina, une consonne glottale notée ʻ).",
     vocab: {
       "Salutations": v([["Aloha","","bonjour / au revoir"],["Mahalo","","merci"],["E ʻoluʻolu","","s'il te plaît"],["ʻAe","","oui"],["ʻAʻole","","non"],["A hui hou","","à bientôt"]]),
@@ -317,7 +319,7 @@ module.exports = {
     ],
     reading: [["ʻO Kai koʻu inoa. Noho au ma Honolulu.","Traduction : « Je m'appelle Kai. J'habite à Honolulu. »"]]
   },
-  sw: { name: "Kiswahili (Swahili)", flag: "🌍", color: "#2E7D5B",
+  sw: { name: "Kiswahili (Swahili)", flag: "🌍", color: "var(--ig27-teal)",
     scriptNote: "Le swahili est une langue bantoue très parlée en Afrique de l'Est, écrite en alphabet latin.",
     vocab: {
       "Salutations": v([["Habari","","bonjour (litt. « nouvelles »)"],["Asante","","merci"],["Tafadhali","","s'il te plaît"],["Ndiyo","","oui"],["Hapana","","non"],["Kwaheri","","au revoir"]]),
@@ -331,7 +333,7 @@ module.exports = {
     ],
     reading: [["Jina langu ni Amina. Ninaishi Nairobi.","Traduction : « Je m'appelle Amina. J'habite à Nairobi. »"]]
   },
-  cy: { name: "Cymraeg (Gallois)", flag: "🏴", color: "#2E7D46",
+  cy: { name: "Cymraeg (Gallois)", flag: "🏴", color: "var(--ig27-green)",
     scriptNote: "Le gallois s'écrit en alphabet latin, avec des doubles-lettres qui comptent comme une seule (ll, ch, dd).",
     vocab: {
       "Salutations": v([["Helo","","bonjour"],["Diolch","","merci"],["Os gwelwch yn dda","","s'il te plaît"],["Ie","","oui"],["Na","","non"],["Hwyl fawr","","au revoir"]]),
@@ -345,7 +347,7 @@ module.exports = {
     ],
     reading: [["Fy enw i yw Rhys. Dwi'n byw yng Nghaerdydd.","Traduction : « Je m'appelle Rhys. J'habite à Cardiff. »"]]
   },
-  hu: { name: "Magyar (Hongrois)", flag: "🇭🇺", color: "#B5322E",
+  hu: { name: "Magyar (Hongrois)", flag: "🇭🇺", color: "var(--ig27-red)",
     scriptNote: "Le hongrois utilise l'alphabet latin avec de nombreux accents (á, é, í, ó, ö, ő, ú, ü, ű).",
     vocab: {
       "Salutations": v([["Szia","","bonjour/salut"],["Köszönöm","","merci"],["Kérlek","","s'il te plaît"],["Igen","","oui"],["Nem","","non"],["Viszlát","","au revoir"]]),
@@ -359,7 +361,7 @@ module.exports = {
     ],
     reading: [["A nevem Kata. Budapesten élek.","Traduction : « Je m'appelle Kata. J'habite à Budapest. »"]]
   },
-  gd: { name: "Gàidhlig (Gaélique écossais)", flag: "🏴", color: "#2E4A9E",
+  gd: { name: "Gàidhlig (Gaélique écossais)", flag: "🏴", color: "var(--ig27-indigo)",
     scriptNote: "Le gaélique écossais est une langue celtique proche de l'irlandais, écrite en alphabet latin.",
     vocab: {
       "Salutations": v([["Halò","","bonjour"],["Tapadh leibh","","merci"],["Mas e ur toil e","","s'il te plaît"],["Tha","","oui"],["Chan eil","","non"],["Mar sin leat","","au revoir"]]),
@@ -373,7 +375,7 @@ module.exports = {
     ],
     reading: [["Is mise Ailean. Tha mi a' fuireach ann an Glaschu.","Traduction : « Je suis Ailean. J'habite à Glasgow. »"]]
   },
-  ht: { name: "Kreyòl ayisyen (Créole haïtien)", flag: "🇭🇹", color: "#2E6FA3",
+  ht: { name: "Kreyòl ayisyen (Créole haïtien)", flag: "🇭🇹", color: "var(--ig27-cyan)",
     scriptNote: "Le créole haïtien s'écrit en alphabet latin, avec une orthographe phonétique régulière et un vocabulaire majoritairement issu du français.",
     vocab: {
       "Salutations": v([["Bonjou","","bonjour"],["Mèsi","","merci"],["Souple","","s'il te plaît"],["Wi","","oui"],["Non","","non"],["Orevwa","","au revoir"]]),
@@ -387,7 +389,7 @@ module.exports = {
     ],
     reading: [["Mwen rele Jan. Mwen rete Pòtoprens.","Traduction : « Je m'appelle Jean. J'habite à Port-au-Prince. »"]]
   },
-  eo: { name: "Esperanto", flag: "🌐", color: "#2E9E6D",
+  eo: { name: "Esperanto", flag: "🌐", color: "var(--ig27-green)",
     scriptNote: "L'espéranto est une langue construite créée en 1887 pour être facile à apprendre et parfaitement régulière.",
     vocab: {
       "Salutations": v([["Saluton","","bonjour"],["Dankon","","merci"],["Bonvolu","","s'il te plaît"],["Jes","","oui"],["Ne","","non"],["Ĝis revido","","au revoir"]]),
@@ -401,7 +403,7 @@ module.exports = {
     ],
     reading: [["Mi nomiĝas Eva. Mi loĝas en Parizo.","Traduction : « Je m'appelle Eva. J'habite à Paris. »"]]
   },
-  tlh: { name: "tlhIngan Hol (Klingon)", flag: "🖖", color: "#5A2E2E",
+  tlh: { name: "tlhIngan Hol (Klingon)", flag: "🖖", color: "var(--ig27-brown)",
     scriptNote: "Langue construite par le linguiste Marc Okrand pour « Star Trek ». Vocabulaire et grammaire volontairement limités ici : ressources fiables rares.",
     vocab: {
       "Expressions connues": v([["nuqneH","","bonjour (litt. « que veux-tu ? »)"],["qatlho'","","merci"],["Qapla'","","succès ! (salutation/vœu)"],["HIja'","","oui"],["ghobe'","","non"],["Heghlu'meH QaQ jajvam","","c'est un bon jour pour mourir (phrase culte)"]])
@@ -413,7 +415,7 @@ module.exports = {
     ],
     reading: [["Qapla'! nuqneH?","Traduction : « Succès ! Que veux-tu (= bonjour) ? » — salutation typique entre Klingons."]]
   },
-  nv: { name: "Diné bizaad (Navajo)", flag: "🪶", color: "#C2622A",
+  nv: { name: "Diné bizaad (Navajo)", flag: "🪶", color: "var(--ig27-orange)",
     scriptNote: "Le navajo (diné bizaad) est une langue tonale et polysynthétique parlée par la nation Navajo (sud-ouest des États-Unis). Vocabulaire best-effort.",
     vocab: {
       "Salutations": v([["Yá'át'ééh","","bonjour"],["Ahéhee'","","merci"],["Aoo'","","oui"],["Dooda","","non"],["Hágoónee'","","au revoir"]]),

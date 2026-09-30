@@ -14,7 +14,7 @@
  * existing `--ink/--bg/--primary/...` variable names when both are loaded.
  * Nothing here is auto-applied to any element — it's a token/utility layer.
  * Re-theming existing pages means mapping the OLD variable names to these new
- * ones (see design-system/README.md), not deleting the old names outright.
+ * ones (done once, app-wide, in design-system/ios27-app.css), not per page.
  *
  * Dark mode: this app toggles a `data-theme="dark"` attribute on <html> (see
  * app.html's own inline theme-init script), so tokens are re-defined under
@@ -154,6 +154,41 @@
   --ig27-ease-standard: cubic-bezier(0.4, 0.0, 0.2, 1.0);
   --ig27-duration-fast: .15s;
   --ig27-duration-base: .25s;
+
+  /* ===== App-level derived tokens (added for the Mes langues app) =====
+     Everything below is DERIVED from the Apple values above (color-mix of the
+     system accents/labels) so pages never hard-code a color, a tint or an
+     elevation of their own. Single tint color = system blue (iOS default). */
+  --ig27-white:#ffffff;
+  --ig27-black:#000000;
+  --ig27-on-accent:#ffffff;              /* label on a filled accent/tinted control */
+  --ig27-accent: var(--ig27-blue);        /* the app's one tint color */
+  --ig27-accent-shade: var(--ig27-black); /* what hover/pressed accent mixes toward */
+  --ig27-accent-hover: color-mix(in srgb, var(--ig27-accent) 86%, var(--ig27-accent-shade));
+  --ig27-tint-strength: 15%;              /* soft tinted backgrounds (badges, selected rows) */
+  --ig27-accent-soft: color-mix(in srgb, var(--ig27-accent) var(--ig27-tint-strength), transparent);
+  --ig27-green-soft: color-mix(in srgb, var(--ig27-green) var(--ig27-tint-strength), transparent);
+  --ig27-red-soft: color-mix(in srgb, var(--ig27-red) var(--ig27-tint-strength), transparent);
+  --ig27-orange-soft: color-mix(in srgb, var(--ig27-orange) var(--ig27-tint-strength), transparent);
+  --ig27-yellow-soft: color-mix(in srgb, var(--ig27-yellow) var(--ig27-tint-strength), transparent);
+  --ig27-pink-soft: color-mix(in srgb, var(--ig27-pink) var(--ig27-tint-strength), transparent);
+  --ig27-indigo-soft: color-mix(in srgb, var(--ig27-indigo) var(--ig27-tint-strength), transparent);
+  --ig27-teal-soft: color-mix(in srgb, var(--ig27-teal) var(--ig27-tint-strength), transparent);
+  --ig27-gray-soft: color-mix(in srgb, var(--ig27-gray) var(--ig27-tint-strength), transparent);
+  --ig27-focus-ring: 0 0 0 4px color-mix(in srgb, var(--ig27-accent) 25%, transparent);
+  --ig27-scrim: rgba(0,0,0,.4);           /* dimming layer under sheets/alerts */
+  --ig27-highlight: rgba(255,255,255,.35);/* specular top edge on tinted glass */
+
+  /* Elevation for opaque CONTENT cards (glass surfaces use --ig27-glass-*-shadow) */
+  --ig27-shadow-sm: 0 1px 2px rgba(0,0,0,.06), 0 1px 1px rgba(0,0,0,.04);
+  --ig27-shadow-md: 0 10px 28px -8px rgba(0,0,0,.16), 0 2px 8px rgba(0,0,0,.06);
+  --ig27-shadow-lg: 0 22px 48px -8px rgba(0,0,0,.25);
+  --ig27-shadow-accent: 0 8px 18px -6px color-mix(in srgb, var(--ig27-accent) 55%, transparent);
+
+  /* Motion (complements the ease/duration tokens above) */
+  --ig27-duration-slow: .4s;
+  --ig27-press-scale: .96;                /* tactile feedback on :active */
+  --ig27-hover-lift: -2px;                /* translateY on hover (pointer devices) */
 }
 
 /* ===== Dark mode: same tokens, dark values ===== */
@@ -207,6 +242,13 @@ html[data-theme="dark"]{
   --ig27-material-regular-bg: rgba(0,0,0,.41);
   --ig27-material-thin-bg: rgba(0,0,0,.26);
   --ig27-material-ultrathin-bg: rgba(0,0,0,.02);
+
+  --ig27-accent-shade: var(--ig27-white);
+  --ig27-scrim: rgba(0,0,0,.6);
+  --ig27-highlight: rgba(255,255,255,.12);
+  --ig27-shadow-sm: 0 1px 2px rgba(0,0,0,.35), 0 1px 1px rgba(0,0,0,.25);
+  --ig27-shadow-md: 0 10px 28px -8px rgba(0,0,0,.5), 0 2px 8px rgba(0,0,0,.3);
+  --ig27-shadow-lg: 0 22px 48px -8px rgba(0,0,0,.6);
 }
 
 /* Fallback for any page with no JS theme toggle: follow the OS setting,
@@ -229,6 +271,19 @@ html[data-theme="dark"]{
     --ig27-glass-small-bg: rgba(118,118,128,.12); --ig27-glass-small-shadow: 0 8px 15px rgba(0,0,0,.04);
     --ig27-glass-rim-color: #a6a6a6; --ig27-glass-edge-color: rgba(0,0,0,.1);
     --ig27-material-regular-bg: rgba(0,0,0,.41);
+    --ig27-red:#ff4245; --ig27-orange:#ff9230; --ig27-yellow:#ffd600;
+    --ig27-green:#30d158; --ig27-mint:#00dac3; --ig27-teal:#00d2e0;
+    --ig27-cyan:#3cd3fe; --ig27-blue:#0091ff; --ig27-indigo:#6d7cff;
+    --ig27-purple:#db34f2; --ig27-pink:#ff375f; --ig27-brown:#b78a66;
+    --ig27-gray2:#636366; --ig27-gray3:#48484a; --ig27-gray4:#3a3a3c; --ig27-gray5:#2c2c2e; --ig27-gray6:#1c1c1e;
+    --ig27-material-chrome-bg: rgba(28,28,28,.9); --ig27-material-thick-bg: rgba(0,0,0,.6);
+    --ig27-material-thin-bg: rgba(0,0,0,.26); --ig27-material-ultrathin-bg: rgba(0,0,0,.02);
+    --ig27-accent-shade: var(--ig27-white);
+    --ig27-scrim: rgba(0,0,0,.6);
+    --ig27-highlight: rgba(255,255,255,.12);
+    --ig27-shadow-sm: 0 1px 2px rgba(0,0,0,.35), 0 1px 1px rgba(0,0,0,.25);
+    --ig27-shadow-md: 0 10px 28px -8px rgba(0,0,0,.5), 0 2px 8px rgba(0,0,0,.3);
+    --ig27-shadow-lg: 0 22px 48px -8px rgba(0,0,0,.6);
   }
 }
 

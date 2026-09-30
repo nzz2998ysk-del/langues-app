@@ -11,6 +11,7 @@ const {
   invoiceEmailHtml,
   suggestionsDigestHtml,
   resetPasswordEmailHtml,
+  logEmailConfig,
 } = require("./lib/email");
 const stripeLib = require("./lib/stripe");
 
@@ -288,7 +289,9 @@ app.use((req, res, next) => {
   res.setHeader("X-Frame-Options", "SAMEORIGIN");
   res.setHeader("X-Content-Type-Options", "nosniff");
   res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
-  res.setHeader("Permissions-Policy", "geolocation=(), microphone=(), camera=()");
+  // microphone=(self): the pronunciation pages (embedded same-origin iframes with
+  // allow="microphone") use speech recognition; everything else stays off.
+  res.setHeader("Permissions-Policy", "geolocation=(), microphone=(self), camera=()");
   // Defense-in-depth against XSS: no external origins are ever loaded (everything
   // is same-origin or inline), so a same-origin-only CSP costs nothing today but
   // stops an accidentally-introduced injection from loading attacker script/data
@@ -305,6 +308,16 @@ app.use((req, res, next) => {
   }
   next();
 });
+
+// ---- design system (iOS 27 Liquid Glass tokens + app layer) ----
+// Public, cacheable CSS shared by every page, including the language pages
+// embedded as srcdoc iframes in app.html (they resolve "/design-system/..."
+// against the parent page's URL). Mounted before any auth check so the
+// login/reset-password pages can use it too.
+app.use("/design-system", express.static(path.join(__dirname, "design-system"), {
+  maxAge: isProd ? "1h" : 0,
+  index: false,
+}));
 
 // ---- very small in-memory rate limiter for auth endpoints (per IP) ----
 const attempts = new Map();
@@ -922,11 +935,15 @@ app.get("/admin", async (req, res) => {
 });
 
 app.get("/healthz", (req, res) => res.status(200).send("ok"));
+// No favicon file: answer the browser's automatic request with 204 instead of a
+// 404 that shows up as a console error on every page load.
+app.get("/favicon.ico", (req, res) => res.status(204).end());
 
 initDb()
   .then(() => {
     app.listen(PORT, () => {
       console.log(`langues-app listening on port ${PORT}`);
+      logEmailConfig();
     });
   })
   .catch((err) => {

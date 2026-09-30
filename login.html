@@ -1,86 +1,73 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+<script>(function(){try{
+  var t = localStorage.getItem('lang_theme');
+  if(t!=='dark'&&t!=='light'){t=((window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light');} document.documentElement.setAttribute('data-theme',t);
+}catch(e){}})();</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Mes langues — Connexion</title>
-<meta name="theme-color" content="#F2F2F7">
+<meta name="theme-color" content="var(--ig27-bg-grouped-primary)">
+<link rel="stylesheet" href="/design-system/ios27-liquid-glass.css">
 <style>
-:root{
-  --ig27-accent:#0088ff; --ig27-accent-dark:#0091ff;
-  --ig27-ink:#1d1d1f; --ig27-muted:#6e6e73;
-  --ig27-glass-bg:rgba(255,255,255,.6); --ig27-glass-border:rgba(255,255,255,.5);
-  --ig27-glass-blur:blur(20px) saturate(1.8);
-}
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
-body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','SF Pro Text','Segoe UI',Roboto,Helvetica,Arial,sans-serif;
-  min-height:100vh;min-height:100dvh;color:var(--ig27-ink);
+body{font-family:var(--ig27-font-family);
+  min-height:100vh;min-height:100dvh;color:var(--ig27-label-primary);
   background:
-    radial-gradient(1100px 620px at 15% -10%, rgba(0,136,255,.10), transparent 55%),
-    radial-gradient(900px 560px at 100% 110%, rgba(217,164,65,.14), transparent 60%),
-    #f5f5f7;
+    radial-gradient(1100px 620px at 15% -10%, color-mix(in srgb,var(--ig27-accent) 10%,transparent), transparent 55%),
+    radial-gradient(900px 560px at 100% 110%, color-mix(in srgb,var(--ig27-accent) 14%,transparent), transparent 60%),
+    var(--ig27-bg-grouped-primary);
   display:grid;grid-template-columns:1fr;overflow-x:hidden}
 @media(min-width:900px){body{grid-template-columns:1.15fr 1fr}}
 
 .hero{display:none;position:relative;overflow:hidden;padding:64px;flex-direction:column;justify-content:space-between;
   background:
-    radial-gradient(900px 520px at 10% 0%, rgba(255,255,255,.12), transparent 55%),
-    radial-gradient(700px 460px at 100% 100%, rgba(0,136,255,.35), transparent 60%),
-    linear-gradient(155deg,#1d1d1f,#000 70%)}
+    radial-gradient(900px 520px at 10% 0%, color-mix(in srgb,var(--ig27-white) 12%,transparent), transparent 55%),
+    radial-gradient(700px 460px at 100% 100%, color-mix(in srgb,var(--ig27-accent) 35%,transparent), transparent 60%),
+    linear-gradient(155deg,var(--ig27-accent),var(--ig27-indigo) 80%)}
 @media(min-width:900px){.hero{display:flex}}
-.hero-brand{color:#fff;font-size:15px;font-weight:600;letter-spacing:.01em;display:flex;align-items:center;gap:10px}
-.hero-brand .dot{width:9px;height:9px;border-radius:50%;background:var(--ig27-accent)}
-.hero-title{color:#fff;font-size:clamp(34px,3.6vw,52px);font-weight:700;letter-spacing:-.03em;line-height:1.08;max-width:560px}
-.hero-sub{color:rgba(255,255,255,.72);font-size:17px;line-height:1.5;letter-spacing:-.02em;margin-top:18px;max-width:460px;font-weight:400}
+.hero-brand{color:var(--ig27-on-accent);font-size:var(--ig27-fs-subheadline);line-height:var(--ig27-lh-subheadline);letter-spacing:var(--ig27-ls-subheadline);font-weight:var(--ig27-weight-semibold);display:flex;align-items:center;gap:10px}
+.hero-brand .dot{width:9px;height:9px;border-radius:50%;background:var(--ig27-on-accent)}
+.hero-title{color:var(--ig27-on-accent);font-size:var(--ig27-fs-large-title);line-height:var(--ig27-lh-large-title);letter-spacing:var(--ig27-ls-large-title);font-weight:var(--ig27-weight-bold);max-width:560px}
+.hero-sub{color:color-mix(in srgb,var(--ig27-white) 72%,transparent);font-size:var(--ig27-fs-body);line-height:var(--ig27-lh-body);letter-spacing:var(--ig27-ls-body);margin-top:18px;max-width:460px;font-weight:var(--ig27-weight-regular)}
 .hero-flags{display:flex;gap:10px;margin-top:34px;flex-wrap:wrap}
-.hero-flags span{font-size:26px;background:rgba(255,255,255,.14);border-radius:18px;padding:10px 12px;
-  backdrop-filter:blur(6px) saturate(1.8);-webkit-backdrop-filter:blur(6px) saturate(1.8);
-  border:1px solid rgba(255,255,255,.14)}
-.hero-foot{color:rgba(255,255,255,.5);font-size:12.5px;font-weight:400}
+.hero-flags span{color:var(--ig27-on-accent);font-size:var(--ig27-fs-title1);line-height:var(--ig27-lh-title1);letter-spacing:var(--ig27-ls-title1);background:color-mix(in srgb,var(--ig27-white) 14%,transparent);border-radius:var(--ig27-radius-xxl);padding:10px 12px;
+  backdrop-filter:blur(var(--ig27-glass-regular-blur)) saturate(var(--ig27-glass-regular-saturate));-webkit-backdrop-filter:blur(var(--ig27-glass-regular-blur)) saturate(var(--ig27-glass-regular-saturate));
+  border:1px solid color-mix(in srgb,var(--ig27-white) 14%,transparent)}
+.hero-foot{color:color-mix(in srgb,var(--ig27-white) 50%,transparent);font-size:var(--ig27-fs-footnote);line-height:var(--ig27-lh-footnote);letter-spacing:var(--ig27-ls-footnote);font-weight:var(--ig27-weight-regular)}
 
 .form-side{display:flex;align-items:center;justify-content:center;padding:40px 24px}
 .auth-wrap{width:100%;max-width:380px}
 .auth-header{text-align:center;margin-bottom:22px}
-.auth-header .mobile-brand{display:block;font-size:20px;font-weight:700;letter-spacing:-.02em;margin-bottom:14px}
+.auth-header .mobile-brand{display:block;font-size:var(--ig27-fs-title3);line-height:var(--ig27-lh-title3);letter-spacing:var(--ig27-ls-title3);font-weight:var(--ig27-weight-bold);margin-bottom:14px}
 @media(min-width:900px){.auth-header .mobile-brand{display:none}}
-.auth-title{font-size:22px;line-height:28px;letter-spacing:-.026em;font-weight:700}
-.auth-subtitle{font-size:15px;line-height:20px;letter-spacing:-.023em;color:var(--ig27-muted);margin-top:6px;font-weight:400}
-.auth-card{background:var(--ig27-glass-bg);-webkit-backdrop-filter:var(--ig27-glass-blur);backdrop-filter:var(--ig27-glass-blur);
-  border-radius:28px;padding:26px;
-  box-shadow:0 20px 48px -16px rgba(0,0,0,.18),0 2px 8px rgba(0,0,0,.06),inset 0 1px 0 rgba(255,255,255,.6);
-  border:1px solid var(--ig27-glass-border);
+.auth-title{font-size:var(--ig27-fs-title2);line-height:var(--ig27-lh-title2);letter-spacing:var(--ig27-ls-title2);font-weight:var(--ig27-weight-bold)}
+.auth-subtitle{font-size:var(--ig27-fs-subheadline);line-height:var(--ig27-lh-subheadline);letter-spacing:var(--ig27-ls-subheadline);color:var(--ig27-label-secondary);margin-top:6px;font-weight:var(--ig27-weight-regular)}
+.auth-card{background:var(--ig27-glass-regular-bg);-webkit-backdrop-filter:blur(var(--ig27-glass-regular-blur)) saturate(var(--ig27-glass-regular-saturate));backdrop-filter:blur(var(--ig27-glass-regular-blur)) saturate(var(--ig27-glass-regular-saturate));
+  border-radius:var(--ig27-radius-xxxl);padding:26px;
+  box-shadow:0 20px 48px -16px color-mix(in srgb,var(--ig27-black) 18%,transparent),0 2px 8px var(--ig27-fill-quaternary),inset 0 1px 0 var(--ig27-glass-regular-bg);
+  border:1px solid var(--ig27-glass-rim-color);
   display:flex;flex-direction:column;gap:14px}
 .field-group{display:flex;flex-direction:column;gap:6px}
-.auth-label{font-size:12px;line-height:16px;font-weight:600;color:var(--ig27-muted)}
-.auth-input{border:1px solid rgba(0,0,0,.08);border-radius:14px;padding:12px 13px;
-  font-size:15px;font-family:inherit;background:rgba(120,120,128,.08);color:var(--ig27-ink);outline:none;
-  transition:border-color .15s ease,box-shadow .15s ease}
-.auth-input:focus{border-color:var(--ig27-accent);box-shadow:0 0 0 4px rgba(0,136,255,.15)}
-.auth-error{background:rgba(255,59,48,.1);color:#d70015;border-radius:14px;padding:9px 12px;font-size:13px;font-weight:500}
-.btn-auth-primary{background:var(--ig27-accent);color:#fff;border:none;border-radius:980px;padding:14px;
-  font-size:15px;font-weight:600;letter-spacing:-.01em;cursor:pointer;transition:transform .15s cubic-bezier(.34,1.4,.64,1),background .15s;
-  box-shadow:0 6px 16px -4px rgba(0,136,255,.45)}
-.btn-auth-primary:hover{background:#006edb}
+.auth-label{font-size:var(--ig27-fs-caption1);line-height:var(--ig27-lh-caption1);letter-spacing:var(--ig27-ls-caption1);font-weight:var(--ig27-weight-semibold);color:var(--ig27-label-secondary)}
+.auth-input{border:1px solid color-mix(in srgb,var(--ig27-black) 8%,transparent);border-radius:var(--ig27-radius-xl);padding:12px 13px;
+  font-size:var(--ig27-fs-subheadline);line-height:var(--ig27-lh-subheadline);letter-spacing:var(--ig27-ls-subheadline);font-family:inherit;background:var(--ig27-fill-quaternary);color:var(--ig27-label-primary);outline:none;
+  transition:border-color var(--ig27-duration-fast) ease,box-shadow var(--ig27-duration-fast) ease}
+.auth-input:focus{border-color:var(--ig27-accent);box-shadow:0 0 0 4px var(--ig27-accent-soft)}
+.auth-error{background:color-mix(in srgb,var(--ig27-red) 10%,transparent);color:var(--ig27-red);border-radius:var(--ig27-radius-xl);padding:9px 12px;font-size:var(--ig27-fs-footnote);line-height:var(--ig27-lh-footnote);letter-spacing:var(--ig27-ls-footnote);font-weight:var(--ig27-weight-medium)}
+.btn-auth-primary{background:var(--ig27-accent);color:var(--ig27-on-accent);border:none;border-radius:var(--ig27-radius-glass);padding:14px;
+  font-size:var(--ig27-fs-subheadline);line-height:var(--ig27-lh-subheadline);letter-spacing:var(--ig27-ls-subheadline);font-weight:var(--ig27-weight-semibold);cursor:pointer;transition:transform var(--ig27-duration-fast) var(--ig27-ease-spring),background var(--ig27-duration-fast);
+  box-shadow:0 6px 16px -4px color-mix(in srgb,var(--ig27-accent) 45%,transparent)}
+.btn-auth-primary:hover{background:var(--ig27-accent-hover)}
 .btn-auth-primary:active{transform:scale(.97)}
-.btn-auth-primary:disabled{opacity:.5;cursor:default;box-shadow:none}
-.btn-auth-link{background:none;border:none;color:var(--ig27-accent);font-size:13px;font-weight:500;
+.btn-auth-primary:disabled{opacity:.5;cursor:default;box-shadow:var(--ig27-shadow-sm)}
+.btn-auth-link{background:none;border:none;color:var(--ig27-accent);font-size:var(--ig27-fs-footnote);line-height:var(--ig27-lh-footnote);letter-spacing:var(--ig27-ls-footnote);font-weight:var(--ig27-weight-medium);
   cursor:pointer;text-align:center;padding:4px}
-.auth-note{font-size:11px;line-height:14px;color:#a1a1a6;text-align:center;line-height:1.5}
-@media (prefers-color-scheme: dark){
-  :root{--ig27-ink:#f5f5f7;--ig27-muted:#98989d;--ig27-glass-bg:rgba(28,28,30,.55);--ig27-glass-border:rgba(255,255,255,.1);--ig27-accent:#0091ff}
-  body{background:
-    radial-gradient(1100px 620px at 15% -10%, rgba(0,145,255,.14), transparent 55%),
-    radial-gradient(900px 560px at 100% 110%, rgba(217,164,65,.10), transparent 60%),
-    #000}
-  .auth-card{box-shadow:0 20px 48px -16px rgba(0,0,0,.6),0 2px 8px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.06)}
-  .auth-input{background:rgba(120,120,128,.16);border-color:rgba(255,255,255,.1);color:var(--ig27-ink)}
-  .auth-input:focus{box-shadow:0 0 0 4px rgba(0,145,255,.22)}
-  .auth-error{background:rgba(255,69,58,.16);color:#ff6961}
-  .btn-auth-primary:hover{background:#37a4ff}
-  .auth-note{color:#6e6e73}
-}
+.auth-note{font-size:var(--ig27-fs-caption2);line-height:var(--ig27-lh-caption2);letter-spacing:var(--ig27-ls-caption2);color:var(--ig27-label-tertiary);text-align:center}
 </style>
+<link rel="stylesheet" href="/design-system/ios27-app.css">
 </head>
 <body>
 <div class="hero">
@@ -117,7 +104,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','SF Pro Text'
       <input class="auth-input" id="authConfirm" type="password" placeholder="••••••••" autocomplete="new-password">
     </div>
     <div id="authError" class="auth-error" style="display:none"></div>
-    <div id="authOk" class="auth-error" style="display:none;background:#DFF3EA;color:#1E7A5E"></div>
+    <div id="authOk" class="auth-error" style="display:none;background:var(--ig27-green-soft);color:var(--ig27-green)"></div>
     <button type="button" class="btn-auth-primary" id="authSubmitBtn" onclick="authSubmit()">Se connecter</button>
     <button type="button" class="btn-auth-link" id="authForgotBtn" onclick="authGoForgot()">Mot de passe oublié&nbsp;?</button>
     <button type="button" class="btn-auth-link" id="authToggleBtn" onclick="authToggleMode()">Pas encore de compte&nbsp;? Créer un compte</button>

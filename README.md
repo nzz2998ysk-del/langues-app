@@ -12,15 +12,33 @@ abonnement (Stripe) et facture envoyée par email.
 
 ## Design
 
-L'app entière (l'habillage — connexion, profil, idées, admin, réinitialisation
-de mot de passe — ainsi que les 272 pages de contenu embarquées pour chaque
-langue) suit un langage visuel « iOS 27 / Liquid Glass », inspiré de
-[ios27-design-system](https://github.com/seunghan91/ios27-design-system) :
-couleurs système (clair/sombre), typographie SF Pro, grille d'espacement 8pt,
-rayons de coin agrandis et surfaces en verre translucide avec flou
-d'arrière-plan. La couleur d'accent propre à chaque langue est préservée ;
-seule la palette neutre partagée (fonds, textes, séparateurs, ombres) a été
-remplacée par les tokens iOS 27.
+L'app entière suit le langage visuel **iOS 27 « Liquid Glass »**, de façon
+uniforme : les 6 pages d'habillage (connexion, profil, idées, admin,
+réinitialisation, abonnement), la chrome d'`app.html` (accueil, barre du haut,
+barre d'onglets, écran de chargement) et les 272 pages de contenu embarquées
+pour les 39 langues.
+
+- **Source de vérité unique** : `design-system/ios27-liquid-glass.css` (tokens
+  `--ig27-*` : couleurs système clair/sombre, échelle typographique SF Pro,
+  rayons, verre — flou + saturation —, élévations, animations). Aucune page ne
+  code de valeur en dur ; un besoin nouveau = un token ajouté dans ce fichier.
+- **Couche applicative** : `design-system/ios27-app.css`, chargée par toutes
+  les pages après leur propre style : pont des anciens noms de variables
+  (`--ink`, `--bg`, `--primary`...) vers les tokens, verre sur les barres,
+  boutons flottants, toasts et overlays (jamais sur le contenu), boutons
+  d'action en pilule, retour tactile, apparition en douceur, et respect de
+  `prefers-reduced-motion` / `prefers-reduced-transparency` partout.
+- **Une seule couleur d'accent** : le bleu système (`#0088ff` clair / `#0091ff`
+  sombre). Chaque langue garde seulement une teinte d'identité sur sa carte
+  d'accueil, choisie parmi les couleurs système.
+- **Thème** : `data-theme="light"|"dark"` toujours explicite (préférence du
+  système par défaut, bouton 🌙/☀️ pour forcer), partagé entre toutes les pages.
+- Les deux fichiers sont servis par `server.js` sous `/design-system/`.
+
+Outils : `scripts/liquid-glass.js` convertit une page en tokens (utilisé par
+les générateurs, donc toute langue générée plus tard a ce design dès sa
+création) ; `node scripts/apply-liquid-glass.js` réapplique la conversion à
+tout `ALL_PAGES` (idempotent, `--dry-run` pour vérifier).
 
 ## Modèle d'accès
 
@@ -106,15 +124,35 @@ webhooks Stripe (HMAC + comparaison à temps constant) était déjà correcte.
 
 ## Emails transactionnels (Resend)
 
-Utilisés pour l'email de bienvenue à l'inscription et la facture envoyée après
-un paiement. À configurer sur Render :
-- `RESEND_API_KEY` — créer un compte gratuit sur resend.com, générer une clé API.
-- `EMAIL_FROM` — expéditeur (le domaine `onboarding@resend.dev` fonctionne sans
-  configuration DNS, pratique pour démarrer ; un domaine propre peut être vérifié
-  plus tard dans Resend pour envoyer depuis ta propre adresse).
+Deux emails automatiques côté compte, envoyés par `lib/email.js` via l'API
+Resend :
+- **bienvenue** — juste après la création du compte (`POST /api/signup`) ;
+- **réinitialisation du mot de passe** — sur `POST /api/forgot-password`,
+  uniquement si le compte existe (réponse identique sinon).
 
-Sans `RESEND_API_KEY`, l'app fonctionne normalement mais aucun email n'est
-envoyé (juste un avertissement dans les logs).
+(La facture après paiement et le récapitulatif quotidien de la boîte à idées
+passent par le même helper.)
+
+Deux variables d'environnement, à créer dans **Render → ton service →
+Settings → Environment** (jamais dans le code ni dans un commit — voir aussi
+`.env.example`) :
+
+| Variable | Où l'obtenir |
+|---|---|
+| `RESEND_API_KEY` | resend.com → dashboard → **API Keys** → *Create API Key* (accès « Sending » suffit). |
+| `EMAIL_FROM` | L'expéditeur, ex. `Mes langues <no-reply@ton-domaine.com>`. Le domaine doit d'abord être **vérifié** dans Resend → **Domains** → *Add domain*, puis ajouter chez ton hébergeur DNS les enregistrements affichés (SPF + DKIM, DMARC conseillé) et attendre le statut *Verified*. |
+
+Comportement :
+- Sans `RESEND_API_KEY`, l'app fonctionne normalement : aucun email n'est
+  envoyé, un avertissement est loggé au démarrage et à chaque envoi sauté
+  (`[email] RESEND_API_KEY not set - skipping ...`). Jamais de crash.
+- Sans `EMAIL_FROM`, l'expéditeur de test de Resend (`onboarding@resend.dev`)
+  est utilisé : il ne délivre qu'à l'adresse du propriétaire du compte Resend.
+  Un avertissement le rappelle au démarrage.
+- Un envoi échoué (réseau, 429, 5xx) est retenté une fois ; une erreur de
+  configuration (clé invalide, domaine non vérifié) est loggée avec la réponse
+  de Resend. Un email qui échoue ne fait jamais échouer l'inscription ni la
+  demande de réinitialisation.
 
 ## Mot de passe oublié
 

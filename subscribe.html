@@ -1,43 +1,47 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+<script>(function(){try{
+  var t = localStorage.getItem('lang_theme');
+  if(t!=='dark'&&t!=='light'){t=((window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light');} document.documentElement.setAttribute('data-theme',t);
+}catch(e){}})();</script>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Mes langues — Premium</title>
+<link rel="stylesheet" href="/design-system/ios27-liquid-glass.css">
 <style>
-*{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','SF Pro Text','Segoe UI',Roboto,sans-serif}
-:root{--ink:#1d1d1f;--muted:#6e6e73;--bg:#f5f5f7;--surface:rgba(255,255,255,.6);--surface-border:rgba(255,255,255,.5);--primary:#0088ff;--primary-dark:#006edb;--line:rgba(0,0,0,.08);--gold:#FFD60A;--glass-blur:blur(20px) saturate(1.8);}
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--ink:#f5f5f7;--muted:#98989d;--bg:#000000;--surface:rgba(28,28,30,.55);--surface-border:rgba(255,255,255,.1);--primary:#0091ff;--primary-dark:#37a4ff;--line:rgba(255,255,255,.1);}}
+*{box-sizing:border-box;margin:0;padding:0;font-family:var(--ig27-font-family)}
 html,body{height:100%}
 body{background:
-    radial-gradient(1100px 520px at 8% -10%, rgba(0,136,255,.10), transparent 60%),
-    radial-gradient(900px 480px at 100% 100%, rgba(217,164,65,.12), transparent 55%),
+    radial-gradient(1100px 520px at 8% -10%, color-mix(in srgb,var(--ig27-accent) 10%,transparent), transparent 60%),
+    radial-gradient(900px 480px at 100% 100%, color-mix(in srgb,var(--ig27-accent) 12%,transparent), transparent 55%),
     var(--bg);
   color:var(--ink);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:40px 20px}
 .shell{width:100%;max-width:1100px;display:grid;grid-template-columns:1fr;gap:0;
-  background:var(--surface);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);
-  border:1px solid var(--surface-border);border-radius:32px;overflow:hidden;
-  box-shadow:0 30px 70px -30px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.5)}
+  background:var(--ig27-glass-regular-bg);-webkit-backdrop-filter:blur(var(--ig27-glass-regular-blur)) saturate(var(--ig27-glass-regular-saturate));backdrop-filter:blur(var(--ig27-glass-regular-blur)) saturate(var(--ig27-glass-regular-saturate));
+  border:1px solid var(--ig27-glass-rim-color);border-radius:var(--ig27-radius-glass);overflow:hidden;
+  box-shadow:0 30px 70px -30px color-mix(in srgb,var(--ig27-black) 28%,transparent),inset 0 1px 0 color-mix(in srgb,var(--ig27-white) 50%,transparent)}
 @media(min-width:860px){.shell{grid-template-columns:1.1fr 1fr}}
-.pitch{padding:48px;background:linear-gradient(155deg,#1d1d1f,#000 75%);color:#fff;display:flex;flex-direction:column;justify-content:center}
-.pitch .badge{display:inline-block;background:var(--gold);color:#1d1d1f;font-size:11px;font-weight:700;letter-spacing:.04em;
-  padding:5px 12px;border-radius:999px;margin-bottom:16px;width:fit-content}
-.pitch h1{font-size:clamp(28px,2.6vw,34px);font-weight:700;letter-spacing:-.03em;line-height:1.1;margin-bottom:14px}
-.pitch p{color:rgba(255,255,255,.75);font-size:16px;line-height:21px;letter-spacing:-.031em;max-width:420px}
+.pitch{padding:48px;background:linear-gradient(155deg,var(--ig27-accent),var(--ig27-indigo) 80%);color:var(--ig27-on-accent);display:flex;flex-direction:column;justify-content:center}
+.pitch .badge{display:inline-block;background:var(--gold);color:var(--ig27-black);font-size:var(--ig27-fs-caption2);line-height:var(--ig27-lh-caption2);letter-spacing:var(--ig27-ls-caption2);font-weight:var(--ig27-weight-bold);
+  padding:5px 12px;border-radius:var(--ig27-radius-full);margin-bottom:16px;width:fit-content}
+.pitch h1{font-size:var(--ig27-fs-large-title);line-height:var(--ig27-lh-large-title);letter-spacing:var(--ig27-ls-large-title);font-weight:var(--ig27-weight-bold);margin-bottom:14px}
+.pitch p{color:color-mix(in srgb,var(--ig27-white) 75%,transparent);font-size:var(--ig27-fs-callout);line-height:var(--ig27-lh-callout);letter-spacing:var(--ig27-ls-callout);max-width:420px}
 .pitch .flags{display:flex;gap:8px;flex-wrap:wrap;margin-top:24px}
-.pitch .flags span{font-size:22px;background:rgba(255,255,255,.14);border-radius:16px;padding:8px 10px;
-  -webkit-backdrop-filter:blur(6px) saturate(1.8);backdrop-filter:blur(6px) saturate(1.8);border:1px solid rgba(255,255,255,.14)}
+.pitch .flags span{font-size:var(--ig27-fs-title2);line-height:var(--ig27-lh-title2);letter-spacing:var(--ig27-ls-title2);background:color-mix(in srgb,var(--ig27-white) 14%,transparent);border-radius:var(--ig27-radius-xl);padding:8px 10px;
+  -webkit-backdrop-filter:blur(var(--ig27-glass-regular-blur)) saturate(var(--ig27-glass-regular-saturate));backdrop-filter:blur(var(--ig27-glass-regular-blur)) saturate(var(--ig27-glass-regular-saturate));border:1px solid color-mix(in srgb,var(--ig27-white) 14%,transparent)}
 .panel{padding:48px;display:flex;flex-direction:column;justify-content:center}
 ul{list-style:none;margin-bottom:26px}
-li{font-size:15px;padding:8px 0;display:flex;gap:10px;color:var(--ink)}
-li:before{content:"✓";color:#34c759;font-weight:700}
-button{width:100%;background:var(--primary);color:#fff;border:none;border-radius:980px;padding:15px;font-size:15px;font-weight:600;letter-spacing:-.01em;cursor:pointer;transition:background .15s,transform .15s cubic-bezier(.34,1.4,.64,1);box-shadow:0 6px 16px -4px rgba(0,136,255,.4)}
+li{font-size:var(--ig27-fs-subheadline);line-height:var(--ig27-lh-subheadline);letter-spacing:var(--ig27-ls-subheadline);padding:8px 0;display:flex;gap:10px;color:var(--ink)}
+li:before{content:"✓";color:var(--ig27-green);font-weight:var(--ig27-weight-bold)}
+button{width:100%;background:var(--primary);color:var(--ig27-on-accent);border:none;border-radius:var(--ig27-radius-glass);padding:15px;font-size:var(--ig27-fs-subheadline);line-height:var(--ig27-lh-subheadline);letter-spacing:var(--ig27-ls-subheadline);font-weight:var(--ig27-weight-semibold);cursor:pointer;transition:background var(--ig27-duration-fast),transform var(--ig27-duration-fast) var(--ig27-ease-spring);box-shadow:0 6px 16px -4px color-mix(in srgb,var(--ig27-accent) 40%,transparent)}
 button:hover{background:var(--primary-dark)}
 button:active{transform:scale(.97)}
-button:disabled{opacity:.5;cursor:default;box-shadow:none}
-a.back{display:block;margin-top:18px;color:var(--muted);font-size:13px;text-decoration:none;text-align:center}
-.msg{font-size:13px;margin-top:14px;color:#d70015;text-align:center}
-.msg.ok{color:#34c759}
+button:disabled{opacity:.5;cursor:default;box-shadow:var(--ig27-shadow-sm)}
+a.back{display:block;margin-top:18px;color:var(--muted);font-size:var(--ig27-fs-footnote);line-height:var(--ig27-lh-footnote);letter-spacing:var(--ig27-ls-footnote);text-decoration:none;text-align:center}
+.msg{font-size:var(--ig27-fs-footnote);line-height:var(--ig27-lh-footnote);letter-spacing:var(--ig27-ls-footnote);margin-top:14px;color:var(--ig27-red);text-align:center}
+.msg.ok{color:var(--ig27-green)}
 </style>
+<link rel="stylesheet" href="/design-system/ios27-app.css">
 </head>
 <body>
 <div class="shell">

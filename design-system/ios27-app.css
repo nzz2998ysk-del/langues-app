@@ -1,0 +1,242 @@
+/*!
+ * Mes langues — app-wide iOS 27 "Liquid Glass" layer.
+ *
+ * Loaded by EVERY page (the 6 shell pages, app.html's chrome and all the
+ * language pages embedded in app.html's ALL_PAGES), always AFTER
+ * ios27-liquid-glass.css and after the page's own <style> so it wins ties.
+ *
+ * Rule of this file: no raw design values. Every color, radius, blur, size,
+ * duration or easing is a var(--ig27-*) token from ios27-liquid-glass.css —
+ * add a token there if something is missing, never a literal here.
+ *
+ * Apple's placement rule is applied throughout: glass dresses CONTROLS and
+ * CHROME (bars, floating buttons, toasts, overlays), never content text or
+ * content cards, and glass is never stacked on glass.
+ */
+
+/* ------------------------------------------------------------------------
+   1. Legacy variable bridge — pages were written against --ink/--bg/...;
+   those names now resolve to tokens, so they flip light/dark by themselves.
+   ------------------------------------------------------------------------ */
+:root{
+  --ink: var(--ig27-label-primary);
+  --muted: var(--ig27-label-secondary);
+  --muted-2: var(--ig27-label-tertiary);
+  --bg: var(--ig27-bg-grouped-primary);
+  --surface: var(--ig27-bg-grouped-secondary);
+  --primary: var(--ig27-accent);
+  --primary-dark: var(--ig27-accent-hover);
+  --primary-light: var(--ig27-accent);
+  --accent: var(--ig27-accent);
+  --accent-dark: var(--ig27-accent);
+  --accent-soft: var(--ig27-accent-soft);
+  --gold: var(--ig27-yellow);
+  --gold-soft: var(--ig27-yellow-soft);
+  --green: var(--ig27-green);
+  --green-soft: var(--ig27-green-soft);
+  --red: var(--ig27-red);
+  --red-soft: var(--ig27-red-soft);
+  --line: var(--ig27-separator);
+  --line-soft: var(--ig27-fill-quaternary);
+  --shadow-sm: var(--ig27-shadow-sm);
+  --shadow-md: var(--ig27-shadow-md);
+  --shadow-lg: var(--ig27-shadow-lg);
+  --ease: var(--ig27-ease-standard);
+  --ease-spring: var(--ig27-ease-spring);
+  --serif: var(--ig27-font-family);
+}
+
+/* ------------------------------------------------------------------------
+   2. Base
+   ------------------------------------------------------------------------ */
+html{ background: var(--ig27-bg-grouped-primary); }
+body{
+  font-family: var(--ig27-font-family);
+  font-size: var(--ig27-fs-body);
+  line-height: var(--ig27-lh-body);
+  letter-spacing: var(--ig27-ls-body);
+  color: var(--ig27-label-primary);
+  background: var(--ig27-bg-grouped-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  animation: ig27-fade-in var(--ig27-duration-slow) var(--ig27-ease-standard) both;
+}
+button, input, select, textarea{ font-family: inherit; }
+::selection{ background: var(--ig27-accent-soft); }
+a{ color: var(--ig27-accent); }
+
+/* Keyboard focus only (mouse/touch clicks stay clean) */
+:focus{ outline: none; }
+:focus-visible{
+  outline: none;
+  box-shadow: var(--ig27-focus-ring) !important;
+}
+
+/* Scrollbars (desktop) */
+::-webkit-scrollbar{ width: var(--ig27-space-3); height: var(--ig27-space-3); }
+::-webkit-scrollbar-track{ background: transparent; }
+::-webkit-scrollbar-thumb{
+  background: var(--ig27-fill-primary);
+  border-radius: var(--ig27-radius-full);
+  border: var(--ig27-space-1) solid transparent;
+  background-clip: content-box;
+}
+
+/* ------------------------------------------------------------------------
+   3. Liquid Glass chrome — bars, floating controls, toasts, overlays
+   ------------------------------------------------------------------------ */
+.ig27-glass,
+.top, .hdr, .duo-bar, .navmenu,
+#appTop, #tabbar,
+.themeToggle,
+.toast, .easter-toast, .speaking-pill, #__ttsFallbackToast{
+  background: var(--ig27-glass-regular-bg) !important;
+  -webkit-backdrop-filter: blur(var(--ig27-glass-regular-blur)) saturate(var(--ig27-glass-regular-saturate)) !important;
+  backdrop-filter: blur(var(--ig27-glass-regular-blur)) saturate(var(--ig27-glass-regular-saturate)) !important;
+  box-shadow: var(--ig27-glass-regular-shadow), inset 0 0 0 .5px var(--ig27-glass-rim-color) !important;
+  border-color: transparent !important;
+  color: var(--ig27-label-primary);
+}
+/* Bars that span the full width keep only a hairline edge, not a floating shadow */
+.hdr, .duo-bar{
+  box-shadow: inset 0 -.5px 0 var(--ig27-separator) !important;
+}
+/* In-page header = floating glass capsule above the content */
+.top{ padding-left: var(--ig27-content-margin); padding-right: var(--ig27-content-margin); border-radius: var(--ig27-radius-xxl); margin-top: var(--ig27-space-3); }
+
+/* Floating round control (theme switch) */
+.themeToggle{
+  width: var(--ig27-touch-target-min) !important;
+  height: var(--ig27-touch-target-min) !important;
+  border-radius: var(--ig27-radius-full) !important;
+  font-size: var(--ig27-fs-title3) !important;
+  border: 0 !important;
+  cursor: pointer;
+  transition: transform var(--ig27-duration-fast) var(--ig27-ease-spring);
+}
+
+/* Toast-like floating capsules: glass + label color (they used to be solid ink,
+   which vanished in dark mode) */
+.toast, .easter-toast, .speaking-pill, #__ttsFallbackToast{
+  color: var(--ig27-label-primary) !important;
+  border-radius: var(--ig27-radius-full) !important;
+  font: var(--ig27-weight-semibold) var(--ig27-fs-subheadline)/var(--ig27-lh-subheadline) var(--ig27-font-family) !important;
+  letter-spacing: var(--ig27-ls-subheadline) !important;
+}
+
+/* Back / navigation capsule at the top of a page (small glass control) */
+.ig27-back{
+  display: inline-flex; align-items: center; gap: var(--ig27-space-1);
+  min-height: var(--ig27-button-height-medium); padding: 0 var(--ig27-space-4);
+  border-radius: var(--ig27-radius-full); text-decoration: none;
+  font: var(--ig27-weight-semibold) var(--ig27-fs-subheadline)/var(--ig27-lh-subheadline) var(--ig27-font-family);
+  letter-spacing: var(--ig27-ls-subheadline);
+  color: var(--ig27-accent) !important; background: var(--ig27-glass-regular-bg);
+  -webkit-backdrop-filter: blur(var(--ig27-glass-small-blur)) saturate(var(--ig27-glass-regular-saturate));
+  backdrop-filter: blur(var(--ig27-glass-small-blur)) saturate(var(--ig27-glass-regular-saturate));
+  box-shadow: var(--ig27-glass-small-shadow), inset 0 0 0 .5px var(--ig27-glass-rim-color);
+  transition: transform var(--ig27-duration-fast) var(--ig27-ease-spring);
+}
+.ig27-back:active{ transform: scale(var(--ig27-press-scale)); }
+
+/* Modal-ish scrims */
+.ig27-scrim{ background: var(--ig27-scrim); -webkit-backdrop-filter: blur(var(--ig27-glass-small-blur)); backdrop-filter: blur(var(--ig27-glass-small-blur)); }
+
+/* ------------------------------------------------------------------------
+   4. Buttons — full capsule for every action button, tactile feedback
+   ------------------------------------------------------------------------ */
+:is(button, .btn, input[type="submit"], input[type="button"], [role="button"],
+    .chip, .pill, .tabchip, .mode-pill, .level-pill, .order-chip, .profbadge):not(.navcard):not(.lvlcard):not(.modecard):not(.hub-card):not(.abc-card):not(.card){
+  border-radius: var(--ig27-radius-full) !important;
+}
+:where(button, .btn, [role="button"], .chip, .tabchip){
+  -webkit-user-select: none; user-select: none;
+  transition:
+    transform var(--ig27-duration-fast) var(--ig27-ease-spring),
+    background-color var(--ig27-duration-fast) var(--ig27-ease-standard),
+    color var(--ig27-duration-fast) var(--ig27-ease-standard),
+    box-shadow var(--ig27-duration-fast) var(--ig27-ease-standard),
+    filter var(--ig27-duration-fast) var(--ig27-ease-standard);
+}
+:where(button, .btn, [role="button"], .chip, .tabchip):not(:disabled):active{
+  transform: scale(var(--ig27-press-scale));
+}
+@media (hover: hover){
+  :where(button, .btn, [role="button"], .chip, .tabchip):not(:disabled):hover{
+    filter: brightness(1.04) saturate(1.05);
+  }
+}
+:where(button, .btn):disabled{ opacity: .4; cursor: default; }
+
+/* Secondary controls = small glass capsules. They paint with var(--surface);
+   re-pointing --surface locally turns them translucent without touching their
+   selected (.on / primary) states, which paint with var(--primary). */
+:where(.btn-ghost, .chip, .tabchip, .speakbtn, .soundbtn, .soundbtn-sm, .bbk,
+       .navtoggle, .profbadge, .read-toggle, .mode-pill, .level-pill, .bpr){
+  --surface: var(--ig27-glass-regular-bg);
+  -webkit-backdrop-filter: blur(var(--ig27-glass-small-blur)) saturate(var(--ig27-glass-regular-saturate));
+  backdrop-filter: blur(var(--ig27-glass-small-blur)) saturate(var(--ig27-glass-regular-saturate));
+  box-shadow: var(--ig27-glass-small-shadow), inset 0 0 0 .5px var(--ig27-glass-rim-color);
+}
+
+/* Prominent (filled) buttons = tinted glass: accent fill + specular rim */
+:where(.btn-primary, .btn-gold, .tabchip.on, .navtoggle.on, .ig27-btn-primary){
+  background: var(--ig27-accent);
+  color: var(--ig27-on-accent);
+  box-shadow: var(--ig27-shadow-accent), inset 0 1px 0 var(--ig27-highlight);
+}
+
+/* Answer choices / keyboard keys sit INSIDE content cards: gray fill capsule,
+   no backdrop blur (no glass-on-content, and cheap to render by the hundred) */
+:where(.ex-opt, .opt, .quiz-opt, .kbtn, .kbtn-niqqud, .esp-kb-key, .esp-kb-back){
+  min-height: var(--ig27-touch-target-min);
+}
+
+/* ------------------------------------------------------------------------
+   5. Content cards — opaque, rounded, soft elevation; lift on hover
+   ------------------------------------------------------------------------ */
+:where(.navcard, .lvlcard, .modecard){
+  transition: transform var(--ig27-duration-base) var(--ig27-ease-spring), box-shadow var(--ig27-duration-base) var(--ig27-ease-standard);
+}
+@media (hover: hover){
+  :where(.navcard, .lvlcard, .modecard):hover{ transform: translateY(var(--ig27-hover-lift)); box-shadow: var(--ig27-shadow-md); }
+}
+:where(.navcard, .lvlcard, .modecard):active{ transform: scale(var(--ig27-press-scale)); }
+:where(.card, .navcard, .lvlcard, .modecard, .stat-box){
+  animation: ig27-rise var(--ig27-duration-slow) var(--ig27-ease-standard) both;
+}
+
+/* ------------------------------------------------------------------------
+   6. Motion primitives
+   ------------------------------------------------------------------------ */
+@keyframes ig27-fade-in{ from{ opacity: 0; } to{ opacity: 1; } }
+@keyframes ig27-rise{ from{ opacity: 0; transform: translateY(var(--ig27-space-2)); } to{ opacity: 1; transform: none; } }
+@keyframes ig27-pop{ from{ opacity: 0; transform: scale(var(--ig27-press-scale)); } to{ opacity: 1; transform: none; } }
+
+/* ------------------------------------------------------------------------
+   7. Accessibility preferences — every page, not just the hub
+   ------------------------------------------------------------------------ */
+@media (prefers-reduced-motion: reduce){
+  *, *::before, *::after{
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+@media (prefers-reduced-transparency: reduce){
+  .ig27-glass, .top, .hdr, .duo-bar, .navmenu, #appTop, #tabbar, .themeToggle,
+  .toast, .easter-toast, .speaking-pill, #__ttsFallbackToast{
+    background: var(--ig27-bg-secondary) !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+  :where(.btn-ghost, .chip, .tabchip, .speakbtn, .soundbtn, .soundbtn-sm, .bbk,
+         .navtoggle, .profbadge, .read-toggle, .mode-pill, .level-pill, .bpr){
+    --surface: var(--ig27-bg-secondary);
+    -webkit-backdrop-filter: none; backdrop-filter: none;
+  }
+}
+@media (prefers-contrast: more){
+  :root{ --line: var(--ig27-separator-opaque); }
+}

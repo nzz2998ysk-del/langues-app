@@ -19,8 +19,10 @@ services:
         value: raphael.sanguinetti@icloud.com
       - key: BUSINESS_NAME
         value: Mes langues
+      # Transactional email (Resend). Both are set by hand in the Render
+      # dashboard (service -> Environment), never committed: see .env.example.
       - key: EMAIL_FROM
-        value: "Mes langues <onboarding@resend.dev>"
+        sync: false
       - key: RESEND_API_KEY
         sync: false
       - key: STRIPE_SECRET_KEY
