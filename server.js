@@ -735,6 +735,17 @@ app.get("/api/admin/stats", requireAdmin, async (req, res) => {
   });
 });
 
+// List registered accounts for the admin panel. Passwords are hashed with
+// bcrypt (one-way) specifically so they can never be recovered or displayed —
+// not even by an admin — so this intentionally never selects password_hash.
+app.get("/api/admin/users", requireAdmin, async (req, res) => {
+  const result = await pool.query(
+    `SELECT id, email, name, base_lang, subscribed, is_admin, created_at
+     FROM users ORDER BY created_at DESC LIMIT 1000`
+  );
+  return res.json({ users: result.rows });
+});
+
 // ---- payment (Stripe Checkout) ----
 app.post("/api/checkout", async (req, res) => {
   if (!req.userId) return res.status(401).json({ error: "Connecte-toi d'abord." });

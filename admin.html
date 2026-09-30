@@ -5,8 +5,8 @@
 <title>Mes langues — Administration</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','SF Pro Display','Segoe UI',Roboto,sans-serif}
-:root{--ink:#000000;--muted:rgba(60,60,67,.6);--bg:#F2F2F7;--surface:rgba(255,255,255,.72);--primary:#3D348B;--line:rgba(0,0,0,.12);--green:#34C759;--green-soft:rgba(52,199,89,.15);--gold:#FFD60A;}
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--ink:#FFFFFF;--muted:rgba(235,235,245,.6);--bg:#000000;--surface:rgba(28,28,30,.72);--line:rgba(255,255,255,.17);}}
+:root{--ink:#000000;--muted:rgba(60,60,67,.6);--bg:#F2F2F7;--surface:#ffffff;--primary:#3D348B;--line:rgba(0,0,0,.12);--green:#34C759;--green-soft:rgba(52,199,89,.15);--gold:#FFD60A;}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--ink:#FFFFFF;--muted:rgba(235,235,245,.6);--bg:#000000;--surface:#1c1c1e;--line:rgba(255,255,255,.17);}}
 body{background:
     radial-gradient(1000px 480px at 10% -10%, rgba(61,52,139,.08), transparent 60%),
     var(--bg);
@@ -20,13 +20,13 @@ h1{font-size:clamp(26px,2.4vw,34px);font-weight:900;letter-spacing:-.02em}
 @media(min-width:960px){.layout{grid-template-columns:260px 1fr}}
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;align-content:start}
 @media(min-width:960px){.stats{grid-template-columns:1fr}}
-.stat{background:var(--surface);backdrop-filter:saturate(1.8) blur(20px);-webkit-backdrop-filter:saturate(1.8) blur(20px);border:1px solid var(--line);border-radius:20px;padding:18px;text-align:center}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:18px;text-align:center}
 @media(min-width:960px){.stat{text-align:left}}
 .stat b{display:block;font-size:24px;color:var(--primary)}
 .stat span{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:700}
 .panel-title{font-size:13px;padding:14px 0 4px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:800}
 
-.toolbar{background:var(--surface);backdrop-filter:saturate(1.8) blur(20px);-webkit-backdrop-filter:saturate(1.8) blur(20px);border:1px solid var(--line);border-radius:20px;padding:16px 18px;margin-bottom:16px}
+.toolbar{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:16px 18px;margin-bottom:16px}
 .toolbar-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 .toolbar-row + .toolbar-row{margin-top:12px}
 input[type=search]{flex:1;min-width:160px;background:var(--bg);border:1px solid var(--line);border-radius:14px;
@@ -40,7 +40,7 @@ select{background:var(--bg);border:1px solid var(--line);border-radius:14px;padd
 .btn.gold{background:var(--gold);border-color:var(--gold);color:#fff}
 .tb-label{font-size:11.5px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.04em}
 
-.card{background:var(--surface);backdrop-filter:saturate(1.8) blur(20px);-webkit-backdrop-filter:saturate(1.8) blur(20px);border:1px solid var(--line);border-radius:22px;padding:4px 8px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:4px 8px}
 .lang-row{border-bottom:1px solid var(--line)}
 .lang-row:last-child{border-bottom:none}
 .lang-head{display:flex;align-items:center;gap:12px;padding:14px 14px}
@@ -66,6 +66,13 @@ input:checked + .slider:before{transform:translateX(16px)}
 .save-msg{font-size:12.5px;color:var(--green);height:18px;margin-top:10px}
 .empty{padding:20px 14px;color:var(--muted);font-size:13.5px}
 .count-badge{font-size:11.5px;color:var(--muted);margin-bottom:10px}
+.users-table{width:100%;border-collapse:collapse;font-size:13px}
+.users-table th{text-align:left;font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;
+  font-weight:800;padding:10px 12px;border-bottom:1px solid var(--line)}
+.users-table td{padding:10px 12px;border-bottom:1px solid var(--line)}
+.users-table tr:last-child td{border-bottom:none}
+.badge-yes{color:var(--green);font-weight:800}
+.badge-no{color:var(--muted)}
 </style>
 </head>
 <body>
@@ -106,6 +113,15 @@ input:checked + .slider:before{transform:translateX(16px)}
       </div>
       <div class="card" id="featuresList"><div class="empty">Chargement…</div></div>
       <div class="save-msg" id="saveMsg"></div>
+
+      <div class="panel-title">Comptes inscrits</div>
+      <div class="sub" style="margin-bottom:10px">Les mots de passe sont hachés (bcrypt) au moment de l'inscription et ne sont jamais stockés en clair — même un compte administrateur ne peut donc pas les afficher ici. Un utilisateur qui a oublié le sien doit utiliser « Mot de passe oublié ? » sur la page de connexion.</div>
+      <div class="card" style="overflow-x:auto">
+        <table class="users-table" id="usersTable">
+          <thead><tr><th>Email</th><th>Nom</th><th>Inscrit le</th><th>Premium</th><th>Admin</th></tr></thead>
+          <tbody><tr><td colspan="5" class="empty">Chargement…</td></tr></tbody>
+        </table>
+      </div>
     </div>
   </div>
 </div>
@@ -253,8 +269,41 @@ async function bulk(payload, isPremium){
   }
 }
 
+function escHtml(s){
+  return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+  });
+}
+
+async function loadUsers(){
+  var tbody = document.querySelector('#usersTable tbody');
+  var r = await fetch('/api/admin/users');
+  if (!r.ok){
+    tbody.innerHTML = '<tr><td colspan="5" class="empty">Accès refusé.</td></tr>';
+    return;
+  }
+  var data = await r.json();
+  var users = data.users || [];
+  if (!users.length){
+    tbody.innerHTML = '<tr><td colspan="5" class="empty">Aucun compte pour l\'instant.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = users.map(function(u){
+    var date = new Date(u.created_at);
+    var dateStr = date.toLocaleDateString('fr-FR', {year:'numeric', month:'short', day:'numeric'});
+    return '<tr>' +
+      '<td>'+escHtml(u.email)+'</td>' +
+      '<td>'+escHtml(u.name || '—')+'</td>' +
+      '<td>'+dateStr+'</td>' +
+      '<td>'+(u.subscribed ? '<span class="badge-yes">✓ Oui</span>' : '<span class="badge-no">Non</span>')+'</td>' +
+      '<td>'+(u.is_admin ? '<span class="badge-yes">✓ Oui</span>' : '<span class="badge-no">Non</span>')+'</td>' +
+      '</tr>';
+  }).join('');
+}
+
 loadStats();
 loadFeatures();
+loadUsers();
 </script>
 </body>
 </html>
