@@ -23,6 +23,22 @@ sur toutes les langues à la fois). Chaque compte peut aussi réorganiser
 librement l'ordre des cartes de langues sur l'accueil (bouton « ↕️
 Réorganiser », glisser-déposer, ordre sauvegardé par compte).
 
+Indépendamment de ça, chaque langue a aussi un **statut** (`active` ou
+`development`), modifiable à tout moment depuis `/admin` (menu « Statut » sur
+chaque ligne). Une langue en développement est grisée et non cliquable sur
+l'accueil (badge « 🚧 Bientôt »), pratique pendant qu'une langue est encore en
+cours de rédaction — ce changement n'envoie jamais d'email.
+
+## Mon profil / langue de base
+
+Chaque compte a une page `/profile` (lien « 🧑 Profil » sur l'accueil) pour
+choisir son prénom affiché et sa **langue de base** — celle qu'on parle déjà,
+utilisée comme point de départ pour apprendre les autres. Par défaut c'est le
+français (langue dans laquelle l'essentiel du contenu existant est rédigé),
+mais n'importe laquelle des 39 langues peut être choisie ; ça personnalise la
+salutation sur l'accueil. Traduire tout le contenu des leçons dans chaque
+langue de base possible est un chantier à part, pas encore fait.
+
 ## Boîte à idées
 
 Chaque compte peut soumettre une suggestion depuis `/ideas` (lien « 💡 Idées »
@@ -87,6 +103,17 @@ un paiement. À configurer sur Render :
 
 Sans `RESEND_API_KEY`, l'app fonctionne normalement mais aucun email n'est
 envoyé (juste un avertissement dans les logs).
+
+## Mot de passe oublié
+
+Un lien « Mot de passe oublié ? » sur la page de connexion envoie un email
+(même template Resend) avec un lien de réinitialisation valable 1 heure
+(`POST /api/forgot-password`, puis `/reset-password?token=...` →
+`POST /api/reset-password`). Le token est stocké haché (SHA-256) en base,
+à usage unique, et la réponse de `/api/forgot-password` est volontairement
+identique que l'email existe ou non (pas d'énumération de comptes).
+`APP_URL` (par défaut `https://langues-app.onrender.com`) sert à construire
+le lien dans l'email — à ajuster si le domaine change.
 
 ## Paiement par abonnement (Stripe) + factures
 
