@@ -11,6 +11,7 @@
   var RTL = { ar: 1, he: 1 };
 
   D.fr = {
+    data_title: "Mes données", data_lead: "Tu peux télécharger tout ce que l'application enregistre sur toi, déconnecter tous tes appareils ou supprimer définitivement ton compte.", data_export: "Télécharger mes données", logout_all: "Déconnecter tous les appareils", delete_account: "Supprimer mon compte", delete_lead: "La suppression efface ton compte, ta progression et tes idées. Les factures sont conservées pour la comptabilité, sans lien avec ton compte. Confirme avec ton mot de passe.", delete_pw_ph: "Ton mot de passe", delete_confirm: "Supprimer définitivement ton compte ? Cette action est irréversible.", wrong_password: "Mot de passe incorrect.", email_unverified: "Adresse email non confirmée : clique sur le lien reçu par email.",
     sub_btn: "S'abonner", sub_no_commit: "Sans engagement, annulable à tout moment", sub_no_ads: "Aucune publicité, jamais", sub_canceled: "Paiement annulé.", sub_success: "Paiement reçu, merci ! Ton accès premium est actif.", sub_redirect: "Redirection…", sub_unavailable: "Le paiement n'est pas encore disponible.",
     load_error: "Impossible de charger ce module.", loading: "Chargement…",
     learn_lang: "Apprendre : {lang}", modules: "Modules", go_premium: "Premium", speaking: "Lecture audio…", listen: "Écouter",
@@ -61,6 +62,7 @@
   };
 
   D.en = {
+    data_title: "My data", data_lead: "You can download everything the app stores about you, log out of all your devices or permanently delete your account.", data_export: "Download my data", logout_all: "Log out of all devices", delete_account: "Delete my account", delete_lead: "Deleting erases your account, progress and ideas. Invoices are kept for accounting, no longer linked to your account. Confirm with your password.", delete_pw_ph: "Your password", delete_confirm: "Permanently delete your account? This cannot be undone.", wrong_password: "Wrong password.", email_unverified: "Email address not confirmed: click the link we emailed you.",
     sub_btn: "Subscribe", sub_no_commit: "No commitment, cancel anytime", sub_no_ads: "No ads, ever", sub_canceled: "Payment canceled.", sub_success: "Payment received, thank you! Your Premium access is active.", sub_redirect: "Redirecting…", sub_unavailable: "Payment isn't available yet.",
     load_error: "This module could not be loaded.", loading: "Loading…",
     learn_lang: "Learning: {lang}", modules: "Modules", go_premium: "Premium", speaking: "Playing audio…", listen: "Listen",

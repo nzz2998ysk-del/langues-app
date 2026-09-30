@@ -1,4 +1,5 @@
 I18N.add("ja", {
+  data_title: "マイデータ", data_lead: "アプリが保存しているあなたのデータのダウンロード、すべての端末からのログアウト、アカウントの完全削除ができます。", data_export: "データをダウンロード", logout_all: "すべての端末からログアウト", delete_account: "アカウントを削除", delete_lead: "削除するとアカウント・進捗・アイデアが消去されます。請求書は会計のため、アカウントと切り離して保管されます。パスワードで確認してください。", delete_pw_ph: "パスワード", delete_confirm: "アカウントを完全に削除しますか？元に戻せません。", wrong_password: "パスワードが違います。", email_unverified: "メールアドレスが未確認です：届いたメールのリンクをクリックしてください。",
   sub_btn: "登録する", sub_no_commit: "縛りなし、いつでも解約可能", sub_no_ads: "広告は一切なし", sub_canceled: "支払いがキャンセルされました。", sub_success: "お支払いを受け付けました。プレミアムが有効になりました！", sub_redirect: "移動中…", sub_unavailable: "お支払いはまだご利用いただけません。",
   load_error: "このモジュールを読み込めませんでした。", loading: "読み込み中…",
   learn_lang: "{lang}を学ぶ", modules: "モジュール", go_premium: "プレミアム", speaking: "音声を再生中…", listen: "聞く",

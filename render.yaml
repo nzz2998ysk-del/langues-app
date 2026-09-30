@@ -15,8 +15,9 @@ services:
         fromDatabase:
           name: langues-app-db
           property: connectionString
+      # Set by hand in the Render dashboard (kept out of the repository).
       - key: ADMIN_EMAIL
-        value: raphael.sanguinetti@icloud.com
+        sync: false
       - key: BUSINESS_NAME
         value: Mes langues
       # Transactional email (Resend). Both are set by hand in the Render

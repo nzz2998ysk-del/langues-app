@@ -1,4 +1,5 @@
 I18N.add("tr", {
+  data_title: "Verilerim", data_lead: "Uygulamanın senin hakkında sakladığı her şeyi indirebilir, tüm cihazlardan çıkış yapabilir veya hesabını kalıcı olarak silebilirsin.", data_export: "Verilerimi indir", logout_all: "Tüm cihazlardan çıkış yap", delete_account: "Hesabımı sil", delete_lead: "Silme işlemi hesabını, ilerlemeni ve fikirlerini siler. Faturalar muhasebe için hesabınla bağlantısız saklanır. Şifrenle onayla.", delete_pw_ph: "Şifren", delete_confirm: "Hesabın kalıcı olarak silinsin mi? Bu işlem geri alınamaz.", wrong_password: "Şifre yanlış.", email_unverified: "E-posta doğrulanmadı: sana gönderdiğimiz bağlantıya tıkla.",
   sub_btn: "Abone ol", sub_no_commit: "Taahhüt yok, istediğin zaman iptal et", sub_no_ads: "Asla reklam yok", sub_canceled: "Ödeme iptal edildi.", sub_success: "Ödeme alındı, teşekkürler! Premium erişimin aktif.", sub_redirect: "Yönlendiriliyor…", sub_unavailable: "Ödeme henüz kullanılamıyor.",
   load_error: "Bu modül yüklenemedi.", loading: "Yükleniyor…",
   learn_lang: "Öğren: {lang}", modules: "Modüller", go_premium: "Premium", speaking: "Ses çalınıyor…", listen: "Dinle",

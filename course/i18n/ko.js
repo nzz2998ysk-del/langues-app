@@ -1,4 +1,5 @@
 I18N.add("ko", {
+  data_title: "내 데이터", data_lead: "앱이 저장한 내 데이터를 모두 내려받거나, 모든 기기에서 로그아웃하거나, 계정을 영구 삭제할 수 있습니다.", data_export: "내 데이터 내려받기", logout_all: "모든 기기에서 로그아웃", delete_account: "계정 삭제", delete_lead: "삭제하면 계정, 진도, 아이디어가 지워집니다. 청구서는 회계를 위해 계정과 분리해 보관됩니다. 비밀번호로 확인하세요.", delete_pw_ph: "비밀번호", delete_confirm: "계정을 영구 삭제할까요? 되돌릴 수 없습니다.", wrong_password: "비밀번호가 틀렸습니다.", email_unverified: "이메일 미인증: 받은 메일의 링크를 눌러 주세요.",
   sub_btn: "구독하기", sub_no_commit: "약정 없음, 언제든 해지 가능", sub_no_ads: "광고 없음", sub_canceled: "결제가 취소되었습니다.", sub_success: "결제가 완료되었습니다. 프리미엄이 활성화되었습니다!", sub_redirect: "이동 중…", sub_unavailable: "아직 결제를 이용할 수 없습니다.",
   load_error: "이 모듈을 불러올 수 없습니다.", loading: "불러오는 중…",
   learn_lang: "{lang} 배우기", modules: "모듈", go_premium: "프리미엄", speaking: "오디오 재생 중…", listen: "듣기",

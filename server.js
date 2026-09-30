@@ -21,10 +21,19 @@ const JWT_SECRET = process.env.JWT_SECRET;
 const DATABASE_URL = process.env.DATABASE_URL;
 const COOKIE_NAME = "langues_session";
 const isProd = process.env.NODE_ENV === "production";
-const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || "raphael.sanguinetti@icloud.com").toLowerCase();
+// Account that becomes administrator — only once it has proved it owns the
+// address (email verification link or password-reset link), so nobody can
+// pre-register this address and grab the admin role. No hard-coded default.
+const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || "").trim().toLowerCase();
 const BUSINESS_NAME = process.env.BUSINESS_NAME || "Mes langues";
 // Where the daily "boîte à idées" digest is sent. Defaults to the admin account.
 const DIGEST_EMAIL = (process.env.DIGEST_EMAIL || ADMIN_EMAIL).toLowerCase();
+// Minimum length for new passwords (signup, reset). Existing shorter passwords
+// still log in; they are simply not accepted any more for new ones.
+const MIN_PASSWORD = 8;
+// Email-verification links (sent in the welcome email) stay valid this long.
+const VERIFY_TOKEN_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+const hasOwn = (obj, key) => typeof key === "string" && Object.prototype.hasOwnProperty.call(obj, key);
 // Local hour (Europe/Paris) after which the in-process scheduler sends the digest.
 const DIGEST_HOUR_LOCAL = parseInt(process.env.DIGEST_HOUR_LOCAL || "22", 10);
 // Optional shared secret so an external scheduler (e.g. a Render Cron Job) can trigger
@@ -97,9 +106,16 @@ if (!DATABASE_URL) {
   process.exit(1);
 }
 
+// TLS to the database. Render's managed Postgres uses a certificate Node does
+// not know, hence rejectUnauthorized:false by default; set DATABASE_SSL_CA (PEM)
+// to verify the server certificate strictly.
 const pool = new Pool({
   connectionString: DATABASE_URL,
-  ssl: DATABASE_URL.includes("localhost") ? false : { rejectUnauthorized: false },
+  ssl: DATABASE_URL.includes("localhost")
+    ? false
+    : process.env.DATABASE_SSL_CA
+      ? { rejectUnauthorized: true, ca: process.env.DATABASE_SSL_CA }
+      : { rejectUnauthorized: false },
 });
 
 // Access model: every language is free at a basic level for every account.
@@ -219,8 +235,44 @@ async function initDb() {
     );
   `);
 
-  // Make sure the designated admin account is always an admin, if it already signed up.
-  await pool.query(`UPDATE users SET is_admin = TRUE WHERE email = $1`, [ADMIN_EMAIL]);
+  // ---- account security: email ownership, session revocation, Stripe ids ----
+  await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verified BOOLEAN NOT NULL DEFAULT FALSE;`);
+  await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS verify_token_hash TEXT;`);
+  await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS verify_token_expires TIMESTAMPTZ;`);
+  // Bumped on password reset / "log out everywhere": every older session token dies.
+  await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS token_version INTEGER NOT NULL DEFAULT 0;`);
+  await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS stripe_customer_id TEXT;`);
+  await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS stripe_subscription_id TEXT;`);
+  // Admins that already exist keep their role (it was granted before email
+  // verification existed); new grants require a verified address.
+  await pool.query("UPDATE users SET email_verified = TRUE WHERE is_admin = TRUE AND email_verified = FALSE");
+  if (ADMIN_EMAIL) {
+    await pool.query(`UPDATE users SET is_admin = TRUE WHERE email = $1 AND email_verified = TRUE`, [ADMIN_EMAIL]);
+  } else {
+    console.warn("[admin] ADMIN_EMAIL not set - no account will be granted the administrator role.");
+  }
+
+  // GDPR: deleting an account removes its ideas and progress; invoices are kept
+  // for accounting but detached from the (deleted) account.
+  await pool.query(`ALTER TABLE payments ALTER COLUMN user_id DROP NOT NULL;`);
+  await pool.query(`ALTER TABLE payments DROP CONSTRAINT IF EXISTS payments_user_id_fkey;`);
+  await pool.query(`ALTER TABLE payments ADD CONSTRAINT payments_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL;`);
+  await pool.query(`ALTER TABLE suggestions DROP CONSTRAINT IF EXISTS suggestions_user_id_fkey;`);
+  await pool.query(`ALTER TABLE suggestions ADD CONSTRAINT suggestions_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;`);
+
+  // Audit trail of every administrator action.
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS admin_audit (
+      id SERIAL PRIMARY KEY,
+      admin_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+      admin_email TEXT NOT NULL,
+      action TEXT NOT NULL,
+      target TEXT NOT NULL DEFAULT '',
+      details JSONB NOT NULL DEFAULT '{}'::jsonb,
+      ip TEXT NOT NULL DEFAULT '',
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+  `);
 
   // ---- Boîte à idées: moderation fields for the admin dashboard ----
   await pool.query(`ALTER TABLE suggestions ADD COLUMN IF NOT EXISTS category TEXT NOT NULL DEFAULT 'autre';`);
@@ -278,6 +330,18 @@ async function initDb() {
 const app = express();
 app.set("trust proxy", 1);
 
+// Express 4 does not catch errors thrown by async handlers: an unexpected
+// database error would become an unhandled rejection and crash the process.
+// Every async route handler is wrapped so errors reach the JSON error handler.
+for (const method of ["get", "post", "put", "patch", "delete"]) {
+  const original = app[method].bind(app);
+  app[method] = (route, ...handlers) =>
+    original(route, ...handlers.map((h) =>
+      typeof h === "function" && h.constructor.name === "AsyncFunction"
+        ? (req, res, next) => h(req, res, next).catch(next)
+        : h));
+}
+
 // Stripe webhooks need the raw request body to verify the signature, so this route
 // is wired up with express.raw() BEFORE the global express.json() middleware below.
 app.post("/api/webhooks/stripe", express.raw({ type: "application/json" }), async (req, res) => {
@@ -286,18 +350,32 @@ app.post("/api/webhooks/stripe", express.raw({ type: "application/json" }), asyn
     event = stripeLib.verifyWebhookSignature(req.body.toString("utf8"), req.headers["stripe-signature"]);
   } catch (err) {
     console.error("stripe webhook signature verification failed:", err.message);
-    return res.status(400).send(`Webhook Error: ${err.message}`);
+    return res.status(400).json({ error: "invalid signature" });
   }
 
   try {
+    // Subscription ended or no longer paid: Premium is withdrawn.
+    if (event.type === "customer.subscription.deleted" || event.type === "customer.subscription.updated") {
+      const sub = event.data.object;
+      const active = event.type === "customer.subscription.updated" && ["active", "trialing"].includes(sub.status);
+      await pool.query(
+        "UPDATE users SET subscribed = $1 WHERE stripe_subscription_id = $2 OR (stripe_subscription_id IS NULL AND stripe_customer_id = $3)",
+        [active, sub.id, sub.customer || ""]
+      );
+      return res.json({ received: true });
+    }
     if (event.type === "checkout.session.completed") {
       const session = event.data.object;
       const userId = parseInt(session.client_reference_id, 10);
-      if (userId) {
+      const paid = session.payment_status === "paid" || session.payment_status === "no_payment_required";
+      if (userId && paid) {
         const result = await pool.query("SELECT id, email FROM users WHERE id = $1", [userId]);
         const user = result.rows[0];
         if (user) {
-          await pool.query("UPDATE users SET subscribed = TRUE WHERE id = $1", [userId]);
+          await pool.query(
+            "UPDATE users SET subscribed = TRUE, stripe_customer_id = COALESCE($2, stripe_customer_id), stripe_subscription_id = COALESCE($3, stripe_subscription_id) WHERE id = $1",
+            [userId, session.customer || null, session.subscription || null]
+          );
           const amount = session.amount_total || 0;
           const currency = session.currency || "eur";
           const invoiceNumber = `INV-${new Date().getFullYear()}-${String(userId).padStart(4, "0")}-${Date.now()
@@ -333,6 +411,27 @@ app.post("/api/webhooks/stripe", express.raw({ type: "application/json" }), asyn
 
 app.use(express.json({ limit: "200kb" }));
 app.use(cookieParser());
+
+// API responses carry personal data: never store them in shared caches.
+app.use("/api", (req, res, next) => {
+  res.setHeader("Cache-Control", "no-store");
+  next();
+});
+
+// CSRF defense in depth (on top of SameSite=Lax cookies and JSON-only bodies):
+// a state-changing request coming from another site is refused.
+const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
+app.use((req, res, next) => {
+  if (SAFE_METHODS.has(req.method) || req.path === "/api/webhooks/stripe" || req.path === "/api/internal/send-digest") return next();
+  if (req.get("sec-fetch-site") === "cross-site") return res.status(403).json({ error: "Requête refusée." });
+  const origin = req.get("origin");
+  if (origin) {
+    let host = "";
+    try { host = new URL(origin).host; } catch (e) { /* malformed */ }
+    if (host !== req.get("host")) return res.status(403).json({ error: "Requête refusée." });
+  }
+  next();
+});
 
 // ---- baseline security headers (A05: Security Misconfiguration) ----
 app.disable("x-powered-by");
@@ -402,22 +501,71 @@ setInterval(() => {
 }, 60000).unref();
 
 function signSession(user) {
-  return jwt.sign({ uid: user.id, email: user.email }, JWT_SECRET, { expiresIn: "30d", algorithm: "HS256" });
+  return jwt.sign({ uid: user.id, email: user.email, tv: user.token_version || 0 }, JWT_SECRET, { expiresIn: "30d", algorithm: "HS256" });
+}
+function setSessionCookie(res, user) {
+  res.cookie(COOKIE_NAME, signSession(user), {
+    httpOnly: true,
+    secure: isProd,
+    sameSite: "lax",
+    maxAge: 30 * 24 * 60 * 60 * 1000,
+  });
 }
 
-function authMiddleware(req, res, next) {
+// Session tokens embed the account's token_version: bumping it (password reset,
+// "log out everywhere", account deletion) revokes every token issued before.
+// A short cache avoids one extra query per request.
+const tokenVersionCache = new Map();
+async function currentTokenVersion(uid) {
+  const hit = tokenVersionCache.get(uid);
+  if (hit && hit.exp > Date.now()) return hit.v;
+  const r = await pool.query("SELECT token_version FROM users WHERE id = $1", [uid]);
+  const v = r.rows[0] ? r.rows[0].token_version : null;
+  tokenVersionCache.set(uid, { v, exp: Date.now() + 30000 });
+  return v;
+}
+async function revokeSessions(uid) {
+  await pool.query("UPDATE users SET token_version = token_version + 1 WHERE id = $1", [uid]);
+  tokenVersionCache.delete(uid);
+}
+setInterval(() => {
+  const now = Date.now();
+  for (const [k, v] of tokenVersionCache) if (v.exp < now) tokenVersionCache.delete(k);
+}, 60000).unref();
+
+async function authMiddleware(req, res, next) {
   const token = req.cookies[COOKIE_NAME];
   if (!token) return next();
+  let payload;
   try {
-    const payload = jwt.verify(token, JWT_SECRET, { algorithms: ["HS256"] });
-    req.userId = payload.uid;
-    req.userEmail = payload.email;
+    payload = jwt.verify(token, JWT_SECRET, { algorithms: ["HS256"] });
   } catch (e) {
-    // invalid/expired token: treat as logged out
+    return next(); // invalid/expired token: treat as logged out
   }
-  next();
+  try {
+    const v = await currentTokenVersion(payload.uid);
+    if (v !== null && v === (payload.tv || 0)) {
+      req.userId = payload.uid;
+      req.userEmail = payload.email;
+    }
+    next();
+  } catch (err) {
+    next(err);
+  }
 }
 app.use(authMiddleware);
+
+// Records an administrator action (who, what, on what) in admin_audit.
+async function audit(req, action, target, details) {
+  try {
+    await pool.query(
+      "INSERT INTO admin_audit (admin_id, admin_email, action, target, details, ip) VALUES ($1, $2, $3, $4, $5, $6)",
+      [req.userId, req.userEmail || "", action, String(target || ""), JSON.stringify(details || {}), req.ip || ""]
+    );
+  } catch (err) {
+    console.error("audit log error:", err.message);
+  }
+}
 
 async function requireAdmin(req, res, next) {
   if (!req.userId) return res.status(401).json({ error: "Connecte-toi d'abord." });
@@ -451,8 +599,8 @@ app.post("/api/signup", async (req, res) => {
     if (!EMAIL_RE.test(email) || email.length > 254) {
       return res.status(400).json({ error: "Adresse email invalide." });
     }
-    if (password.length < 6 || password.length > 200) {
-      return res.status(400).json({ error: "Le mot de passe doit contenir au moins 6 caractères." });
+    if (password.length < MIN_PASSWORD || password.length > 200) {
+      return res.status(400).json({ error: `Le mot de passe doit contenir au moins ${MIN_PASSWORD} caractères.` });
     }
 
     const existing = await pool.query("SELECT id FROM users WHERE email = $1", [email]);
@@ -461,25 +609,20 @@ app.post("/api/signup", async (req, res) => {
     }
 
     const hash = await bcrypt.hash(password, 12);
-    const isAdmin = email === ADMIN_EMAIL;
+    // Never admin at signup: the admin role needs a verified address (see verify-email).
+    const rawVerify = crypto.randomBytes(32).toString("hex");
     const result = await pool.query(
-      "INSERT INTO users (email, password_hash, name, is_admin) VALUES ($1, $2, $3, $4) RETURNING id, email",
-      [email, hash, name || null, isAdmin]
+      `INSERT INTO users (email, password_hash, name, is_admin, verify_token_hash, verify_token_expires)
+       VALUES ($1, $2, $3, FALSE, $4, $5) RETURNING id, email, token_version`,
+      [email, hash, name || null, hashResetToken(rawVerify), new Date(Date.now() + VERIFY_TOKEN_TTL_MS)]
     );
     const user = result.rows[0];
-
-    const token = signSession(user);
-    res.cookie(COOKIE_NAME, token, {
-      httpOnly: true,
-      secure: isProd,
-      sameSite: "lax",
-      maxAge: 30 * 24 * 60 * 60 * 1000,
-    });
+    setSessionCookie(res, user);
 
     sendEmail({
       to: user.email,
       subject: `Bienvenue sur ${BUSINESS_NAME}`,
-      html: welcomeEmailHtml(name),
+      html: welcomeEmailHtml(name, `${APP_URL}/api/verify-email?token=${rawVerify}`),
     }).catch(() => {});
 
     return res.status(201).json({ ok: true });
@@ -510,7 +653,7 @@ app.post("/api/login", async (req, res) => {
     }
 
     const result = await pool.query(
-      "SELECT id, email, password_hash FROM users WHERE email = $1",
+      "SELECT id, email, password_hash, email_verified, token_version FROM users WHERE email = $1",
       [email]
     );
     const user = result.rows[0];
@@ -521,17 +664,11 @@ app.post("/api/login", async (req, res) => {
       return res.status(401).json({ error: "Email ou mot de passe incorrect." });
     }
 
-    if (email === ADMIN_EMAIL) {
+    if (ADMIN_EMAIL && email === ADMIN_EMAIL && user.email_verified) {
       await pool.query("UPDATE users SET is_admin = TRUE WHERE id = $1", [user.id]);
     }
 
-    const token = signSession(user);
-    res.cookie(COOKIE_NAME, token, {
-      httpOnly: true,
-      secure: isProd,
-      sameSite: "lax",
-      maxAge: 30 * 24 * 60 * 60 * 1000,
-    });
+    setSessionCookie(res, user);
     return res.json({ ok: true });
   } catch (err) {
     console.error("login error:", err);
@@ -540,14 +677,42 @@ app.post("/api/login", async (req, res) => {
 });
 
 app.post("/api/logout", (req, res) => {
-  res.clearCookie(COOKIE_NAME);
+  res.clearCookie(COOKIE_NAME, { httpOnly: true, secure: isProd, sameSite: "lax" });
   res.json({ ok: true });
+});
+
+// Revokes every session of the account (all devices), then logs out this one.
+app.post("/api/logout-all", async (req, res) => {
+  if (!req.userId) return res.status(401).json({ error: "Connecte-toi d'abord." });
+  await revokeSessions(req.userId);
+  res.clearCookie(COOKIE_NAME, { httpOnly: true, secure: isProd, sameSite: "lax" });
+  return res.json({ ok: true });
 });
 
 // ---- forgot / reset password ----
 function hashResetToken(rawToken) {
   return crypto.createHash("sha256").update(rawToken).digest("hex");
 }
+
+// Email ownership proof (link sent in the welcome email). The designated
+// ADMIN_EMAIL account only becomes administrator once this is done.
+app.get("/api/verify-email", async (req, res) => {
+  const ip = req.ip || "unknown";
+  if (rateLimited("verify-email:" + ip, 20, 15 * 60 * 1000)) return res.status(429).send("Trop de tentatives.");
+  const token = String(req.query.token || "");
+  if (!/^[a-f0-9]{64}$/.test(token)) return res.redirect("/?verified=0");
+  const r = await pool.query(
+    `UPDATE users SET email_verified = TRUE, verify_token_hash = NULL, verify_token_expires = NULL
+      WHERE verify_token_hash = $1 AND verify_token_expires > NOW() RETURNING id, email`,
+    [hashResetToken(token)]
+  );
+  const user = r.rows[0];
+  if (!user) return res.redirect("/?verified=0");
+  if (ADMIN_EMAIL && user.email === ADMIN_EMAIL) {
+    await pool.query("UPDATE users SET is_admin = TRUE WHERE id = $1", [user.id]);
+  }
+  return res.redirect("/?verified=1");
+});
 
 app.post("/api/forgot-password", async (req, res) => {
   try {
@@ -601,12 +766,12 @@ app.post("/api/reset-password", async (req, res) => {
     const token = String((req.body && req.body.token) || "");
     const password = String((req.body && req.body.password) || "");
     if (!token) return res.status(400).json({ error: "Lien invalide." });
-    if (password.length < 6 || password.length > 200) {
-      return res.status(400).json({ error: "Le mot de passe doit contenir au moins 6 caractères." });
+    if (password.length < MIN_PASSWORD || password.length > 200) {
+      return res.status(400).json({ error: `Le mot de passe doit contenir au moins ${MIN_PASSWORD} caractères.` });
     }
     const tokenHash = hashResetToken(token);
     const result = await pool.query(
-      "SELECT id FROM users WHERE reset_token_hash = $1 AND reset_token_expires > NOW()",
+      "SELECT id, email FROM users WHERE reset_token_hash = $1 AND reset_token_expires > NOW()",
       [tokenHash]
     );
     const user = result.rows[0];
@@ -614,10 +779,15 @@ app.post("/api/reset-password", async (req, res) => {
       return res.status(400).json({ error: "Ce lien a expiré ou n'est plus valide. Refais une demande." });
     }
     const hash = await bcrypt.hash(password, 12);
+    // The reset link proves ownership of the address; every existing session
+    // (possibly an attacker's) is revoked.
     await pool.query(
-      "UPDATE users SET password_hash = $1, reset_token_hash = NULL, reset_token_expires = NULL WHERE id = $2",
-      [hash, user.id]
+      `UPDATE users SET password_hash = $1, reset_token_hash = NULL, reset_token_expires = NULL,
+              email_verified = TRUE, is_admin = is_admin OR ($3 <> '' AND email = $3)
+        WHERE id = $2`,
+      [hash, user.id, ADMIN_EMAIL]
     );
+    await revokeSessions(user.id);
     return res.json({ ok: true });
   } catch (err) {
     console.error("reset-password error:", err);
@@ -629,7 +799,7 @@ app.get("/api/me", async (req, res) => {
   if (!req.userId) return res.status(401).json({ authenticated: false });
   try {
     const result = await pool.query(
-      "SELECT id, email, name, subscribed, is_admin, lang_order, base_lang FROM users WHERE id = $1",
+      "SELECT id, email, name, subscribed, is_admin, lang_order, base_lang, email_verified FROM users WHERE id = $1",
       [req.userId]
     );
     const user = result.rows[0];
@@ -651,6 +821,7 @@ app.get("/api/me", async (req, res) => {
       isAdmin: user.is_admin,
       langOrder,
       baseLang: user.base_lang || "fr",
+      emailVerified: user.email_verified,
     });
   } catch (err) {
     console.error("me error:", err);
@@ -689,7 +860,7 @@ app.put("/api/profile", async (req, res) => {
   const body = req.body || {};
   const name = typeof body.name === "string" ? body.name.trim().slice(0, 80) : undefined;
   const baseLang = typeof body.baseLang === "string" ? body.baseLang.trim().toLowerCase() : undefined;
-  if (baseLang !== undefined && !LANG_META[baseLang]) {
+  if (baseLang !== undefined && !hasOwn(LANG_META, baseLang)) {
     return res.status(400).json({ error: "Langue de base inconnue." });
   }
   try {
@@ -705,6 +876,47 @@ app.put("/api/profile", async (req, res) => {
     console.error("profile error:", err);
     return res.status(500).json({ error: "Erreur serveur." });
   }
+});
+
+// ---- GDPR: data export and account deletion ----
+// Everything stored about the account, as a downloadable JSON file.
+app.get("/api/account/export", async (req, res) => {
+  if (!req.userId) return res.status(401).json({ error: "Connecte-toi d'abord." });
+  if (rateLimited("export:" + req.userId, 10, 60 * 60 * 1000)) return res.status(429).json({ error: "Trop de requêtes." });
+  const u = await pool.query(
+    "SELECT id, email, name, base_lang, lang_order, subscribed, is_admin, email_verified, created_at FROM users WHERE id = $1",
+    [req.userId]
+  );
+  if (!u.rows[0]) return res.status(404).json({ error: "Compte introuvable." });
+  const progress = await pool.query("SELECT lang, data, updated_at FROM user_progress WHERE user_id = $1 ORDER BY lang", [req.userId]);
+  const ideas = await pool.query("SELECT message, category, status, created_at FROM suggestions WHERE user_id = $1 ORDER BY created_at", [req.userId]);
+  const payments = await pool.query("SELECT invoice_number, amount_cents, currency, created_at FROM payments WHERE user_id = $1 ORDER BY created_at", [req.userId]);
+  res.setHeader("Content-Disposition", 'attachment; filename="mes-donnees.json"');
+  return res.json({
+    exportedAt: new Date().toISOString(),
+    account: u.rows[0],
+    progress: progress.rows,
+    ideas: ideas.rows,
+    payments: payments.rows,
+  });
+});
+
+// Permanently deletes the account (password required). Progress and ideas are
+// deleted with it; invoices are kept for accounting, detached from the account.
+app.delete("/api/account", async (req, res) => {
+  if (!req.userId) return res.status(401).json({ error: "Connecte-toi d'abord." });
+  if (rateLimited("delete-account:" + req.userId, 5, 15 * 60 * 1000)) return res.status(429).json({ error: "Trop de tentatives." });
+  const password = String((req.body && req.body.password) || "");
+  const u = await pool.query("SELECT id, password_hash, is_admin FROM users WHERE id = $1", [req.userId]);
+  const user = u.rows[0];
+  if (!user) return res.status(404).json({ error: "Compte introuvable." });
+  if (!password || !(await bcrypt.compare(password, user.password_hash))) {
+    return res.status(403).json({ error: "Mot de passe incorrect." });
+  }
+  await pool.query("DELETE FROM users WHERE id = $1", [user.id]);
+  tokenVersionCache.delete(user.id);
+  res.clearCookie(COOKIE_NAME, { httpOnly: true, secure: isProd, sameSite: "lax" });
+  return res.json({ ok: true });
 });
 
 // ---- features (free/premium toggles) ----
@@ -751,7 +963,7 @@ async function accessFor(userId) {
 app.get("/api/course/:lang", async (req, res) => {
   if (!req.userId) return res.status(401).json({ error: "Connecte-toi d'abord." });
   const code = String(req.params.lang);
-  if (!LANG_META[code]) return res.status(404).json({ error: "Langue inconnue." });
+  if (!hasOwn(LANG_META, code)) return res.status(404).json({ error: "Langue inconnue." });
   try {
     const access = await accessFor(req.userId);
     if (!access) return res.status(401).json({ error: "Session invalide." });
@@ -782,7 +994,7 @@ app.get("/api/course/:lang", async (req, res) => {
 // opaque JSON document per account and language, owned by course/engine.js.
 app.get("/api/progress/:lang", async (req, res) => {
   if (!req.userId) return res.status(401).json({ error: "Connecte-toi d'abord." });
-  if (!LANG_META[req.params.lang]) return res.status(404).json({ error: "Langue inconnue." });
+  if (!hasOwn(LANG_META, req.params.lang)) return res.status(404).json({ error: "Langue inconnue." });
   try {
     const r = await pool.query("SELECT data, updated_at FROM user_progress WHERE user_id = $1 AND lang = $2", [req.userId, req.params.lang]);
     return res.json(r.rows[0] ? { data: r.rows[0].data, updatedAt: r.rows[0].updated_at } : { data: null });
@@ -793,7 +1005,7 @@ app.get("/api/progress/:lang", async (req, res) => {
 });
 app.put("/api/progress/:lang", async (req, res) => {
   if (!req.userId) return res.status(401).json({ error: "Connecte-toi d'abord." });
-  if (!LANG_META[req.params.lang]) return res.status(404).json({ error: "Langue inconnue." });
+  if (!hasOwn(LANG_META, req.params.lang)) return res.status(404).json({ error: "Langue inconnue." });
   if (rateLimited("progress:" + req.userId, 240, 15 * 60 * 1000)) return res.status(429).json({ error: "Trop de sauvegardes." });
   const data = req.body && req.body.data;
   if (!data || typeof data !== "object" || Array.isArray(data)) return res.status(400).json({ error: "Données invalides." });
@@ -815,10 +1027,11 @@ app.put("/api/progress/:lang", async (req, res) => {
 app.get("/api/vocabulary", async (req, res) => {
   if (!req.userId) return res.status(401).json({ error: "Connecte-toi d'abord." });
   const lang = String(req.query.lang || "");
-  if (!LANG_META[lang]) return res.status(400).json({ error: "Langue inconnue." });
+  if (!hasOwn(LANG_META, lang)) return res.status(400).json({ error: "Langue inconnue." });
   const levels = String(req.query.level || "").split(",").filter((l) => LEVELS.includes(l));
   const q = String(req.query.q || "").trim().slice(0, 60);
-  const sort = { level: "eff_level, word", alpha: "word", theme: "theme, eff_level, word" }[req.query.sort] || "eff_level, word";
+  const SORTS = { level: "eff_level, word", alpha: "word", theme: "theme, eff_level, word" };
+  const sort = hasOwn(SORTS, req.query.sort) ? SORTS[req.query.sort] : SORTS.level;
   const limit = Math.min(parseInt(req.query.limit, 10) || 200, 500);
   const offset = Math.max(parseInt(req.query.offset, 10) || 0, 0);
   try {
@@ -848,7 +1061,7 @@ app.get("/api/vocabulary", async (req, res) => {
 // ---- Admin: CEFR level of any word ----
 app.get("/api/admin/vocabulary", requireAdmin, async (req, res) => {
   const lang = String(req.query.lang || "");
-  if (!LANG_META[lang]) return res.status(400).json({ error: "Langue inconnue." });
+  if (!hasOwn(LANG_META, lang)) return res.status(400).json({ error: "Langue inconnue." });
   const q = String(req.query.q || "").trim().slice(0, 60);
   const level = LEVELS.includes(req.query.level) ? req.query.level : "";
   const r = await pool.query(
@@ -866,11 +1079,13 @@ app.get("/api/admin/vocabulary", requireAdmin, async (req, res) => {
 app.put("/api/admin/vocabulary/:lang/:wordId", requireAdmin, async (req, res) => {
   const level = req.body && req.body.level;
   if (level !== null && !LEVELS.includes(level)) return res.status(400).json({ error: "Niveau invalide." });
+  if (!hasOwn(LANG_META, req.params.lang)) return res.status(400).json({ error: "Langue inconnue." });
   const r = await pool.query(
     "UPDATE course_words SET level_override = $1, updated_at = NOW() WHERE lang = $2 AND word_id = $3 RETURNING word_id, level, level_override",
     [level, req.params.lang, req.params.wordId]
   );
   if (!r.rows[0]) return res.status(404).json({ error: "Mot introuvable." });
+  await audit(req, "word.level", `${req.params.lang}:${req.params.wordId}`, { level });
   return res.json({ ok: true, word: r.rows[0] });
 });
 
@@ -915,6 +1130,7 @@ app.put("/api/admin/suggestions/:id", requireAdmin, async (req, res) => {
       [body.status === undefined ? null : body.status, body.admin_notes === undefined ? null : body.admin_notes.slice(0, 5000), id]
     );
     if (!r.rows[0]) return res.status(404).json({ error: "Idée introuvable." });
+    await audit(req, "idea.update", id, { status: body.status, notesChanged: body.admin_notes !== undefined });
     return res.json({ ok: true, suggestion: r.rows[0] });
   } catch (err) {
     console.error("admin suggestion update error:", err);
@@ -945,7 +1161,7 @@ app.get("/api/admin/features", requireAdmin, async (req, res) => {
 const LANGUAGE_STATUSES = ["active", "development"];
 app.put("/api/admin/languages/:code", requireAdmin, async (req, res) => {
   const code = req.params.code;
-  if (!LANG_META[code]) return res.status(400).json({ error: "Langue inconnue." });
+  if (!hasOwn(LANG_META, code)) return res.status(400).json({ error: "Langue inconnue." });
   const status = req.body && req.body.status;
   if (!LANGUAGE_STATUSES.includes(status)) {
     return res.status(400).json({ error: "Statut invalide (active ou development)." });
@@ -956,6 +1172,7 @@ app.put("/api/admin/languages/:code", requireAdmin, async (req, res) => {
        ON CONFLICT (code) DO UPDATE SET status = EXCLUDED.status`,
       [code, status]
     );
+    await audit(req, "language.status", code, { status });
     return res.json({ ok: true, code, status });
   } catch (err) {
     console.error("languages update error:", err);
@@ -971,6 +1188,7 @@ app.patch("/api/admin/features/:key", requireAdmin, async (req, res) => {
     [isPremium, key]
   );
   if (!result.rows[0]) return res.status(404).json({ error: "Fonctionnalité introuvable." });
+  await audit(req, "feature.toggle", key, { is_premium: isPremium });
   return res.json({ feature: result.rows[0] });
 });
 
@@ -985,7 +1203,7 @@ app.post("/api/admin/features/bulk", requireAdmin, async (req, res) => {
   if (Array.isArray(body.keys)) {
     keys = body.keys.filter((k) => typeof k === "string").slice(0, 500);
   } else if (typeof body.lang_code === "string") {
-    if (!LANG_META[body.lang_code]) return res.status(400).json({ error: "Langue inconnue." });
+    if (!hasOwn(LANG_META, body.lang_code)) return res.status(400).json({ error: "Langue inconnue." });
     keys = MODULES.map((m) => `${body.lang_code}:${m.key}`);
   } else if (typeof body.module === "string") {
     if (!MODULES.some((m) => m.key === body.module)) return res.status(400).json({ error: "Module inconnu." });
@@ -1002,6 +1220,7 @@ app.post("/api/admin/features/bulk", requireAdmin, async (req, res) => {
       "UPDATE features SET is_premium = $1 WHERE key = ANY($2::text[]) RETURNING key, is_premium",
       [isPremium, keys]
     );
+    await audit(req, "feature.bulk", body.lang_code || body.module || (body.all ? "all" : "keys"), { is_premium: isPremium, count: result.rows.length });
     return res.json({ ok: true, updated: result.rows.length });
   } catch (err) {
     console.error("features bulk error:", err);
@@ -1018,6 +1237,14 @@ app.get("/api/admin/stats", requireAdmin, async (req, res) => {
     totalRevenueCents: Number(revenue.rows[0].total_cents),
     totalPayments: revenue.rows[0].count,
   });
+});
+
+// Latest administrator actions (audit trail).
+app.get("/api/admin/audit", requireAdmin, async (req, res) => {
+  const r = await pool.query(
+    "SELECT id, admin_email, action, target, details, ip, created_at FROM admin_audit ORDER BY created_at DESC LIMIT 200"
+  );
+  return res.json({ entries: r.rows });
 });
 
 // List registered accounts for the admin panel. Passwords are hashed with
@@ -1039,7 +1266,7 @@ app.get("/api/admin/users", requireAdmin, async (req, res) => {
 app.patch("/api/admin/users/:id", requireAdmin, async (req, res) => {
   const userId = parseInt(req.params.id, 10);
   if (!Number.isInteger(userId)) return res.status(400).json({ error: "Identifiant invalide." });
-  if (typeof req.body.subscribed !== "boolean") {
+  if (!req.body || typeof req.body.subscribed !== "boolean") {
     return res.status(400).json({ error: "Paramètre 'subscribed' (booléen) requis." });
   }
   const result = await pool.query(
@@ -1047,6 +1274,7 @@ app.patch("/api/admin/users/:id", requireAdmin, async (req, res) => {
     [req.body.subscribed, userId]
   );
   if (!result.rows[0]) return res.status(404).json({ error: "Compte introuvable." });
+  await audit(req, "user.premium", userId, { subscribed: req.body.subscribed, email: result.rows[0].email });
   return res.json({ user: result.rows[0] });
 });
 
@@ -1060,7 +1288,8 @@ app.post("/api/checkout", async (req, res) => {
     return res.status(501).json({ error: "Le paiement n'est pas encore configuré côté serveur." });
   }
   try {
-    const origin = `${req.protocol}://${req.get("host")}`;
+    // Fixed base URL (not the request's Host header) for Stripe's redirects.
+    const origin = APP_URL;
     const session = await stripeLib.createCheckoutSession({
       userId: req.userId,
       email: req.userEmail,
@@ -1126,7 +1355,9 @@ async function sendSuggestionsDigest() {
 // free-tier web service can spin down between requests and silently skip the
 // in-process scheduler below.
 app.post("/api/internal/send-digest", async (req, res) => {
-  if (!DIGEST_CRON_SECRET || req.headers["x-digest-secret"] !== DIGEST_CRON_SECRET) {
+  const given = Buffer.from(String(req.headers["x-digest-secret"] || ""));
+  const expected = Buffer.from(DIGEST_CRON_SECRET);
+  if (!DIGEST_CRON_SECRET || given.length !== expected.length || !crypto.timingSafeEqual(given, expected)) {
     return res.status(403).json({ error: "Non autorisé." });
   }
   try {
@@ -1188,6 +1419,20 @@ app.get("/healthz", (req, res) => res.status(200).send("ok"));
 // No favicon file: answer the browser's automatic request with 204 instead of a
 // 404 that shows up as a console error on every page load.
 app.get("/favicon.ico", (req, res) => res.status(204).end());
+
+// Unknown API routes answer JSON, not an HTML page.
+app.use("/api", (req, res) => res.status(404).json({ error: "Introuvable." }));
+
+// Last-resort error handler: never leaks stack traces or SQL details to clients.
+// eslint-disable-next-line no-unused-vars
+app.use((err, req, res, next) => {
+  if (err && (err.type === "entity.parse.failed" || err.type === "entity.too.large")) {
+    return res.status(err.status || 400).json({ error: "Requête invalide." });
+  }
+  console.error(`unhandled error on ${req.method} ${req.path}:`, err && err.message);
+  if (res.headersSent) return;
+  res.status(500).json({ error: "Erreur serveur." });
+});
 
 initDb()
   .then(() => {

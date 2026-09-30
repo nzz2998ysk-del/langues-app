@@ -113,9 +113,10 @@ PostgreSQL gratuite, avec `JWT_SECRET`/`DATABASE_URL` déjà câblés.
 
 ## Compte administrateur
 
-Le compte dont l'email correspond à la variable `ADMIN_EMAIL` (par défaut
-`raphael.sanguinetti@icloud.com`) devient automatiquement administrateur à
-l'inscription ou à la connexion. Un lien "⚙️ Admin" apparaît alors sur l'accueil,
+Le compte dont l'email correspond à la variable `ADMIN_EMAIL` (à définir dans
+Render → Environment ; aucune valeur par défaut) devient administrateur dès
+qu'il a confirmé son adresse : lien de l'email de bienvenue, ou « Mot de passe
+oublié ? » puis le lien reçu. Un compte déjà administrateur le reste. Un lien "⚙️ Admin" apparaît alors sur l'accueil,
 menant vers `/admin` : la grille des 117 interrupteurs premium/gratuit décrite
 ci-dessus, plus les statistiques (comptes, abonnés, revenu encaissé). Décoché =
 gratuit pour tout le monde. Un compte admin a toujours accès à tout, y compris
@@ -123,17 +124,28 @@ le contenu payant.
 
 ## Sécurité
 
-Un audit manuel (OWASP Top 10) a été fait sur le code ; corrections appliquées :
-en-têtes de sécurité (`X-Frame-Options`, `X-Content-Type-Options`,
-`Referrer-Policy`, `Permissions-Policy`, HSTS en production), algorithme JWT
-explicitement restreint à `HS256`, validation email resserrée (rejette les
-caractères pouvant casser du HTML), échappement HTML systématique des valeurs
-utilisateur dans les emails (nom, email, message de suggestion), limitation de
-débit sur les endpoints sensibles (`/api/checkout`, `/api/lang-order`,
-`/api/suggestions`), et vérification d'origine sur les messages `postMessage`
-entre l'accueil et les iframes de langue. La vérification de signature des
-webhooks Stripe (HMAC + comparaison à temps constant) était déjà correcte.
-`npm audit` ne remonte aucune vulnérabilité connue dans les dépendances.
+Le rapport d'audit complet (problèmes, gravité, corrections, reste à faire) est
+dans [`SECURITY.md`](SECURITY.md). En bref :
+
+- **Admin** : le rôle n'est donné au compte `ADMIN_EMAIL` qu'après une preuve
+  de possession de l'adresse (lien de confirmation de l'email de bienvenue, ou
+  lien de réinitialisation du mot de passe). Toutes les actions admin sont
+  journalisées (`/admin` → « 🧾 Journal »).
+- **Sessions** : cookie `httpOnly` / `SameSite=Lax` / `Secure` en production,
+  JWT HS256 révocable (réinitialisation du mot de passe, « Déconnecter tous les
+  appareils », suppression du compte). Mots de passe bcrypt, 8 caractères
+  minimum pour les nouveaux.
+- **Requêtes** : SQL paramétré, contrôle `Origin` / `Sec-Fetch-Site` contre le
+  CSRF, erreurs toujours en JSON sans détail interne, `Cache-Control: no-store`
+  sur l'API, limitation de débit sur les routes sensibles.
+- **Premium** : appliqué côté serveur ; il suit l'état réel de l'abonnement
+  Stripe. Configurer le webhook Stripe avec les événements
+  `checkout.session.completed`, `customer.subscription.updated` et
+  `customer.subscription.deleted`.
+- **RGPD** : export des données (JSON) et suppression du compte depuis
+  `/profile` → « Mes données ».
+- **Tests** : `TEST_DATABASE_URL=postgresql://… npm test` lance 21 tests
+  d'attaque contre le vrai serveur (base de test effacée à chaque lancement).
 
 ## Emails transactionnels (Resend)
 

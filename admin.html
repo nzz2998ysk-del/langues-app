@@ -122,6 +122,7 @@ input:checked + .slider:before{transform:translateX(16px)}
     <a class="btn" href="#sec-ideas">💡 Idées <span id="ideasBadge"></span></a>
     <a class="btn" href="#sec-levels">🎯 Niveaux des mots</a>
     <a class="btn" href="#sec-users">👥 Comptes</a>
+    <a class="btn" href="#sec-audit">🧾 Journal</a>
   </nav>
   <div class="layout" id="sec-langs">
     <div>
@@ -185,6 +186,12 @@ input:checked + .slider:before{transform:translateX(16px)}
           <tbody><tr><td colspan="5" class="empty">Chargement…</td></tr></tbody>
         </table>
       </div>
+
+      <div class="panel-title section" id="sec-audit">🧾 Journal des actions admin</div>
+      <div class="sub" style="margin-bottom:10px">Chaque action d'administration (premium offert ou retiré, fonctionnalités, statut des langues, niveaux des mots, idées) est enregistrée avec son auteur, sa date et son adresse IP. 200 dernières entrées.</div>
+      <div class="card" style="overflow-x:auto">
+        <table class="users-table" id="auditTable"><tbody><tr><td class="empty">Chargement…</td></tr></tbody></table>
+      </div>
     </div>
   </div>
 </div>
@@ -231,7 +238,7 @@ async function loadLevels(){
   document.getElementById('lvCounts').innerHTML = '<span class="tb-label">Répartition</span>' + ['A1','A2','B1','B2','C1','C2'].map(function(l){ return '<span class="lv">'+l+'</span> '+(d.counts[l]||0); }).join(' &nbsp; ');
   document.getElementById('lvTable').innerHTML = '<thead><tr><th>Mot</th><th>Traduction</th><th>Thème</th><th>Niveau du contenu</th><th>Niveau appliqué</th></tr></thead><tbody>' +
     d.words.map(function(w){
-      var sel = '<select onchange="setWordLevel(\''+escH(lang)+'\', \''+escH(w.word_id)+'\', this.value)"><option value="">Par défaut ('+w.level+')</option>' +
+      var sel = '<select data-lang="'+escH(lang)+'" data-word="'+escH(w.word_id)+'" onchange="setWordLevel(this.dataset.lang, this.dataset.word, this.value)"><option value="">Par défaut ('+escH(w.level)+')</option>' +
         ['A1','A2','B1','B2','C1','C2'].map(function(l){ return '<option'+(w.level_override===l?' selected':'')+'>'+l+'</option>'; }).join('') + '</select>';
       return '<tr><td><b>'+escH(w.word)+'</b> <span style="color:var(--muted)">'+escH(w.romanization)+'</span></td><td>'+escH(w.gloss_fr)+'</td><td>'+escH(w.theme)+'</td><td><span class="lv">'+w.level+'</span></td><td>'+sel+'</td></tr>';
     }).join('') + '</tbody>' + (d.words.length === 100 ? '<tfoot><tr><td colspan="5" class="empty">100 premiers résultats — affine la recherche.</td></tr></tfoot>' : '');
@@ -252,6 +259,18 @@ function initAdminExtras(){
   document.getElementById('lvLevel').addEventListener('change', loadLevels);
   document.getElementById('lvLang').addEventListener('change', loadLevels);
   loadIdeas();
+  loadAudit();
+}
+var AUDIT_LABEL = { 'user.premium': 'Premium compte', 'feature.toggle': 'Fonctionnalité', 'feature.bulk': 'Fonctionnalités (groupé)', 'language.status': 'Statut langue', 'word.level': 'Niveau mot', 'idea.update': 'Idée' };
+async function loadAudit(){
+  var r = await fetch('/api/admin/audit');
+  var t = document.getElementById('auditTable');
+  if (!r.ok){ t.innerHTML = '<tbody><tr><td class="empty">Accès refusé.</td></tr></tbody>'; return; }
+  var d = await r.json();
+  t.innerHTML = '<thead><tr><th>Date</th><th>Admin</th><th>Action</th><th>Cible</th><th>Détails</th></tr></thead><tbody>' +
+    (d.entries.map(function(e){
+      return '<tr><td>'+escH(new Date(e.created_at).toLocaleString('fr-FR'))+'</td><td>'+escH(e.admin_email)+'</td><td>'+escH(AUDIT_LABEL[e.action]||e.action)+'</td><td>'+escH(e.target)+'</td><td style="font-family:ui-monospace,monospace;font-size:12px">'+escH(JSON.stringify(e.details))+'</td></tr>';
+    }).join('') || '<tr><td colspan="5" class="empty">Aucune action pour l\'instant.</td></tr>') + '</tbody>';
 }
 var STATE = { features: [], modules: [], langMeta: {}, langOrder: [], languageStatus: {} };
 

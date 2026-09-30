@@ -1,4 +1,5 @@
 I18N.add("zh", {
+  data_title: "我的数据", data_lead: "你可以下载应用保存的关于你的全部数据、退出所有设备，或永久删除账号。", data_export: "下载我的数据", logout_all: "退出所有设备", delete_account: "删除我的账号", delete_lead: "删除将清除你的账号、学习进度和想法。发票将出于记账目的保留，但不再与账号关联。请输入密码确认。", delete_pw_ph: "你的密码", delete_confirm: "确定永久删除账号吗？此操作无法撤销。", wrong_password: "密码错误。", email_unverified: "邮箱尚未验证：请点击邮件中的链接。",
   sub_btn: "订阅", sub_no_commit: "无需承诺，随时取消", sub_no_ads: "永无广告", sub_canceled: "付款已取消。", sub_success: "已收到付款，谢谢！你的高级版已开通。", sub_redirect: "正在跳转…", sub_unavailable: "暂不支持付款。",
   load_error: "无法加载此模块。", loading: "加载中…",
   learn_lang: "学习：{lang}", modules: "模块", go_premium: "高级版", speaking: "正在播放音频…", listen: "收听",

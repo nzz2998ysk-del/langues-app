@@ -26,9 +26,9 @@ h1{font-size:var(--ig27-fs-large-title);line-height:var(--ig27-lh-large-title);l
 .card + .card{margin-top:18px}
 label{display:block;font-size:var(--ig27-fs-caption1);line-height:var(--ig27-lh-caption1);letter-spacing:var(--ig27-ls-caption1);font-weight:var(--ig27-weight-semibold);color:var(--muted);margin-bottom:8px}
 .field + .field{margin-top:20px}
-input[type=text], select{width:100%;background:var(--ig27-fill-quaternary);border:1px solid var(--line);border-radius:var(--ig27-radius-xl);
+input[type=text], input[type=password], select{width:100%;background:var(--ig27-fill-quaternary);border:1px solid var(--line);border-radius:var(--ig27-radius-xl);
   padding:13px 14px;font-size:var(--ig27-fs-subheadline);line-height:var(--ig27-lh-subheadline);letter-spacing:var(--ig27-ls-subheadline);color:var(--ink);font-family:inherit}
-input[type=text]:focus, select:focus{outline:none;box-shadow:0 0 0 4px var(--ig27-accent-soft);border-color:var(--primary)}
+input[type=text]:focus, input[type=password]:focus, select:focus{outline:none;box-shadow:0 0 0 4px var(--ig27-accent-soft);border-color:var(--primary)}
 select{appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%238e8e93'%3E%3Cpath d='M5.5 7.5l4.5 5 4.5-5z'/%3E%3C/svg%3E");
   background-repeat:no-repeat;background-position:right 12px center;padding-right:38px}
 button{margin-top:20px;width:100%;background:var(--primary);color:var(--ig27-on-accent);border:none;border-radius:var(--ig27-radius-glass);padding:15px;
@@ -42,6 +42,8 @@ button:disabled{opacity:.5;cursor:default;box-shadow:var(--ig27-shadow-sm)}
 .note{margin-top:18px;font-size:var(--ig27-fs-footnote);line-height:var(--ig27-lh-footnote);letter-spacing:var(--ig27-ls-footnote);color:var(--muted);background:var(--ig27-glass-regular-bg);
   -webkit-backdrop-filter:blur(var(--ig27-glass-regular-blur)) saturate(var(--ig27-glass-regular-saturate));backdrop-filter:blur(var(--ig27-glass-regular-blur)) saturate(var(--ig27-glass-regular-saturate));
   border:1px solid var(--ig27-glass-rim-color);border-radius:var(--ig27-radius-xxl);padding:14px 16px}
+button.secondary{background:var(--ig27-fill-secondary);color:var(--primary);margin-top:10px}
+button.danger{background:var(--ig27-red);margin-top:12px}
 .email-row{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .email-row .val{font-size:var(--ig27-fs-subheadline);line-height:var(--ig27-lh-subheadline);letter-spacing:var(--ig27-ls-subheadline);color:var(--muted)}
 </style>
@@ -65,10 +67,24 @@ button:disabled{opacity:.5;cursor:default;box-shadow:var(--ig27-shadow-sm)}
       <select id="baseLang"></select>
     </div>
     <div class="field email-row">
-      <div><label style="margin-bottom:2px">Email</label><div class="val" id="emailVal">…</div></div>
+      <div><label style="margin-bottom:2px">Email</label><div class="val" id="emailVal">…</div><div class="val" id="emailUnverified" style="display:none;color:var(--ig27-orange)" data-i18n="email_unverified"></div></div>
     </div>
     <button id="saveBtn" onclick="saveProfile()" data-i18n="save">Enregistrer</button>
     <div class="msg" id="status"></div>
+  </div>
+
+  <div class="card">
+    <h2 style="margin:0 0 6px;font-size:var(--ig27-fs-title3);line-height:var(--ig27-lh-title3)" data-i18n="data_title">Mes données</h2>
+    <p class="lead" style="margin:0" data-i18n="data_lead"></p>
+    <button type="button" id="exportBtn" onclick="exportData()" data-i18n="data_export">Télécharger mes données</button>
+    <button type="button" class="secondary" onclick="logoutAll()" data-i18n="logout_all">Déconnecter tous les appareils</button>
+    <details style="margin-top:18px">
+      <summary style="cursor:pointer;color:var(--ig27-red);font-weight:600" data-i18n="delete_account">Supprimer mon compte</summary>
+      <p class="lead" style="margin:10px 0 0" data-i18n="delete_lead"></p>
+      <input type="password" id="delPw" autocomplete="current-password" data-i18n-ph="delete_pw_ph" style="margin-top:12px">
+      <button type="button" class="danger" onclick="deleteAccount()" data-i18n="delete_account">Supprimer mon compte</button>
+    </details>
+    <div class="msg" id="dataStatus"></div>
   </div>
 
   <div class="note" data-i18n="profile_note">Exemple : langue de base français + langue apprise japonais = interface, traductions des mots et des phrases, et explications en français, contenu en japonais. Les explications de grammaire et de culture sont rédigées en français et en anglais : pour les autres langues de base, la version anglaise est utilisée.</div>
@@ -110,8 +126,37 @@ async function loadProfile(){
   var me = await r.json();
   document.getElementById('name').value = me.name || '';
   document.getElementById('emailVal').textContent = me.email || '';
+  document.getElementById('emailUnverified').style.display = me.emailVerified === false ? 'block' : 'none';
   select.value = me.baseLang || 'fr';
   applyLang(select.value);
+}
+
+function clearOfflineData(){
+  // Offline mode caches API answers: remove them when the session ends.
+  try { if (window.caches) caches.keys().then(function(ks){ ks.forEach(function(k){ caches.delete(k); }); }); } catch(e){}
+  try { if (navigator.serviceWorker) navigator.serviceWorker.getRegistrations().then(function(rs){ rs.forEach(function(r){ r.unregister(); }); }); } catch(e){}
+}
+async function exportData(){
+  var st = document.getElementById('dataStatus'); st.className = 'msg';
+  var r = await fetch('/api/account/export');
+  if (!r.ok){ st.textContent = tr('save_error'); return; }
+  var blob = await r.blob();
+  var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'mes-donnees.json';
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(function(){ URL.revokeObjectURL(a.href); }, 1000);
+}
+async function logoutAll(){
+  await fetch('/api/logout-all', {method:'POST'}).catch(function(){});
+  clearOfflineData();
+  window.location.href = '/';
+}
+async function deleteAccount(){
+  var st = document.getElementById('dataStatus'); st.className = 'msg';
+  var pw = document.getElementById('delPw').value;
+  if (!pw){ st.textContent = tr('wrong_password'); return; }
+  if (!confirm(tr('delete_confirm'))) return;
+  var r = await fetch('/api/account', {method:'DELETE', headers:{'Content-Type':'application/json'}, body: JSON.stringify({password: pw})});
+  if (r.ok){ clearOfflineData(); window.location.href = '/'; return; }
+  st.textContent = r.status === 403 ? tr('wrong_password') : tr('save_error');
 }
 
 async function saveProfile(){

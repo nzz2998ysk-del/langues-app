@@ -498,6 +498,9 @@ function goHome(){
   window.scrollTo(0, 0);
 }
 function serverLogout(){
+  // Offline mode caches API answers (personal data): wipe them on logout.
+  try { if (window.caches) caches.keys().then(function(ks){ ks.forEach(function(k){ caches.delete(k); }); }); } catch(e){}
+  try { if (navigator.serviceWorker) navigator.serviceWorker.getRegistrations().then(function(rs){ rs.forEach(function(r){ r.unregister(); }); }); } catch(e){}
   fetch("/api/logout", {method:"POST"}).catch(function(){}).then(function(){
     window.location.href = "/";
   });
