@@ -103,7 +103,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Ar
       <input class="auth-input" id="authConfirm" type="password" placeholder="••••••••" autocomplete="new-password">
     </div>
     <div id="authError" class="auth-error" style="display:none"></div>
+    <div id="authOk" class="auth-error" style="display:none;background:#DFF3EA;color:#1E7A5E"></div>
     <button type="button" class="btn-auth-primary" id="authSubmitBtn" onclick="authSubmit()">Se connecter</button>
+    <button type="button" class="btn-auth-link" id="authForgotBtn" onclick="authGoForgot()">Mot de passe oublié&nbsp;?</button>
     <button type="button" class="btn-auth-link" id="authToggleBtn" onclick="authToggleMode()">Pas encore de compte&nbsp;? Créer un compte</button>
     <div class="auth-note">Tes données de compte sont stockées de façon sécurisée sur notre serveur (mot de passe chiffré, jamais en clair).</div>
   </form>
@@ -123,21 +125,77 @@ function authShowError(msg){
 function authToggleMode(){
   authMode = (authMode === 'login') ? 'signup' : 'login';
   authClearError();
+  document.getElementById('authOk').style.display = 'none';
   document.getElementById('authNameGroup').style.display = authMode === 'signup' ? 'block' : 'none';
   document.getElementById('authConfirmGroup').style.display = authMode === 'signup' ? 'block' : 'none';
+  document.getElementById('authForgotBtn').style.display = authMode === 'signup' ? 'none' : 'block';
   document.getElementById('authSubmitBtn').textContent = authMode === 'signup' ? 'Créer mon compte' : 'Se connecter';
   document.getElementById('authToggleBtn').textContent = authMode === 'signup' ? 'Déjà un compte ? Se connecter' : "Pas encore de compte ? Créer un compte";
   document.getElementById('authTitle').textContent = authMode === 'signup' ? "Crée ton compte" : "Bon retour";
   document.getElementById('authSubtitle').textContent = authMode === 'signup' ? "Crée ton compte pour accéder à l'application" : "Connecte-toi pour accéder à l'application";
 }
 
+function authGoForgot(){
+  authMode = 'forgot';
+  authClearError();
+  document.getElementById('authOk').style.display = 'none';
+  document.getElementById('authNameGroup').style.display = 'none';
+  document.getElementById('authConfirmGroup').style.display = 'none';
+  document.getElementById('authPassword').closest('.field-group').style.display = 'none';
+  document.getElementById('authForgotBtn').style.display = 'none';
+  document.getElementById('authSubmitBtn').textContent = 'Envoyer le lien';
+  var toggle = document.getElementById('authToggleBtn');
+  toggle.textContent = '‹ Retour à la connexion';
+  toggle.onclick = authBackToLogin;
+  document.getElementById('authTitle').textContent = 'Mot de passe oublié';
+  document.getElementById('authSubtitle').textContent = "Indique ton email, on t'envoie un lien pour le réinitialiser.";
+}
+
+function authBackToLogin(){
+  authMode = 'login';
+  authClearError();
+  document.getElementById('authOk').style.display = 'none';
+  document.getElementById('authNameGroup').style.display = 'none';
+  document.getElementById('authConfirmGroup').style.display = 'none';
+  document.getElementById('authPassword').closest('.field-group').style.display = '';
+  document.getElementById('authForgotBtn').style.display = '';
+  document.getElementById('authSubmitBtn').textContent = 'Se connecter';
+  var toggle = document.getElementById('authToggleBtn');
+  toggle.textContent = "Pas encore de compte ? Créer un compte";
+  toggle.onclick = authToggleMode;
+  document.getElementById('authTitle').textContent = 'Bon retour';
+  document.getElementById('authSubtitle').textContent = "Connecte-toi pour accéder à l'application";
+}
+
 function authSubmit(){
   authClearError();
+  document.getElementById('authOk').style.display = 'none';
   var email = (document.getElementById('authEmail').value || '').trim().toLowerCase();
-  var pass = document.getElementById('authPassword').value || '';
   var btn = document.getElementById('authSubmitBtn');
 
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ authShowError('Adresse email invalide.'); return; }
+
+  if (authMode === 'forgot'){
+    btn.disabled = true;
+    fetch('/api/forgot-password', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({email: email})
+    }).then(function(res){
+      return res.json().then(function(data){ return {status: res.status, data: data}; });
+    }).then(function(r){
+      btn.disabled = false;
+      var ok = document.getElementById('authOk');
+      ok.textContent = (r.data && r.data.message) || 'Si un compte existe avec cet email, un lien a été envoyé.';
+      ok.style.display = 'block';
+    }).catch(function(){
+      btn.disabled = false;
+      authShowError('Impossible de contacter le serveur. Réessaie.');
+    });
+    return;
+  }
+
+  var pass = document.getElementById('authPassword').value || '';
   if (pass.length < 6){ authShowError('Le mot de passe doit contenir au moins 6 caractères.'); return; }
 
   var body, url;

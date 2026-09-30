@@ -1,10 +1,17 @@
 const express = require("express");
 const path = require("path");
+const crypto = require("crypto");
 const cookieParser = require("cookie-parser");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { Pool } = require("pg");
-const { sendEmail, welcomeEmailHtml, invoiceEmailHtml, suggestionsDigestHtml } = require("./lib/email");
+const {
+  sendEmail,
+  welcomeEmailHtml,
+  invoiceEmailHtml,
+  suggestionsDigestHtml,
+  resetPasswordEmailHtml,
+} = require("./lib/email");
 const stripeLib = require("./lib/stripe");
 
 const PORT = process.env.PORT || 3000;
@@ -23,6 +30,10 @@ const DIGEST_HOUR_LOCAL = parseInt(process.env.DIGEST_HOUR_LOCAL || "22", 10);
 // spin a web service down after inactivity, making an in-process setInterval alone
 // unreliable as the only delivery mechanism.
 const DIGEST_CRON_SECRET = process.env.DIGEST_CRON_SECRET || "";
+// Base URL used to build the link inside the "reset your password" email.
+const APP_URL = (process.env.APP_URL || "https://langues-app.onrender.com").replace(/\/$/, "");
+// How long a password-reset link stays valid.
+const RESET_TOKEN_TTL_MS = 60 * 60 * 1000; // 1h
 
 // All 39 languages the app teaches, with display metadata — mirrors app.html's
 // LANG_META exactly, and is the source of truth for the per-language admin toggles.
@@ -114,6 +125,12 @@ function buildDefaultFeatures() {
 }
 const DEFAULT_FEATURES = buildDefaultFeatures();
 
+// One row per language, independent from the premium features grid: whether the
+// admin has marked the language as actively available ("active") or still being
+// prepared ("development" - hidden/greyed out for regular users on the hub, no
+// email sent when the admin flips this).
+const DEFAULT_LANGUAGES = Object.keys(LANG_META).map((code) => ({ code, status: "active" }));
+
 async function initDb() {
   await pool.query(`
     CREATE TABLE IF NOT EXISTS users (
@@ -130,6 +147,28 @@ async function initDb() {
   await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS is_admin BOOLEAN NOT NULL DEFAULT FALSE;`);
   // Per-account custom ordering of the language cards on the hub (JSON array of codes).
   await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS lang_order TEXT;`);
+  // Base/native language: the language the account already speaks, used to
+  // personalize the profile. Defaults to French (the language almost all of the
+  // app's existing lesson content is written in) but is freely choosable among
+  // all 39 languages, per account.
+  await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS base_lang TEXT NOT NULL DEFAULT 'fr';`);
+  // Password-reset flow: a hash of the current one-time token (never the raw
+  // token itself) plus its expiry. Both NULL when no reset is in progress.
+  await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token_hash TEXT;`);
+  await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token_expires TIMESTAMPTZ;`);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS languages (
+      code TEXT PRIMARY KEY,
+      status TEXT NOT NULL DEFAULT 'active'
+    );
+  `);
+  for (const l of DEFAULT_LANGUAGES) {
+    await pool.query(
+      `INSERT INTO languages (code, status) VALUES ($1, $2) ON CONFLICT (code) DO NOTHING`,
+      [l.code, l.status]
+    );
+  }
 
   await pool.query(`
     CREATE TABLE IF NOT EXISTS features (
@@ -181,7 +220,7 @@ async function initDb() {
   // Make sure the designated admin account is always an admin, if it already signed up.
   await pool.query(`UPDATE users SET is_admin = TRUE WHERE email = $1`, [ADMIN_EMAIL]);
 
-  console.log("Database ready (users, features, payments, suggestions tables ok).");
+  console.log("Database ready (users, features, languages, payments, suggestions tables ok).");
 }
 
 const app = express();
@@ -412,11 +451,87 @@ app.post("/api/logout", (req, res) => {
   res.json({ ok: true });
 });
 
+// ---- forgot / reset password ----
+function hashResetToken(rawToken) {
+  return crypto.createHash("sha256").update(rawToken).digest("hex");
+}
+
+app.post("/api/forgot-password", async (req, res) => {
+  try {
+    const ip = req.ip || "unknown";
+    if (rateLimited("forgot-password:" + ip, 10, 15 * 60 * 1000)) {
+      return res.status(429).json({ error: "Trop de tentatives. Réessaie dans quelques minutes." });
+    }
+    const email = String((req.body && req.body.email) || "").trim().toLowerCase();
+    // Always answer the same way whether or not the address has an account,
+    // so this endpoint can't be used to check who has signed up.
+    const genericOk = { ok: true, message: "Si un compte existe avec cet email, un lien a été envoyé." };
+    if (!EMAIL_RE.test(email) || email.length > 254) {
+      return res.json(genericOk);
+    }
+    const result = await pool.query("SELECT id, email FROM users WHERE email = $1", [email]);
+    const user = result.rows[0];
+    if (user) {
+      const rawToken = crypto.randomBytes(32).toString("hex");
+      const tokenHash = hashResetToken(rawToken);
+      const expires = new Date(Date.now() + RESET_TOKEN_TTL_MS);
+      await pool.query(
+        "UPDATE users SET reset_token_hash = $1, reset_token_expires = $2 WHERE id = $3",
+        [tokenHash, expires, user.id]
+      );
+      const resetLink = `${APP_URL}/reset-password?token=${rawToken}`;
+      sendEmail({
+        to: user.email,
+        subject: `Réinitialise ton mot de passe - ${BUSINESS_NAME}`,
+        html: resetPasswordEmailHtml(resetLink),
+      }).catch(() => {});
+    }
+    return res.json(genericOk);
+  } catch (err) {
+    console.error("forgot-password error:", err);
+    // Still avoid leaking anything about whether the address exists.
+    return res.json({ ok: true, message: "Si un compte existe avec cet email, un lien a été envoyé." });
+  }
+});
+
+app.post("/api/reset-password", async (req, res) => {
+  try {
+    const ip = req.ip || "unknown";
+    if (rateLimited("reset-password:" + ip, 20, 15 * 60 * 1000)) {
+      return res.status(429).json({ error: "Trop de tentatives. Réessaie dans quelques minutes." });
+    }
+    const token = String((req.body && req.body.token) || "");
+    const password = String((req.body && req.body.password) || "");
+    if (!token) return res.status(400).json({ error: "Lien invalide." });
+    if (password.length < 6 || password.length > 200) {
+      return res.status(400).json({ error: "Le mot de passe doit contenir au moins 6 caractères." });
+    }
+    const tokenHash = hashResetToken(token);
+    const result = await pool.query(
+      "SELECT id FROM users WHERE reset_token_hash = $1 AND reset_token_expires > NOW()",
+      [tokenHash]
+    );
+    const user = result.rows[0];
+    if (!user) {
+      return res.status(400).json({ error: "Ce lien a expiré ou n'est plus valide. Refais une demande." });
+    }
+    const hash = await bcrypt.hash(password, 12);
+    await pool.query(
+      "UPDATE users SET password_hash = $1, reset_token_hash = NULL, reset_token_expires = NULL WHERE id = $2",
+      [hash, user.id]
+    );
+    return res.json({ ok: true });
+  } catch (err) {
+    console.error("reset-password error:", err);
+    return res.status(500).json({ error: "Erreur serveur." });
+  }
+});
+
 app.get("/api/me", async (req, res) => {
   if (!req.userId) return res.status(401).json({ authenticated: false });
   try {
     const result = await pool.query(
-      "SELECT id, email, name, subscribed, is_admin, lang_order FROM users WHERE id = $1",
+      "SELECT id, email, name, subscribed, is_admin, lang_order, base_lang FROM users WHERE id = $1",
       [req.userId]
     );
     const user = result.rows[0];
@@ -437,6 +552,7 @@ app.get("/api/me", async (req, res) => {
       subscribed: user.subscribed,
       isAdmin: user.is_admin,
       langOrder,
+      baseLang: user.base_lang || "fr",
     });
   } catch (err) {
     console.error("me error:", err);
@@ -466,6 +582,33 @@ app.put("/api/lang-order", async (req, res) => {
   }
 });
 
+// ---- account profile: display name + base/native language ----
+app.put("/api/profile", async (req, res) => {
+  if (!req.userId) return res.status(401).json({ error: "Connecte-toi d'abord." });
+  if (rateLimited("profile:" + req.userId, 30, 15 * 60 * 1000)) {
+    return res.status(429).json({ error: "Trop de requêtes. Réessaie dans quelques minutes." });
+  }
+  const body = req.body || {};
+  const name = typeof body.name === "string" ? body.name.trim().slice(0, 80) : undefined;
+  const baseLang = typeof body.baseLang === "string" ? body.baseLang.trim().toLowerCase() : undefined;
+  if (baseLang !== undefined && !LANG_META[baseLang]) {
+    return res.status(400).json({ error: "Langue de base inconnue." });
+  }
+  try {
+    if (name !== undefined && baseLang !== undefined) {
+      await pool.query("UPDATE users SET name = $1, base_lang = $2 WHERE id = $3", [name || null, baseLang, req.userId]);
+    } else if (name !== undefined) {
+      await pool.query("UPDATE users SET name = $1 WHERE id = $2", [name || null, req.userId]);
+    } else if (baseLang !== undefined) {
+      await pool.query("UPDATE users SET base_lang = $1 WHERE id = $2", [baseLang, req.userId]);
+    }
+    return res.json({ ok: true });
+  } catch (err) {
+    console.error("profile error:", err);
+    return res.status(500).json({ error: "Erreur serveur." });
+  }
+});
+
 // ---- features (free/premium toggles) ----
 app.get("/api/features", async (req, res) => {
   try {
@@ -482,7 +625,10 @@ app.get("/api/features", async (req, res) => {
       premium: f.is_premium,
       locked: f.is_premium && !unlocked,
     }));
-    return res.json({ features, unlocked });
+    const langsResult = await pool.query("SELECT code, status FROM languages");
+    const languageStatus = {};
+    langsResult.rows.forEach((l) => { languageStatus[l.code] = l.status; });
+    return res.json({ features, unlocked, languageStatus });
   } catch (err) {
     console.error("features error:", err);
     return res.status(500).json({ error: "Erreur serveur." });
@@ -495,12 +641,41 @@ app.get("/api/admin/features", requireAdmin, async (req, res) => {
   const result = await pool.query(
     "SELECT key, label, category, lang_code, module, is_premium, sort_order FROM features ORDER BY sort_order"
   );
+  const langsResult = await pool.query("SELECT code, status FROM languages");
+  const languageStatus = {};
+  langsResult.rows.forEach((l) => { languageStatus[l.code] = l.status; });
   return res.json({
     features: result.rows,
     modules: MODULES,
     langMeta: LANG_META,
     langOrder: Object.keys(LANG_META),
+    languageStatus,
   });
+});
+
+// Admin can flip a language between "active" and "development" whenever they
+// want (e.g. while still authoring its content) - purely a visibility switch on
+// the hub, independent from the premium/free features grid, and it never sends
+// any email.
+const LANGUAGE_STATUSES = ["active", "development"];
+app.put("/api/admin/languages/:code", requireAdmin, async (req, res) => {
+  const code = req.params.code;
+  if (!LANG_META[code]) return res.status(400).json({ error: "Langue inconnue." });
+  const status = req.body && req.body.status;
+  if (!LANGUAGE_STATUSES.includes(status)) {
+    return res.status(400).json({ error: "Statut invalide (active ou development)." });
+  }
+  try {
+    await pool.query(
+      `INSERT INTO languages (code, status) VALUES ($1, $2)
+       ON CONFLICT (code) DO UPDATE SET status = EXCLUDED.status`,
+      [code, status]
+    );
+    return res.json({ ok: true, code, status });
+  } catch (err) {
+    console.error("languages update error:", err);
+    return res.status(500).json({ error: "Erreur serveur." });
+  }
 });
 
 app.patch("/api/admin/features/:key", requireAdmin, async (req, res) => {
@@ -667,9 +842,18 @@ app.get("/", (req, res) => {
   }
 });
 
+app.get("/reset-password", (req, res) => {
+  res.sendFile(path.join(__dirname, "reset-password.html"));
+});
+
 app.get("/ideas", (req, res) => {
   if (!req.userId) return res.redirect("/");
   res.sendFile(path.join(__dirname, "ideas.html"));
+});
+
+app.get("/profile", (req, res) => {
+  if (!req.userId) return res.redirect("/");
+  res.sendFile(path.join(__dirname, "profile.html"));
 });
 
 app.get("/subscribe", (req, res) => {

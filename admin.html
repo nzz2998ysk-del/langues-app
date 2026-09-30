@@ -50,6 +50,10 @@ select{background:var(--bg);border:1px solid var(--line);border-radius:10px;padd
   border-radius:6px;padding:2px 7px}
 .lang-head .all-free{font-size:11px;color:var(--green);font-weight:700}
 .lang-head .all-premium{font-size:11px;color:var(--gold);font-weight:700}
+.status-select{font-size:11.5px;font-weight:700;border-radius:8px;padding:5px 8px;border:1px solid var(--line);
+  background:var(--bg);color:var(--ink)}
+.status-select.dev{background:#FCE3C6;border-color:#EF8A2E;color:#8A4E10}
+.lang-row.dev{background:rgba(239,138,46,.06)}
 .modules{display:flex;gap:18px;flex-wrap:wrap;padding:0 14px 14px 48px}
 .mod{display:flex;align-items:center;gap:8px}
 .mod .mlabel{font-size:12.5px;color:var(--muted);font-weight:600}
@@ -71,7 +75,9 @@ input:checked + .slider:before{transform:translateX(16px)}
       <a class="back" href="/">‹ Retour à l'application</a>
       <h1>Administration</h1>
       <div class="sub">Toutes les langues sont gratuites au niveau de base. Coche ici, langue par langue et module par
-        module, ce qui doit rester réservé au Premium (feedback avancé, leçons avancées, exercices avancés).</div>
+        module, ce qui doit rester réservé au Premium (feedback avancé, leçons avancées, exercices avancés). Le menu
+        « Statut » marque une langue comme en développement : elle est alors grisée et inaccessible sur l'accueil,
+        sans qu'aucun email ne soit envoyé.</div>
     </div>
   </div>
 
@@ -104,7 +110,7 @@ input:checked + .slider:before{transform:translateX(16px)}
   </div>
 </div>
 <script>
-var STATE = { features: [], modules: [], langMeta: {}, langOrder: [] };
+var STATE = { features: [], modules: [], langMeta: {}, langOrder: [], languageStatus: {} };
 
 async function loadStats(){
   var r = await fetch('/api/admin/stats');
@@ -128,6 +134,7 @@ async function loadFeatures(){
   STATE.modules = data.modules;
   STATE.langMeta = data.langMeta;
   STATE.langOrder = data.langOrder;
+  STATE.languageStatus = data.languageStatus || {};
 
   document.getElementById('moduleBulkRow').innerHTML = '<span class="tb-label">Par module</span>' +
     STATE.modules.map(function(m){
@@ -171,14 +178,19 @@ function renderList(){
       var statusHtml = premiumCount === fs.length
         ? '<span class="all-premium">Tout premium</span>'
         : (premiumCount === 0 ? '<span class="all-free">Tout gratuit</span>' : '');
+      var devStatus = STATE.languageStatus[code] || 'active';
       var modulesHtml = fs.map(function(f){
         var modLabel = f.label.split(' — ').slice(1).join(' — ') || f.module;
         return '<div class="mod"><label class="toggle"><input type="checkbox" data-key="'+f.key+'" '+(f.is_premium?'checked':'')+
           ' onchange="toggleFeature(this)"><span class="slider"></span></label><span class="mlabel">'+modLabel+'</span></div>';
       }).join('');
-      return '<div class="lang-row">' +
+      return '<div class="lang-row'+(devStatus==='development'?' dev':'')+'">' +
         '<div class="lang-head"><span class="flag">'+meta.flag+'</span><span class="name">'+meta.name+'</span>' +
         '<span class="code">'+code+'</span>'+statusHtml+
+        '<select class="status-select'+(devStatus==='development'?' dev':'')+'" onchange="setLanguageStatus(\''+code+'\', this.value)">' +
+        '<option value="active"'+(devStatus==='active'?' selected':'')+'>✅ Active</option>' +
+        '<option value="development"'+(devStatus==='development'?' selected':'')+'>🚧 En développement</option>' +
+        '</select>' +
         '<button class="btn" onclick="bulk({lang_code:\''+code+'\'}, true)">🔒</button>' +
         '<button class="btn" onclick="bulk({lang_code:\''+code+'\'}, false)">🔓</button>' +
         '</div>' +
@@ -203,6 +215,23 @@ async function toggleFeature(el){
   } else {
     msg.textContent = 'Erreur lors de la sauvegarde';
     el.checked = !el.checked;
+  }
+}
+
+async function setLanguageStatus(code, status){
+  var msg = document.getElementById('saveMsg');
+  var r = await fetch('/api/admin/languages/'+encodeURIComponent(code), {
+    method: 'PUT',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({status: status})
+  });
+  if (r.ok){
+    STATE.languageStatus[code] = status;
+    msg.textContent = 'Statut mis à jour ✓ (aucun email envoyé)';
+    setTimeout(function(){ msg.textContent=''; }, 2000);
+    renderList();
+  } else {
+    msg.textContent = 'Erreur lors de la sauvegarde du statut';
   }
 }
 
