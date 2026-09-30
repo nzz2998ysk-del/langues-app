@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Papote — Réinitialiser le mot de passe</title><!--BRAND_HEAD-->
+<title>Papote — Mentions légales</title><!--BRAND_HEAD-->
 <script>(function(){try{
   var t = localStorage.getItem('lang_theme');
   if(t!=='dark'&&t!=='light'){t=((window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light');} document.documentElement.setAttribute('data-theme',t);
@@ -11,11 +11,11 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:var(--ig27-font-family)}
 html,body{height:100%}
-body{background:
+body{display:block;background:
     radial-gradient(1100px 520px at 8% -10%, color-mix(in srgb,var(--ig27-accent) 10%,transparent), transparent 60%),
     radial-gradient(900px 480px at 100% 100%, color-mix(in srgb,var(--ig27-accent) 12%,transparent), transparent 55%),
     var(--bg);
-  color:var(--ink);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+  color:var(--ink);min-height:100vh;padding:24px}
 .wrap{max-width:400px;width:100%}
 h1{font-size:var(--ig27-fs-title2);line-height:var(--ig27-lh-title2);letter-spacing:var(--ig27-ls-title2);font-weight:var(--ig27-weight-bold);margin-bottom:8px;text-align:center}
 .lead{color:var(--muted);font-size:var(--ig27-fs-subheadline);line-height:var(--ig27-lh-subheadline);letter-spacing:var(--ig27-ls-subheadline);margin-bottom:22px;text-align:center}
@@ -36,76 +36,41 @@ button:disabled{opacity:.5;cursor:default;box-shadow:var(--ig27-shadow-sm)}
 .msg{font-size:var(--ig27-fs-footnote);line-height:var(--ig27-lh-footnote);letter-spacing:var(--ig27-ls-footnote);margin-top:14px;text-align:center;color:var(--red)}
 .msg.ok{color:var(--green)}
 .back{display:block;text-align:center;margin-top:18px;color:var(--muted);font-size:var(--ig27-fs-footnote);line-height:var(--ig27-lh-footnote);letter-spacing:var(--ig27-ls-footnote);text-decoration:none}
+
+.wrap{max-width:760px;margin:0 auto}
+.doc h1{text-align:left}
+.doc h2{font-size:var(--ig27-fs-title3);line-height:var(--ig27-lh-title3);font-weight:var(--ig27-weight-semibold);margin:26px 0 8px}
+.doc p,.doc li{font-size:var(--ig27-fs-subheadline);line-height:1.6;color:var(--ink)}
+.doc ul{padding-left:20px;margin:6px 0}
+.doc table{width:100%;border-collapse:collapse;margin:8px 0;font-size:var(--ig27-fs-footnote)}
+.doc th,.doc td{text-align:left;padding:8px;border-bottom:1px solid var(--line);vertical-align:top}
+.doc a{color:var(--primary)}
+.todo{background:color-mix(in srgb,var(--ig27-orange) 18%,transparent);color:var(--ink);border-radius:6px;padding:0 5px}
+.updated{color:var(--muted);font-size:var(--ig27-fs-footnote)}
+.back{text-align:left;margin:0 0 16px}
 </style>
 <link rel="stylesheet" href="/design-system/ios27-app.css">
 </head>
 <body>
-<div class="wrap">
-  <h1>🔑 Nouveau mot de passe</h1>
-  <p class="lead" id="lead">Choisis un nouveau mot de passe pour ton compte.</p>
-  <div class="card" id="formCard">
-    <div class="field">
-      <label for="pass">Nouveau mot de passe</label>
-      <input type="password" id="pass" placeholder="••••••••" autocomplete="new-password">
-    </div>
-    <div class="field">
-      <label for="confirm">Confirme le mot de passe</label>
-      <input type="password" id="confirm" placeholder="••••••••" autocomplete="new-password">
-    </div>
-    <button id="saveBtn" data-click="submitReset">Réinitialiser</button>
-    <div class="msg" id="status"></div>
-  </div>
-  <a class="back" href="/">‹ Retour à la connexion</a>
-</div>
-<script>
-var params = new URLSearchParams(window.location.search);
-var token = params.get('token') || '';
-if (!token){
-  document.getElementById('lead').textContent = "Ce lien est invalide. Refais une demande depuis la page de connexion.";
-  document.getElementById('formCard').style.display = 'none';
-}
+<div class="wrap doc">
+<a class="back" href="/">‹ Papote</a>
+<div class="card">
+<h1>Mentions légales</h1>
+<p class="updated">Dernière mise à jour : 30 septembre 2026</p>
+<h2>Éditeur</h2>
+<p>Le service <b>Papote</b> (application d'apprentissage des langues) est édité par :<br>
+{{LEGAL_PUBLISHER}}<br>{{LEGAL_ADDRESS}}<br>Contact : {{LEGAL_CONTACT_EMAIL}}<br>{{LEGAL_SIRET_LINE}}</p>
+<p>Directeur de la publication : {{LEGAL_DIRECTOR}}</p>
+<h2>Hébergement</h2>
+<p>Application et base de données hébergées par <b>Render Services, Inc.</b>, San Francisco, Californie, États-Unis — <a href="https://render.com" rel="noopener">render.com</a>.</p>
+<h2>Paiement</h2>
+<p>Les paiements sont traités par <b>Stripe</b> (Stripe Payments Europe, Ltd., Dublin, Irlande). Papote ne voit ni ne stocke jamais les numéros de carte.</p>
+<h2>Propriété intellectuelle</h2>
+<p>Les contenus pédagogiques, textes, illustrations, la mascotte et le logo Papote sont protégés. Toute reproduction sans autorisation est interdite.</p>
+<h2>Données personnelles</h2>
+<p>Voir la <a href="/confidentialite">politique de confidentialité</a>.</p>
 
-async function submitReset(){
-  var btn = document.getElementById('saveBtn');
-  var status = document.getElementById('status');
-  var pass = document.getElementById('pass').value || '';
-  var confirm = document.getElementById('confirm').value || '';
-  status.className = 'msg';
-  if (pass.length < 8){ status.textContent = 'Le mot de passe doit contenir au moins 8 caractères.'; return; }
-  if (pass !== confirm){ status.textContent = 'Les mots de passe ne correspondent pas.'; return; }
-  btn.disabled = true;
-  btn.textContent = 'Enregistrement…';
-  try {
-    var r = await fetch('/api/reset-password', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({token: token, password: pass})
-    });
-    var data = await r.json().catch(function(){ return {}; });
-    if (r.ok){
-      status.textContent = 'Mot de passe mis à jour ✓ Redirection…';
-      status.classList.add('ok');
-      setTimeout(function(){ window.location.href = '/'; }, 1500);
-      return;
-    } else {
-      status.textContent = data.error || "Impossible de réinitialiser pour le moment.";
-    }
-  } catch(e){
-    status.textContent = 'Erreur réseau.';
-  }
-  btn.disabled = false;
-  btn.textContent = 'Réinitialiser';
-}
-</script>
-<script>
-// Click delegation: [data-click="fn"] calls the global fn (with data-arg if set).
-// No inline onclick attributes, so the Content-Security-Policy can forbid them.
-document.addEventListener('click', function (e) {
-  var el = e.target.closest('[data-click]');
-  if (!el) return;
-  var fn = window[el.dataset.click];
-  if (typeof fn === 'function') fn.apply(null, el.dataset.arg !== undefined ? [el.dataset.arg] : []);
-});
-</script>
+</div>
+</div>
 </body>
 </html>

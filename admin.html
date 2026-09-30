@@ -6,7 +6,7 @@
   if(t!=='dark'&&t!=='light'){t=((window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light');} document.documentElement.setAttribute('data-theme',t);
 }catch(e){}})();</script>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Mes langues — Administration</title>
+<title>Papote — Administration</title><!--BRAND_HEAD-->
 <link rel="stylesheet" href="/design-system/ios27-liquid-glass.css">
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:var(--ig27-font-family)}
@@ -82,6 +82,17 @@ input:checked + .slider:before{transform:translateX(16px)}
 .users-table tr:last-child td{border-bottom:none}
 .badge-yes{color:var(--green);font-weight:var(--ig27-weight-semibold)}
 .badge-no{color:var(--muted)}
+.mfa-gate{max-width:560px;margin:10px auto 30px;padding:26px}
+.mfa-gate h2{margin-bottom:8px}
+.mfa-gate p{color:var(--muted);line-height:1.55;margin:8px 0}
+.mfa-key{font-family:ui-monospace,monospace;font-size:18px;letter-spacing:.08em;background:var(--ig27-fill-quaternary);border-radius:12px;padding:12px 14px;word-break:break-all;user-select:all;margin:10px 0}
+.mfa-input{width:100%;font-size:22px;letter-spacing:.3em;text-align:center;padding:12px;border-radius:14px;border:1px solid var(--line);background:var(--ig27-fill-quaternary);color:var(--ink);margin:10px 0}
+.codes{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;font-family:ui-monospace,monospace;background:var(--ig27-fill-quaternary);border-radius:12px;padding:12px;margin:10px 0;user-select:all}
+.cfg-list{list-style:none;padding:0;margin:0}
+.cfg-list li{display:flex;gap:10px;align-items:flex-start;padding:10px 4px;border-bottom:1px solid var(--line)}
+.cfg-list li:last-child{border-bottom:none}
+.cfg-list .st{flex:none;width:22px;text-align:center}
+.cfg-list small{display:block;color:var(--muted);margin-top:2px}
 .adm-nav{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 20px}
 .adm-nav a{text-decoration:none}
 .section{margin-top:34px;scroll-margin-top:16px}
@@ -116,6 +127,8 @@ input:checked + .slider:before{transform:translateX(16px)}
     </div>
   </div>
 
+  <div class="card mfa-gate" id="mfaGate" style="display:none"></div>
+  <div id="adminMain">
   <nav class="adm-nav">
     <a class="btn" href="#sec-langs">🌍 Premium par langue</a>
     <a class="btn" href="#sec-global">★ Fonctionnalités premium</a>
@@ -123,6 +136,7 @@ input:checked + .slider:before{transform:translateX(16px)}
     <a class="btn" href="#sec-levels">🎯 Niveaux des mots</a>
     <a class="btn" href="#sec-users">👥 Comptes</a>
     <a class="btn" href="#sec-audit">🧾 Journal</a>
+    <a class="btn" href="#sec-security">🔐 Sécurité &amp; configuration</a>
   </nav>
   <div class="layout" id="sec-langs">
     <div>
@@ -132,8 +146,8 @@ input:checked + .slider:before{transform:translateX(16px)}
     <div>
       <div class="toolbar">
         <div class="toolbar-row">
-          <input type="search" id="search" placeholder="Filtrer par langue…" oninput="renderList()">
-          <select id="filterMode" onchange="renderList()">
+          <input type="search" id="search" placeholder="Filtrer par langue…" data-input="renderList">
+          <select id="filterMode" data-change="renderList">
             <option value="all">Toutes les langues</option>
             <option value="mixed">Partiellement premium</option>
             <option value="all-premium">100% premium</option>
@@ -142,8 +156,8 @@ input:checked + .slider:before{transform:translateX(16px)}
         </div>
         <div class="toolbar-row">
           <span class="tb-label">Actions groupées</span>
-          <button class="btn primary" onclick="bulk({all:true}, true)">🔒 Tout premium</button>
-          <button class="btn" onclick="bulk({all:true}, false)">🔓 Tout gratuit</button>
+          <button class="btn primary" data-act="bulk" data-scope="all" data-premium="true">🔒 Tout premium</button>
+          <button class="btn" data-act="bulk" data-scope="all" data-premium="false">🔓 Tout gratuit</button>
         </div>
         <div class="toolbar-row" id="moduleBulkRow"></div>
       </div>
@@ -192,9 +206,15 @@ input:checked + .slider:before{transform:translateX(16px)}
       <div class="card" style="overflow-x:auto">
         <table class="users-table" id="auditTable"><tbody><tr><td class="empty">Chargement…</td></tr></tbody></table>
       </div>
+
+      <div class="panel-title section" id="sec-security">🔐 Sécurité &amp; configuration</div>
+      <div class="sub" style="margin-bottom:10px">Vérification automatique de la configuration du serveur (aucune valeur secrète n'est affichée).</div>
+      <div class="card"><ul class="cfg-list" id="cfgList"><li class="empty">Chargement…</li></ul></div>
+      <div class="card" style="margin-top:14px" id="mfaCard"></div>
     </div>
   </div>
 </div>
+</div><!-- /adminMain -->
 <script>
 function escH(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
 var IDEA_STATUS = {nouvelle:'Nouvelle', vue:'Vue', en_cours:'En cours', acceptee:'Acceptée', refusee:'Refusée'};
@@ -202,7 +222,7 @@ var IDEA_CAT = {langue:'Nouvelle langue', contenu:'Contenu', fonctionnalite:'Fon
 function renderGlobalFeatures(){
   var list = STATE.features.filter(function(f){ return f.category === 'global'; });
   document.getElementById('globalFeatures').innerHTML = list.map(function(f){
-    return '<div class="gf-row"><label class="toggle"><input type="checkbox" data-key="'+escH(f.key)+'" '+(f.is_premium?'checked':'')+' onchange="toggleFeature(this)"><span class="slider"></span></label><span>'+escH(f.label)+'</span></div>';
+    return '<div class="gf-row"><label class="toggle"><input type="checkbox" data-key="'+escH(f.key)+'" '+(f.is_premium?'checked':'')+' data-change="toggleFeature"><span class="slider"></span></label><span>'+escH(f.label)+'</span></div>';
   }).join('') || '<div class="empty">Aucune.</div>';
 }
 async function loadIdeas(){
@@ -219,8 +239,8 @@ async function loadIdeas(){
       '<b style="color:var(--ink)">'+escH(s.author_name || '')+'</b> '+escH(s.author_email || 'compte supprimé')+' · '+new Date(s.created_at).toLocaleString('fr-FR')+
       (s.updated_at ? ' · modifiée '+new Date(s.updated_at).toLocaleDateString('fr-FR') : '')+'</div>' +
       '<div class="idea-msg">'+escH(s.message)+'</div>' +
-      '<div class="idea-tools"><select onchange="saveIdea('+s.id+', {status:this.value})">'+opts+'</select>' +
-      '<textarea placeholder="Notes internes (admin uniquement)…" onchange="saveIdea('+s.id+', {admin_notes:this.value})">'+escH(s.admin_notes)+'</textarea></div></div>';
+      '<div class="idea-tools"><select data-change="ideaStatus" data-id="'+s.id+'">'+opts+'</select>' +
+      '<textarea placeholder="Notes internes (admin uniquement)…" data-change="ideaNotes" data-id="'+s.id+'">'+escH(s.admin_notes)+'</textarea></div></div>';
   }).join('') || '<div class="empty">Aucune idée pour ce filtre.</div>';
 }
 async function saveIdea(id, patch){
@@ -238,7 +258,7 @@ async function loadLevels(){
   document.getElementById('lvCounts').innerHTML = '<span class="tb-label">Répartition</span>' + ['A1','A2','B1','B2','C1','C2'].map(function(l){ return '<span class="lv">'+l+'</span> '+(d.counts[l]||0); }).join(' &nbsp; ');
   document.getElementById('lvTable').innerHTML = '<thead><tr><th>Mot</th><th>Traduction</th><th>Thème</th><th>Niveau du contenu</th><th>Niveau appliqué</th></tr></thead><tbody>' +
     d.words.map(function(w){
-      var sel = '<select data-lang="'+escH(lang)+'" data-word="'+escH(w.word_id)+'" onchange="setWordLevel(this.dataset.lang, this.dataset.word, this.value)"><option value="">Par défaut ('+escH(w.level)+')</option>' +
+      var sel = '<select data-lang="'+escH(lang)+'" data-word="'+escH(w.word_id)+'" data-change="wordLevel"><option value="">Par défaut ('+escH(w.level)+')</option>' +
         ['A1','A2','B1','B2','C1','C2'].map(function(l){ return '<option'+(w.level_override===l?' selected':'')+'>'+l+'</option>'; }).join('') + '</select>';
       return '<tr><td><b>'+escH(w.word)+'</b> <span style="color:var(--muted)">'+escH(w.romanization)+'</span></td><td>'+escH(w.gloss_fr)+'</td><td>'+escH(w.theme)+'</td><td><span class="lv">'+w.level+'</span></td><td>'+sel+'</td></tr>';
     }).join('') + '</tbody>' + (d.words.length === 100 ? '<tfoot><tr><td colspan="5" class="empty">100 premiers résultats — affine la recherche.</td></tr></tfoot>' : '');
@@ -300,8 +320,8 @@ async function loadFeatures(){
 
   document.getElementById('moduleBulkRow').innerHTML = '<span class="tb-label">Par module</span>' +
     STATE.modules.map(function(m){
-      return '<button class="btn gold" onclick="bulk({module:\''+m.key+'\'}, true)">🔒 '+m.label+'</button>' +
-             '<button class="btn" onclick="bulk({module:\''+m.key+'\'}, false)">🔓 '+m.label+'</button>';
+      return '<button class="btn gold" data-act="bulk" data-scope="module" data-value="'+escH(m.key)+'" data-premium="true">🔒 '+escH(m.label)+'</button>' +
+             '<button class="btn" data-act="bulk" data-scope="module" data-value="'+escH(m.key)+'" data-premium="false">🔓 '+escH(m.label)+'</button>';
     }).join('');
 
   renderList();
@@ -350,17 +370,17 @@ function renderList(){
       var modulesHtml = fs.map(function(f){
         var modLabel = f.label.split(' — ').slice(1).join(' — ') || f.module;
         return '<div class="mod"><label class="toggle"><input type="checkbox" data-key="'+f.key+'" '+(f.is_premium?'checked':'')+
-          ' onchange="toggleFeature(this)"><span class="slider"></span></label><span class="mlabel">'+modLabel+'</span></div>';
+          ' data-change="toggleFeature"><span class="slider"></span></label><span class="mlabel">'+escH(modLabel)+'</span></div>';
       }).join('');
       return '<div class="lang-row'+(devStatus==='development'?' dev':'')+'">' +
         '<div class="lang-head"><span class="flag">'+meta.flag+'</span><span class="name">'+meta.name+'</span>' +
         '<span class="code">'+code+'</span>'+statusHtml+
-        '<select class="status-select'+(devStatus==='development'?' dev':'')+'" onchange="setLanguageStatus(\''+code+'\', this.value)">' +
+        '<select class="status-select'+(devStatus==='development'?' dev':'')+'" data-change="langStatus" data-code="'+escH(code)+'">' +
         '<option value="active"'+(devStatus==='active'?' selected':'')+'>✅ Active</option>' +
         '<option value="development"'+(devStatus==='development'?' selected':'')+'>🚧 En développement</option>' +
         '</select>' +
-        '<button class="btn" onclick="bulk({lang_code:\''+code+'\'}, true)">🔒</button>' +
-        '<button class="btn" onclick="bulk({lang_code:\''+code+'\'}, false)">🔓</button>' +
+        '<button class="btn" data-act="bulk" data-scope="lang_code" data-value="'+escH(code)+'" data-premium="true">🔒</button>' +
+        '<button class="btn" data-act="bulk" data-scope="lang_code" data-value="'+escH(code)+'" data-premium="false">🔓</button>' +
         '</div>' +
         '<div class="modules">'+modulesHtml+'</div>' +
       '</div>';
@@ -472,16 +492,95 @@ async function loadUsers(){
       '<td>'+(u.subscribed ? '<span class="badge-yes">✓ Oui</span>' : '<span class="badge-no">Non</span>')+'</td>' +
       '<td>'+(u.is_admin ? '<span class="badge-yes">✓ Oui</span>' : '<span class="badge-no">Non</span>')+'</td>' +
       '<td><button type="button" class="btn'+(u.subscribed?'':' primary')+'" style="font-size:var(--ig27-fs-caption2);line-height:var(--ig27-lh-caption2);letter-spacing:var(--ig27-ls-caption2);padding:6px 11px" ' +
-        'data-user-id="'+u.id+'" data-next="'+(!u.subscribed)+'" onclick="togglePremium(this)">' +
+        'data-user-id="'+u.id+'" data-next="'+(!u.subscribed)+'" data-act="togglePremium">' +
         (u.subscribed ? '🔓 Retirer premium' : '✨ Offrir premium') + '</button></td>' +
       '</tr>';
   }).join('');
 }
 
-loadStats();
-loadFeatures();
-loadUsers();
-initAdminExtras();
+// ---- two-factor authentication gate (mandatory for administrators) ----
+function mfaGate(html){ var g = document.getElementById('mfaGate'); g.innerHTML = html; g.style.display = ''; document.getElementById('adminMain').style.display = 'none'; }
+async function mfaStart(){
+  var r = await fetch('/api/admin/mfa/setup', {method:'POST'});
+  var d = await r.json();
+  if (!r.ok){ alert(d.error || 'Erreur'); return; }
+  mfaGate('<h2>🔐 Activer la double authentification</h2>' +
+    '<p>1. Ouvre ton application d\'authentification (Apple Mots de passe, Google Authenticator, 1Password, Authy…) et ajoute un compte avec cette clé :</p>' +
+    '<div class="mfa-key">'+escH(d.secret.replace(/(.{4})/g, '$1 ').trim())+'</div>' +
+    '<p><a class="btn" href="'+escH(d.otpauth)+'">📱 Ouvrir dans l\'app (sur ce téléphone)</a></p>' +
+    '<p>2. Saisis le code à 6 chiffres affiché par l\'application :</p>' +
+    '<input class="mfa-input" id="mfaCode" inputmode="numeric" autocomplete="one-time-code" maxlength="7" placeholder="000000">' +
+    '<button class="btn primary" data-act="mfaEnable">Activer</button> <span id="mfaMsg" class="sub"></span>');
+  document.getElementById('mfaCode').focus();
+}
+async function mfaEnable(){
+  var code = document.getElementById('mfaCode').value.replace(/\s+/g, '');
+  var r = await fetch('/api/admin/mfa/enable', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({code: code})});
+  var d = await r.json();
+  if (!r.ok){ document.getElementById('mfaMsg').textContent = d.error || 'Code incorrect.'; return; }
+  mfaGate('<h2>✅ Double authentification activée</h2><p>Garde ces <b>codes de secours</b> en lieu sûr : chacun permet de te connecter une fois si tu perds ton téléphone. Ils ne seront plus jamais affichés.</p>' +
+    '<div class="codes">'+d.recoveryCodes.map(function(c){ return '<span>'+escH(c)+'</span>'; }).join('')+'</div>' +
+    '<button class="btn primary" data-act="reload">J\'ai noté mes codes, continuer</button>');
+}
+async function mfaDisable(){
+  var pw = prompt('Mot de passe du compte :'); if (!pw) return;
+  var code = prompt('Code à 6 chiffres de ton application :'); if (!code) return;
+  var r = await fetch('/api/admin/mfa/disable', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({password: pw, code: code})});
+  var d = await r.json();
+  if (!r.ok){ alert(d.error || 'Erreur'); return; }
+  location.reload();
+}
+async function loadConfig(){
+  var r = await fetch('/api/admin/config'); if (!r.ok) return;
+  var d = await r.json();
+  document.getElementById('cfgList').innerHTML = d.checks.map(function(c){
+    return '<li><span class="st">'+(c.ok ? '✅' : '⚠️')+'</span><div><b>'+escH(c.label)+'</b>'+(c.help ? '<small>'+escH(c.help)+'</small>' : '')+'</div></li>';
+  }).join('');
+  var m = await (await fetch('/api/admin/mfa')).json();
+  document.getElementById('mfaCard').innerHTML = '<b>Double authentification</b><div class="sub">Active — '+m.recoveryLeft+' code(s) de secours restant(s).</div>' +
+    '<p style="margin-top:10px"><button class="btn" data-act="mfaDisable">Désactiver (mot de passe + code requis)</button></p>';
+}
+async function adminBoot(){
+  var r = await fetch('/api/admin/mfa');
+  if (!r.ok){ location.href = '/'; return; }
+  var st = await r.json();
+  if (!st.enabled){
+    mfaGate('<h2>🔐 Double authentification obligatoire</h2><p>Pour protéger l\'administration, chaque compte administrateur doit utiliser un code temporaire (application d\'authentification) en plus du mot de passe.</p><button class="btn primary" data-act="mfaStart">Configurer maintenant</button>');
+    return;
+  }
+  if (!st.sessionVerified){
+    mfaGate('<h2>🔐 Reconnexion nécessaire</h2><p>Ta session actuelle a été ouverte sans code de double authentification. Déconnecte-toi puis reconnecte-toi : le code te sera demandé.</p><button class="btn primary" data-act="relogin">Me reconnecter</button>');
+    return;
+  }
+  loadStats();
+  loadFeatures();
+  loadUsers();
+  initAdminExtras();
+  loadConfig();
+}
+// Event delegation (no inline handlers: the CSP forbids them).
+var ACT = {
+  bulk: function(el){ var p = {}; if (el.dataset.scope === 'all') p.all = true; else p[el.dataset.scope] = el.dataset.value; bulk(p, el.dataset.premium === 'true'); },
+  togglePremium: function(el){ togglePremium(el); },
+  mfaStart: function(){ mfaStart(); },
+  mfaEnable: function(){ mfaEnable(); },
+  mfaDisable: function(){ mfaDisable(); },
+  reload: function(){ location.reload(); },
+  relogin: function(){ fetch('/api/logout', {method:'POST'}).then(function(){ location.href = '/?verified'; }); }
+};
+var CHANGE = {
+  renderList: function(){ renderList(); },
+  toggleFeature: function(el){ toggleFeature(el); },
+  ideaStatus: function(el){ saveIdea(+el.dataset.id, {status: el.value}); },
+  ideaNotes: function(el){ saveIdea(+el.dataset.id, {admin_notes: el.value}); },
+  wordLevel: function(el){ setWordLevel(el.dataset.lang, el.dataset.word, el.value); },
+  langStatus: function(el){ setLanguageStatus(el.dataset.code, el.value); }
+};
+document.addEventListener('click', function(e){ var el = e.target.closest('[data-act]'); if (el && ACT[el.dataset.act]) ACT[el.dataset.act](el, e); });
+document.addEventListener('change', function(e){ var el = e.target.closest('[data-change]'); if (el && CHANGE[el.dataset.change]) CHANGE[el.dataset.change](el, e); });
+document.addEventListener('input', function(e){ var el = e.target.closest('[data-input]'); if (el && CHANGE[el.dataset.input]) CHANGE[el.dataset.input](el, e); });
+document.addEventListener('keydown', function(e){ if (e.key === 'Enter' && e.target.id === 'mfaCode') mfaEnable(); });
+adminBoot();
 </script>
 </body>
 </html>

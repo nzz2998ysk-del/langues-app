@@ -2,11 +2,16 @@
 // the account has the premium:offline feature. Network first; when the network
 // fails, the last good response from the cache is used, so already-opened
 // languages keep working without a connection. Served at /sw.js (root scope).
-const CACHE = "mes-langues-offline-v1";
+const CACHE = "papote-offline-v1";
 const API_CACHED = [/^\/api\/course\//, /^\/api\/progress\//, /^\/api\/me$/, /^\/api\/features$/];
 
 self.addEventListener("install", () => self.skipWaiting());
-self.addEventListener("activate", (e) => e.waitUntil(self.clients.claim()));
+// Drop caches left by older versions (e.g. before the app was renamed Papote).
+self.addEventListener("activate", (e) => e.waitUntil(
+  caches.keys()
+    .then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))))
+    .then(() => self.clients.claim())
+));
 
 self.addEventListener("message", (e) => {
   if (!e.data || e.data.type !== "precache" || !Array.isArray(e.data.urls)) return;

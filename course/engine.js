@@ -69,10 +69,25 @@
   function rom(r) { return r && P.settings.rom !== false ? '<span class="r">' + esc(r) + "</span>" : ""; }
   function locked(key) { return !!(ACCESS && ACCESS.features && ACCESS.features[key]); }
   function modLocked(mod) { return locked(LANG + ":" + mod); }
-  function toast(msg) {
+  // ---- Papote mascot: one expression per situation (files in
+  // /design-system/brand/mascot/, prepared by scripts/brand/process-brand.py).
+  // Without the files, the previous emoji are kept.
+  var BRAND = { logo: false, mascot: [] };
+  function hasMood(m) { return BRAND.mascot && BRAND.mascot.indexOf(m) >= 0; }
+  function masc(mood, size, cls) {
+    if (!hasMood(mood)) return "";
+    return '<img class="masc ' + (cls || "") + '" src="/design-system/brand/mascot/' + mood + '.png" alt="" width="' + size + '" height="' + size + '" decoding="async">';
+  }
+  // Big illustration for end screens: mascot if available, else the emoji.
+  function mascOr(mood, emoji, size) { return masc(mood, size || 132, "masc-big") || emoji; }
+  function pickMood(list) { var ok = list.filter(hasMood); return ok.length ? ok[Math.floor(Math.random() * ok.length)] : list[0]; }
+
+  function toast(msg, mood) {
     var el = document.getElementById("engToast");
     if (!el) { el = document.createElement("div"); el.id = "engToast"; el.className = "toast"; body.appendChild(el); }
-    el.textContent = msg; el.classList.add("show");
+    el.textContent = msg;
+    if (mood && hasMood(mood)) el.insertAdjacentHTML("afterbegin", masc(mood, 40, "masc-toast"));
+    el.classList.add("show");
     clearTimeout(el._t); el._t = setTimeout(function () { el.classList.remove("show"); }, 2600);
   }
   function goTop(url) { try { window.top.location.href = url; } catch (e) { window.location.href = url; } }
@@ -289,6 +304,7 @@
     var wotd = C.words.length ? C.words[(new Date().getDate() * 37 + new Date().getMonth() * 11) % C.words.length] : null;
     var due = dueWords().length;
     var hero = '<section class="hero"><div class="hero-watermark" aria-hidden="true">' + esc(C.watermark || C.flag) + "</div>" +
+      masc("wave", 104, "masc-hero") +
       "<h1>" + esc(C.greeting || "👋") + (ME.name ? ", " + esc(ME.name) : "") + " !</h1>" +
       "<p>" + esc(T("hub_intro", { lang: langName(LANG) })) + "</p>" +
       '<div class="stat-grid">' +
@@ -378,7 +394,7 @@
   function paintVocab() {
     var list = filteredWords(), el = document.getElementById("vlist");
     if (!el) return;
-    el.innerHTML = list.slice(0, VS.shown).map(vrow).join("") || '<p class="muted">' + esc(T("no_results")) + "</p>";
+    el.innerHTML = list.slice(0, VS.shown).map(vrow).join("") || '<p class="muted with-masc">' + masc("question", 56, "masc-inline") + esc(T("no_results")) + "</p>";
     document.getElementById("vcount").textContent = T("n_shown", { n: Math.min(VS.shown, list.length), total: list.length });
     document.getElementById("vmore").hidden = list.length <= VS.shown;
   }
@@ -393,7 +409,7 @@
     bindLevelPills(VS, upd);
     app.addEventListener("click", function (e) {
       var s = e.target.closest("[data-srs]");
-      if (s) { var w = wordIndex()[s.getAttribute("data-srs")]; if (w) { srsAdd(w); save(); s.textContent = "🧠 " + T("in_review"); toast(T("added_review")); } return; }
+      if (s) { var w = wordIndex()[s.getAttribute("data-srs")]; if (w) { srsAdd(w); save(); s.textContent = "🧠 " + T("in_review"); toast(T("added_review"), "wink"); } return; }
       var r = e.target.closest(".vrow");
       if (r && !e.target.closest("button")) r.classList.toggle("open");
     });
@@ -403,7 +419,7 @@
     app.querySelectorAll("[data-lv]").forEach(function (b) {
       b.addEventListener("click", function () {
         var l = b.getAttribute("data-lv");
-        if (l && C.locked && C.locked.levels.indexOf(l) >= 0) { toast(T("feat_levels-c") + " — " + T("premium_only")); return; }
+        if (l && C.locked && C.locked.levels.indexOf(l) >= 0) { toast(T("feat_levels-c") + " — " + T("premium_only"), "peek"); return; }
         if (!l) state.levels = [];
         else if (b.getAttribute("data-multi")) { var i = state.levels.indexOf(l); i >= 0 ? state.levels.splice(i, 1) : state.levels.push(l); }
         else state.levels = [l];
@@ -426,7 +442,7 @@
       return '<div class="sect"><div class="secttit">' + esc(themeLabel(th)) + "</div>" + byTheme[th].map(function (p) {
         return '<div class="prow">' + snd(p.t) + '<div style="flex:1">' + tgt(p.t) + (p.r && P.settings.rom !== false ? '<div class="muted small">' + esc(p.r) + "</div>" : "") + '<div class="g">' + esc(gl(p.g)) + fallbackTag(p.g) + "</div></div>" + lvBadge(p.level) + "</div>";
       }).join("") + "</div>";
-    }).join("") || '<p class="muted">' + esc(T("no_results")) + "</p>";
+    }).join("") || '<p class="muted with-masc">' + masc("question", 56, "masc-inline") + esc(T("no_results")) + "</p>";
   }
   function bindPhrases() { bindLevelPills(PS, paintPhrases); paintPhrases(); }
 
@@ -449,7 +465,7 @@
     var pron = list.filter(function (g) { return g.kind === "pronunciation"; }), main = list.filter(function (g) { return g.kind !== "pronunciation"; });
     document.getElementById("glist").innerHTML = main.map(function (g, i) { return grammarCard(g, i === 0); }).join("") +
       (pron.length ? '<div class="sect"><div class="secttit">🗣️ ' + esc(T("pronunciation_rules")) + "</div>" + pron.map(function (g) { return grammarCard(g); }).join("") + "</div>" : "") ||
-      '<p class="muted">' + esc(T("no_results")) + "</p>";
+      '<p class="muted with-masc">' + masc("question", 56, "masc-inline") + esc(T("no_results")) + "</p>";
     decorateTargetText(document.getElementById("glist"));
   }
   function bindGrammar() { bindLevelPills(GS, paintGrammar); paintGrammar(); }
@@ -551,7 +567,7 @@
   function readingList(state) { return (C.readings || []).filter(function (r) { return !state.levels.length || state.levels.indexOf(r.level) >= 0; }); }
   function bindLecture() {
     var cur = [];
-    var paint = function () { cur = readingList(RS); document.getElementById("rlist").innerHTML = cur.map(function (r, i) { return readingCard(r, i); }).join("") || '<p class="muted">' + esc(T("no_results")) + "</p>"; };
+    var paint = function () { cur = readingList(RS); document.getElementById("rlist").innerHTML = cur.map(function (r, i) { return readingCard(r, i); }).join("") || '<p class="muted with-masc">' + masc("question", 56, "masc-inline") + esc(T("no_results")) + "</p>"; };
     bindLevelPills(RS, paint); paint();
     bindReadings(function () { return cur; });
   }
@@ -702,7 +718,8 @@
         if (!adv && !ok) expl += '<div class="expl muted small">🔒 ' + esc(T("feedback_locked")) + "</div>";
       }
       var fb = document.getElementById("fb");
-      fb.innerHTML = '<div class="feedback ' + (ok ? "ok" : "ko") + '"><b>' + esc(ok ? T("correct") : T("wrong")) + "</b>" + expl + '</div><button type="button" class="bpr wide" id="next" style="margin-top:var(--ig27-space-3)">' + esc(T("continue")) + "</button>";
+      var fbMood = ok ? pickMood(["laugh", "wink", "cheer", "amazed"]) : (QUIZ.hearts === 1 ? "sad" : pickMood(["surprised", "question", "sad"]));
+      fb.innerHTML = '<div class="feedback ' + (ok ? "ok" : "ko") + (hasMood(fbMood) ? " with-masc" : "") + '">' + masc(fbMood, 64, "masc-fb") + "<div><b>" + esc(ok ? T("correct") : T("wrong")) + "</b>" + expl + "</div></div>" + '<button type="button" class="bpr wide" id="next" style="margin-top:var(--ig27-space-3)">' + esc(T("continue")) + "</button>";
       fb.querySelector(".feedback").classList.add(ok ? "pop" : "shake");
       if (q.audio && (q.mode !== "listen")) TTS.speak(q.audio);
       document.getElementById("next").addEventListener("click", function () { QUIZ.i++; paintQuiz(); });
@@ -746,7 +763,8 @@
     var errs = Q.errors.length && !modLocked("feedback-avance") ? '<div class="box" style="text-align:left;margin-top:var(--ig27-space-5)"><h3>' + esc(T("review_errors")) + "</h3>" + Q.errors.map(function (e) {
       return '<div class="exline" style="margin-top:var(--ig27-space-2)">' + snd(e.q.audio || e.q.answer, true) + "<div><b>" + esc(e.q.prompt || e.q.audio) + "</b> → " + tgt(e.q.answer) + (e.given ? ' <span class="muted">(' + esc(T("you_said")) + " : " + esc(e.given) + ")</span>" : "") + "</div></div>";
     }).join("") + "</div>" : "";
-    app.innerHTML = quizShell('<div class="complete"><div class="big">' + (pct >= 80 ? "🏆" : pct >= 50 ? "👏" : "💪") + "</div><h2>" + esc(res && res.title || T("quiz_done")) + "</h2><p>" +
+    var endMood = pct === 100 ? "amazed" : pct >= 80 ? "celebrate" : pct >= 50 ? "cheer" : "sad";
+    app.innerHTML = quizShell('<div class="complete"><div class="big">' + mascOr(endMood, pct >= 80 ? "🏆" : pct >= 50 ? "👏" : "💪") + "</div><h2>" + esc(res && res.title || T("quiz_done")) + "</h2><p>" +
       esc(T("score_line", { ok: Q.ok, total: total, pct: pct, xp: Q.xp })) + "</p>" + (res && res.html ? res.html : "") +
       '<div class="row" style="justify-content:center;margin-top:var(--ig27-space-5)"><button type="button" class="btn2" id="again">↺ ' + esc(T("again")) + '</button><button type="button" class="bpr" id="back">' + esc(T("back")) + "</button></div>" + errs + "</div>");
     document.getElementById("again").addEventListener("click", function () { startQuiz(Q.opts); });
@@ -770,7 +788,7 @@
   function bindEcoute() {
     app.querySelectorAll("[data-mode]").forEach(function (b) { b.addEventListener("click", function () { XS.levels = ES.levels; launchMode(b.getAttribute("data-mode")); }); });
     var cur = [];
-    var paint = function () { cur = readingList(ES); document.getElementById("elist").innerHTML = cur.map(function (r, i) { return readingCard(r, i, true); }).join("") || '<p class="muted">' + esc(T("no_results")) + "</p>"; };
+    var paint = function () { cur = readingList(ES); document.getElementById("elist").innerHTML = cur.map(function (r, i) { return readingCard(r, i, true); }).join("") || '<p class="muted with-masc">' + masc("question", 56, "masc-inline") + esc(T("no_results")) + "</p>"; };
     bindLevelPills(ES, paint); paint();
     bindReadings(function () { return cur; });
   }
@@ -789,7 +807,7 @@
     }
     var html = '<h1 class="ttl">' + esc(T("mod_revision")) + '</h1><p class="sub">' + esc(adv ? T("srs_adv_sub") : T("srs_free_sub", { n: 20 })) + "</p>" +
       '<div class="stat-grid">' + stat(due.length, T("due_now")) + stat(total, T("in_srs")) + stat(adv ? "∞" : left, T("left_today")) + "</div>" +
-      (due.length && left ? '<button type="button" class="bpr wide" id="startRev">🧠 ' + esc(T("review_now")) + " (" + Math.min(due.length, left) + ")</button>" : '<div class="box">' + esc(!left ? T("srs_cap_reached") : T("nothing_due")) + "</div>") +
+      (due.length && left ? '<button type="button" class="bpr wide" id="startRev">🧠 ' + esc(T("review_now")) + " (" + Math.min(due.length, left) + ")</button>" : '<div class="box with-masc">' + masc(!left ? "stretch" : "sleep", 72, "masc-inline") + "<div>" + esc(!left ? T("srs_cap_reached") : T("nothing_due")) + "</div></div>") +
       '<div class="box row" style="margin-top:var(--ig27-space-4)"><span>' + esc(T("learn_new")) + '</span><span class="spacer"></span><select class="sel" id="newLv">' + LEVELS.filter(function (l) { return !(C.locked && C.locked.levels.indexOf(l) >= 0); }).map(function (l) { return "<option>" + l + "</option>"; }).join("") + '</select><button type="button" class="btn2" id="addNew">+ 10</button></div>' +
       forecast + (!adv ? '<div class="sect">' + gate("premium:srs-advanced", "🧠") + "</div>" : "");
     return shell("mod_revision", html);
@@ -798,7 +816,7 @@
     var add = document.getElementById("addNew");
     if (add) add.addEventListener("click", function () {
       var l = document.getElementById("newLv").value, fresh = C.words.filter(function (w) { return w.level === l && !P.srs[w.id]; }).slice(0, 10);
-      fresh.forEach(srsAdd); save(); toast(T("added_n", { n: fresh.length })); render();
+      fresh.forEach(srsAdd); save(); toast(T("added_n", { n: fresh.length }), "wink"); render();
     });
     var st = document.getElementById("startRev");
     if (st) st.addEventListener("click", function () {
@@ -809,7 +827,7 @@
   function reviewSession(cards) {
     var i = 0;
     var paint = function () {
-      if (i >= cards.length) { app.innerHTML = shell("mod_revision", '<div class="complete"><div class="big">🎉</div><h2>' + esc(T("review_done")) + '</h2><button type="button" class="bpr" data-nav="revision">' + esc(T("back")) + "</button></div>"); return; }
+      if (i >= cards.length) { app.innerHTML = shell("mod_revision", '<div class="complete"><div class="big">' + mascOr("love", "🎉") + '</div><h2>' + esc(T("review_done")) + '</h2><button type="button" class="bpr" data-nav="revision">' + esc(T("back")) + "</button></div>"); return; }
       var w = cards[i];
       app.innerHTML = shell("mod_revision", '<div class="quiz-card"><div class="quiz-kind">' + (i + 1) + "/" + cards.length + " " + lvBadge(w.level) + '</div><div class="flash"><div class="big t"' + (C.dir === "rtl" ? ' dir="rtl"' : "") + ">" + esc(w.t) + '</div><div class="row" style="justify-content:center;margin-top:var(--ig27-space-2)">' + snd(w.t) + "</div>" +
         '<div id="back" hidden>' + (w.r ? '<div class="rom">' + esc(w.r) + "</div>" : "") + '<div class="gl">' + esc(wg(w)) + "</div>" + (w.ex ? '<div class="exs">' + snd(w.ex.t, true) + " " + tgt(w.ex.t) + "<br>" + esc(gl(w.ex.g)) + "</div>" : "") + "</div></div>" +
@@ -858,7 +876,7 @@
         var best = 0, heard = "";
         for (var k = 0; k < ev.results[0].length; k++) { var alt = ev.results[0][k].transcript, sc = Math.max(similarity(alt, x.t), x.r ? similarity(alt, x.r) : 0); if (sc > best) { best = sc; heard = alt; } }
         var pct = Math.round(best * 100);
-        out.innerHTML = '<b style="color:var(--ig27-' + (pct >= 85 ? "green" : pct >= 60 ? "orange" : "red") + ')">' + pct + "%</b> — " + esc(T("heard")) + " : « " + esc(heard) + " » " + esc(pct >= 85 ? T("pron_great") : pct >= 60 ? T("pron_ok") : T("pron_retry"));
+        out.innerHTML = masc(pct >= 85 ? "amazed" : pct >= 60 ? "cheer" : "question", 48, "masc-inline") + '<b style="color:var(--ig27-' + (pct >= 85 ? "green" : pct >= 60 ? "orange" : "red") + ')">' + pct + "%</b> — " + esc(T("heard")) + " : « " + esc(heard) + " » " + esc(pct >= 85 ? T("pron_great") : pct >= 60 ? T("pron_ok") : T("pron_retry"));
         record({ id: x.id, level: x.level, theme: x.theme || "_pron" }, pct >= 70); addXp(pct >= 85 ? 5 : pct >= 60 ? 2 : 0); save();
       };
       rec.onerror = function (ev) { out.textContent = T("sr_error") + " (" + ev.error + ")"; };
@@ -891,7 +909,7 @@
         '<div class="grid cols-2">' +
         '<div class="box"><h3>📘 ' + esc(T("lesson")) + '</h3><p class="muted small">' + esc(T("lesson_d")) + "</p>" +
         (left > 0 ? '<button type="button" class="bpr wide" id="startLesson" style="margin-top:var(--ig27-space-3)">' + esc(T("start_lesson")) + "</button>" + (unlimited ? "" : '<p class="muted small" style="margin-top:var(--ig27-space-2)">' + esc(T("lessons_left", { n: left })) + "</p>") :
-          '<p class="small" style="margin-top:var(--ig27-space-3)">🔒 ' + esc(T("lessons_cap")) + '</p><button type="button" class="bpr" data-go="/subscribe">★ ' + esc(T("go_premium")) + "</button>") + "</div>" +
+          masc("sleep", 72, "masc-inline") + '<p class="small" style="margin-top:var(--ig27-space-3)">🔒 ' + esc(T("lessons_cap")) + '</p><button type="button" class="bpr" data-go="/subscribe">★ ' + esc(T("go_premium")) + "</button>") + "</div>" +
         '<div class="box"><h3>🎓 ' + esc(T("mod_examen")) + '</h3><p class="muted small">' + esc(exam ? T("exam_best", { n: exam.best }) : T("exam_d")) + '</p><button type="button" class="btn2" data-exam="' + L + '" style="margin-top:var(--ig27-space-3)">' + esc(T("take_exam")) + (locked("premium:exam") ? " 🔒" : "") + "</button></div></div>") +
       (gram.length ? '<div class="sect"><div class="secttit">📑 ' + esc(T("mod_grammaire")) + "</div>" + gram.map(function (g) { return grammarCard(g); }).join("") + "</div>" : "") +
       (reads.length ? '<div class="sect"><div class="secttit">📖 ' + esc(T("mod_lecture")) + '</div><button type="button" class="btn2" data-nav="lecture">' + esc(T("n_texts", { n: reads.length })) + " ›</button></div>" : "") +
@@ -1023,7 +1041,7 @@
   function paintCert(L) {
     var ex = P.exams[L], el = document.getElementById("cert"); if (!el) return;
     el.innerHTML = '<div style="font-size:48px">' + esc(C.flag) + "</div><h2>" + esc(T("cert_title")) + '</h2><p class="muted">' + esc(T("cert_attests")) + '</p><div class="who">' + esc(ME.name || T("learner")) + "</div><p>" +
-      esc(T("cert_body", { lang: langName(LANG), level: L, label: T("level_" + L), score: ex.best })) + '</p><p class="muted small" style="margin-top:var(--ig27-space-6)">' + esc(T("cert_date", { d: ex.date })) + " · Mes langues · #" + esc(String(ME.id) + "-" + LANG + "-" + L) + "</p>";
+      esc(T("cert_body", { lang: langName(LANG), level: L, label: T("level_" + L), score: ex.best })) + '</p><p class="muted small" style="margin-top:var(--ig27-space-6)">' + esc(T("cert_date", { d: ex.date })) + " · Papote · #" + esc(String(ME.id) + "-" + LANG + "-" + L) + "</p>";
   }
 
   // ------------------------------------------------------------------ dictionary
@@ -1045,13 +1063,13 @@
       res.innerHTML = (w.length ? '<div class="vlist">' + w.map(vrow).join("") + "</div>" : "") +
         (ph.length ? '<div class="sect"><div class="secttit">' + esc(T("mod_phrases")) + "</div>" + ph.map(function (p) { return '<div class="prow">' + snd(p.t) + '<div style="flex:1">' + tgt(p.t) + '<div class="g">' + esc(gl(p.g)) + "</div></div>" + lvBadge(p.level) + "</div>"; }).join("") + "</div>" : "") +
         (gr.length ? '<div class="sect"><div class="secttit">' + esc(T("mod_grammaire")) + "</div>" + gr.map(function (g) { return grammarCard(g); }).join("") + "</div>" : "") ||
-        '<p class="muted">' + esc(T("no_results")) + "</p>";
+        '<p class="muted with-masc">' + masc("question", 56, "masc-inline") + esc(T("no_results")) + "</p>";
     };
     q.addEventListener("input", run);
     var paintCustom = function () { document.getElementById("cwlist").innerHTML = allWords().filter(function (w) { return w.custom; }).map(vrow).join(""); };
     document.getElementById("cw_add").addEventListener("click", function () {
       var cap = locked("premium:custom-words") ? 20 : Infinity;
-      if ((P.custom || []).length >= cap) { toast(T("feat_custom-words") + " — " + T("premium_only")); return; }
+      if ((P.custom || []).length >= cap) { toast(T("feat_custom-words") + " — " + T("premium_only"), "peek"); return; }
       var t = document.getElementById("cw_t").value.trim(), g = document.getElementById("cw_g").value.trim();
       if (!t || !g) { toast(T("word_required")); return; }
       P.custom.push({ t: t, r: document.getElementById("cw_r").value.trim(), g: g, level: document.getElementById("cw_l").value });
@@ -1088,7 +1106,7 @@
     app.querySelectorAll("[data-set]").forEach(function (c) { c.addEventListener("change", function () { P.settings[c.getAttribute("data-set")] = c.checked; save(); }); });
     document.getElementById("reset").addEventListener("click", function () { if (confirm(T("reset_confirm"))) { var s = P.settings; P = newProgress(); P.settings = s; save(); render(); } });
     document.getElementById("export").addEventListener("click", function () {
-      if (locked("premium:export")) { toast(T("premium_only")); return; }
+      if (locked("premium:export")) { toast(T("premium_only"), "peek"); return; }
       var rows = [["word", "romanization", "translation", "level", "theme", "correct", "wrong", "srs_box", "known"]];
       allWords().forEach(function (w) { var s = P.words[w.id] || {}, r = P.srs[w.id] || {}; rows.push([w.t, w.r || "", wg(w), w.level, w.theme, s.ok || 0, s.ko || 0, r.box || "", known(w) ? 1 : 0]); });
       var csv = rows.map(function (r) { return r.map(function (c) { return '"' + String(c).replace(/"/g, '""') + '"'; }).join(","); }).join("\n");
@@ -1098,7 +1116,7 @@
     var swNav = TOP.navigator;
     if (swNav && swNav.serviceWorker && swNav.serviceWorker.controller) offState.textContent = T("offline_on");
     document.getElementById("offline").addEventListener("click", function () {
-      if (locked("premium:offline")) { toast(T("premium_only")); return; }
+      if (locked("premium:offline")) { toast(T("premium_only"), "peek"); return; }
       if (!swNav || !swNav.serviceWorker) { offState.textContent = T("offline_unsupported"); return; }
       offState.textContent = T("offline_preparing");
       swNav.serviceWorker.register("/sw.js").then(function (reg) {
@@ -1132,9 +1150,9 @@
     document.title = T(L ? "mod_levels" : "mod_" + PAGE) + " · " + langName(LANG);
     app.innerHTML = fn();
     if (L) bindLevel(L); else if (BINDERS[PAGE]) BINDERS[PAGE]();
-    var fresh2 = checkBadges(); if (fresh2.length && !locked("premium:badges")) { save(); toast(fresh2[0].ic + " " + T("badge_new", { name: T("badge_" + fresh2[0].id) })); }
+    var fresh2 = checkBadges(); if (fresh2.length && !locked("premium:badges")) { save(); toast(fresh2[0].ic + " " + T("badge_new", { name: T("badge_" + fresh2[0].id) }), "cool"); }
     var goal = P.settings.goal || 30, d = dayRec();
-    if (d.xp >= goal && !d.goalShown) { d.goalShown = true; save(); toast("🎯 " + T("goal_reached", { n: goal })); }
+    if (d.xp >= goal && !d.goalShown) { d.goalShown = true; save(); toast("🎯 " + T("goal_reached", { n: goal }), "celebrate"); }
   }
 
   // ------------------------------------------------------------------ boot
@@ -1148,6 +1166,7 @@
     }).then(function (j) { try { (TOP.__COURSE_CACHE = TOP.__COURSE_CACHE || {})[LANG] = j; } catch (e) {} return j; });
     courseP.then(function (j) {
       C = j.course; ACCESS = j.access; ME = j.me;
+      if (j.brand) BRAND = j.brand;
       BASE = String(ME.baseLang || "fr"); UI = (window.I18N && window.I18N.resolve(BASE)) || "fr";
       document.documentElement.lang = BASE;
       if (window.I18N && window.I18N.rtl(BASE)) document.documentElement.dir = "rtl";
@@ -1167,7 +1186,8 @@
       });
     }).catch(function (err) {
       if (err && err.message === "auth") return;
-      app.innerHTML = '<div class="eng-error"><div style="font-size:40px">⚠️</div><p>' + esc((window.I18N && window.I18N.t("fr", "load_error")) || "Erreur") + '</p><p class="muted small">' + esc(err && err.message) + '</p><button type="button" class="bpr" onclick="location.reload()">↻</button></div>';
+      app.innerHTML = '<div class="eng-error"><div style="font-size:40px">⚠️</div><p>' + esc((window.I18N && window.I18N.t("fr", "load_error")) || "Erreur") + '</p><p class="muted small">' + esc(err && err.message) + '</p><button type="button" class="bpr" id="engReload">↻</button></div>';
+      document.getElementById("engReload").addEventListener("click", function () { location.reload(); });
     });
   }
   // The app shell can ask an already-open page to jump somewhere (e.g. a level preset).

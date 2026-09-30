@@ -6,7 +6,7 @@
   if(t!=='dark'&&t!=='light'){t=((window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light');} document.documentElement.setAttribute('data-theme',t);
 }catch(e){}})();</script>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Mes langues — Premium</title>
+<title>Papote — Premium</title><!--BRAND_HEAD-->
 <link rel="stylesheet" href="/design-system/ios27-liquid-glass.css">
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:var(--ig27-font-family)}
@@ -71,7 +71,7 @@ a.back{display:block;margin-top:18px;color:var(--muted);font-size:var(--ig27-fs-
       <li data-i18n="sub_no_ads">Aucune publicité, jamais</li>
       <li data-i18n="sub_no_commit">Sans engagement, annulable à tout moment</li>
     </ul>
-    <button id="goBtn" onclick="startCheckout()" data-i18n="sub_btn">S'abonner</button>
+    <button id="goBtn" data-click="startCheckout" data-i18n="sub_btn">S'abonner</button>
     <div class="msg" id="msg"></div>
     <a class="back" href="/">‹ <span data-i18n="back_home">Retour à l'accueil</span></a>
   </div>
@@ -111,6 +111,16 @@ async function startCheckout(){
   btn.disabled = false;
   btn.textContent = tr('sub_btn');
 }
+</script>
+<script>
+// Click delegation: [data-click="fn"] calls the global fn (with data-arg if set).
+// No inline onclick attributes, so the Content-Security-Policy can forbid them.
+document.addEventListener('click', function (e) {
+  var el = e.target.closest('[data-click]');
+  if (!el) return;
+  var fn = window[el.dataset.click];
+  if (typeof fn === 'function') fn.apply(null, el.dataset.arg !== undefined ? [el.dataset.arg] : []);
+});
 </script>
 </body>
 </html>

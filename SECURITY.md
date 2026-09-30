@@ -1,10 +1,10 @@
-# Audit de sécurité — Mes langues
+# Audit de sécurité — Papote
 
 Audit complet du code (`server.js`, `lib/`, pages HTML, moteur `course/`), de la
 configuration (`render.yaml`, `.env.example`), du schéma PostgreSQL et des
 dépendances npm. Date : 30/09/2026.
 
-Tests de régression : `test/security.test.js` (21 tests d'attaque HTTP contre
+Tests de régression : `test/security.test.js` (23 tests d'attaque HTTP contre
 le vrai serveur et une vraie base PostgreSQL) :
 
 ```bash
@@ -56,11 +56,11 @@ pointer vers des données réelles.
 | 15 | Faible | `lib/email.js` | Adresses email complètes dans les logs (données personnelles). | ✅ Corrigé (masquées) |
 | 16 | Faible | `admin.html` (niveaux des mots) | Identifiant de mot injecté dans un `onchange` inline : un apostrophe dans le contenu aurait permis une injection JS (contenu non fourni par les utilisateurs). | ✅ Corrigé (`data-*`) |
 | 17 | Faible | `render.yaml` | Adresse email personnelle de l'admin versionnée dans le dépôt. | ✅ Retirée (à saisir dans Render) |
-| 18 | Moyenne | `server.js` (CSP) | `script-src 'unsafe-inline'` : nécessaire tant que les pages utilisent des scripts inline (dont les 936 pages en `srcdoc`). | ⏳ Reste à faire |
-| 19 | Moyenne | pool PostgreSQL | TLS vers la base sans vérification du certificat (`rejectUnauthorized:false`). | ⚙️ Option ajoutée : `DATABASE_SSL_CA` |
-| 20 | Moyenne | exploitation | Base Render **gratuite** : pas de sauvegardes automatiques, et elle expire. | ⏳ Reste à faire |
-| 21 | Moyenne | conformité | Pas de politique de confidentialité ni de mentions légales ; la reconnaissance vocale du navigateur (Chrome) envoie l'audio au fournisseur du navigateur. | ⏳ Reste à faire |
-| 22 | Moyenne | admin | Pas de double authentification pour le compte admin. | ⏳ Reste à faire |
+| 18 | Moyenne | `server.js` (CSP) | `script-src 'unsafe-inline'` : n'importe quel script injecté aurait pu s'exécuter. | ✅ Corrigé : nonce par requête sur chaque `<script>`/`<style>` (y compris les 936 pages `srcdoc`), 41 gestionnaires `onclick=` remplacés par de la délégation, rapports de violation sur `/api/csp-report`. Seuls les attributs `style=""` restent autorisés (`style-src-attr`), ils ne peuvent pas exécuter de code |
+| 19 | Moyenne | pool PostgreSQL | TLS vers la base sans vérification du certificat. | ✅ Corrigé : `DATABASE_SSL=auto` vérifie le certificat quand c'est possible ; sinon repli signalé dans `/admin` avec `DATABASE_SSL_CA` à fournir |
+| 20 | Moyenne | exploitation | Pas de sauvegardes. | ✅ Corrigé : sauvegarde quotidienne chiffrée (GitHub Actions, 30 jours) + scripts de sauvegarde et de restauration testés ; date de la dernière sauvegarde visible dans `/admin`. La base Render gratuite expire quand même : passer à un plan payant reste recommandé |
+| 21 | Moyenne | conformité | Pas de politique de confidentialité ni de mentions légales. | ✅ Corrigé : `/confidentialite` et `/mentions-legales` (y compris l'audio traité par le navigateur), liens depuis l'accueil et l'inscription ; identité de l'éditeur à renseigner (`LEGAL_*`) |
+| 22 | Moyenne | admin | Pas de double authentification pour le compte admin. | ✅ Corrigé : TOTP obligatoire pour toutes les routes admin, 8 codes de secours à usage unique, protection contre le rejeu, secret chiffré (AES-256-GCM), sessions admin de 12 h |
 | 23 | Faible | `rateLimited()` | Limiteur en mémoire : propre à chaque instance et remis à zéro au redémarrage. | ⏳ Acceptable avec une seule instance |
 | 24 | Faible | `/api/signup` | « Un compte existe déjà avec cet email » permet de savoir si une adresse est inscrite. | ⏳ Compromis d'ergonomie assumé |
 | 25 | Faible | `/api/login` | La limite par compte (10 essais / 15 min) permet de bloquer temporairement la connexion d'un tiers. | ⏳ Acceptable |
@@ -105,26 +105,15 @@ Les autres points sont corrigés comme indiqué dans le tableau.
 
 ## Reste à faire (recommandations)
 
-1. **CSP sans `unsafe-inline`** : déplacer les scripts inline dans des fichiers
-   `.js` ou leur ajouter un nonce par requête (gros chantier sur `app.html`).
-2. **Sauvegardes** : passer la base Render sur un plan payant (sauvegardes
-   quotidiennes, pas d'expiration), ou programmer un `pg_dump` chiffré.
-3. **Base de données** : renseigner `DATABASE_SSL_CA` avec le certificat du
-   fournisseur, pour vérifier le TLS.
-4. **Conformité** : publier une politique de confidentialité et des mentions
-   légales (responsable du traitement, finalités, durées de conservation,
-   sous-traitants : Render, Stripe, Resend et le fournisseur de reconnaissance
-   vocale du navigateur, droits et contact). Le seul cookie est la session,
-   strictement nécessaire : pas de bannière de consentement requise tant
-   qu'aucun traceur ou analytics n'est ajouté.
-5. **Admin** : ajouter la double authentification (TOTP) ; envisager des
-   sessions admin plus courtes.
-6. **Logs** : définir une durée de conservation côté Render ; ne jamais
-   ajouter de corps de requête dans les logs.
-7. **Dépendances** : `npm audit` à chaque déploiement ; prévoir la migration
-   vers Express 5 et bcryptjs 3 (pas de faille connue aujourd'hui).
-8. **Audio et fichiers** : l'application n'accepte aucun upload et ne stocke
-   aucun fichier audio (synthèse et reconnaissance vocales faites dans le
-   navigateur). Si des uploads sont ajoutés un jour : vérifier le type MIME
-   réel et la taille, stocker hors du dossier web et servir avec
-   `Content-Disposition: attachment`.
+1. **Renseigner la configuration** signalée par `/admin` → « 🔐 Sécurité & configuration » :
+   `RESEND_API_KEY` et `EMAIL_FROM`, les variables `LEGAL_*`, les secrets GitHub
+   de sauvegarde `BACKUP_DATABASE_URL` et `BACKUP_PASSPHRASE`, et
+   `DATABASE_SSL_CA` si le certificat ne peut pas être vérifié.
+2. **Base Render** : passer à un plan payant (la base gratuite expire).
+3. **Styles inline** : les attributs `style=""` restent autorisés. Risque faible,
+   ils ne permettent pas d'exécuter du code.
+4. **Logs** : définir une durée de conservation côté Render.
+5. **Dépendances** : `npm audit` à chaque déploiement ; prévoir Express 5 et bcryptjs 3.
+6. **Fichiers** : aucun upload utilisateur aujourd'hui. Si des uploads sont
+   ajoutés, vérifier le type MIME réel et la taille, stocker hors du dossier web
+   et servir avec `Content-Disposition: attachment`.

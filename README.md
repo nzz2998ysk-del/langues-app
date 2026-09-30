@@ -1,4 +1,4 @@
-# Mes langues — app d'apprentissage (39 langues)
+# Papote — app d'apprentissage des langues (39 langues)
 
 Application web d'apprentissage de 39 langues (anglais, espagnol, italien,
 hébreu, chinois, portugais, russe, allemand, japonais, français, hindi, coréen,
@@ -9,6 +9,22 @@ haïtien, espéranto, klingon, navajo), toutes avec les mêmes modules, du nivea
 A1 au C2. Inscription par email + mot de passe (comptes sur PostgreSQL, mots de
 passe hachés bcrypt), compte administrateur, abonnement Premium (Stripe) et
 facture envoyée par email.
+
+## Accueil, logo et mascotte
+
+- **Page d'accueil publique** (`login.html`, servie sur `/` sans session) :
+  hero avec le logo animé et des bulles « bonjour » dans plusieurs langues,
+  chiffres clés, défilé des 39 langues, fonctionnalités, étapes, Premium,
+  liens légaux ; connexion, inscription, mot de passe oublié et double
+  authentification dans une feuille modale.
+- **Animation d'ouverture** de l'application (logo ou bulle + lettres
+  « Papote », « bonjour » dans 12 langues), une fois par session, respecte
+  « réduire les animations ».
+- **Logo et mascotte** : fichiers à déposer dans `design-system/brand/` (voir
+  le README de ce dossier), puis `python3 scripts/brand/process-brand.py`. Tant
+  qu'ils sont absents, l'app affiche un logotype dessiné en CSS et les emoji
+  habituels. La mascotte réagit aux bonnes et mauvaises réponses, aux fins de
+  leçon, examens, révisions, badges, objectif du jour, contenu Premium…
 
 ## Design
 
@@ -144,7 +160,28 @@ dans [`SECURITY.md`](SECURITY.md). En bref :
   `customer.subscription.deleted`.
 - **RGPD** : export des données (JSON) et suppression du compte depuis
   `/profile` → « Mes données ».
-- **Tests** : `TEST_DATABASE_URL=postgresql://… npm test` lance 21 tests
+- **CSP stricte** : aucun script inline autorisé sans nonce, aucun gestionnaire
+  `onclick=` ; violations remontées sur `/api/csp-report`.
+- **Double authentification obligatoire pour l'admin** (TOTP : Apple Mots de
+  passe, Google Authenticator, 1Password…, avec 8 codes de secours) ; secret
+  chiffré en base (AES-256-GCM).
+- **Configuration vérifiée** : `/admin` → « 🔐 Sécurité & configuration » liste
+  ce qui est en place ou manquant (ADMIN_EMAIL, Resend, Stripe et ses
+  événements de webhook — ajoutés automatiquement via l'API Stripe —, TLS de
+  la base, dernière sauvegarde, mentions légales).
+- **Sauvegardes** : `.github/workflows/db-backup.yml` fait chaque nuit un
+  `pg_dump` chiffré (AES-256), conservé 30 jours. Secrets GitHub à créer :
+  `BACKUP_DATABASE_URL` (Render → base → *External Database URL*) et
+  `BACKUP_PASSPHRASE`. Restauration : `scripts/restore-db.sh`.
+- **TLS base de données** : `DATABASE_SSL=auto` (défaut) essaie d'abord une
+  connexion avec certificat vérifié et ne se replie sur un TLS non vérifié
+  qu'en dernier recours (signalé dans l'admin) ; `DATABASE_SSL_CA` pour fournir
+  le certificat.
+- **Mentions légales et confidentialité** : `/mentions-legales` et
+  `/confidentialite`, identité de l'éditeur via `LEGAL_PUBLISHER`,
+  `LEGAL_ADDRESS`, `LEGAL_CONTACT_EMAIL` (et `LEGAL_SIRET`, `LEGAL_DIRECTOR`
+  facultatifs).
+- **Tests** : `TEST_DATABASE_URL=postgresql://… npm test` lance 23 tests
   d'attaque contre le vrai serveur (base de test effacée à chaque lancement).
 
 ## Emails transactionnels (Resend)
@@ -165,7 +202,7 @@ Settings → Environment** (jamais dans le code ni dans un commit — voir aussi
 | Variable | Où l'obtenir |
 |---|---|
 | `RESEND_API_KEY` | resend.com → dashboard → **API Keys** → *Create API Key* (accès « Sending » suffit). |
-| `EMAIL_FROM` | L'expéditeur, ex. `Mes langues <no-reply@ton-domaine.com>`. Le domaine doit d'abord être **vérifié** dans Resend → **Domains** → *Add domain*, puis ajouter chez ton hébergeur DNS les enregistrements affichés (SPF + DKIM, DMARC conseillé) et attendre le statut *Verified*. |
+| `EMAIL_FROM` | L'expéditeur, ex. `Papote <no-reply@ton-domaine.com>`. Le domaine doit d'abord être **vérifié** dans Resend → **Domains** → *Add domain*, puis ajouter chez ton hébergeur DNS les enregistrements affichés (SPF + DKIM, DMARC conseillé) et attendre le statut *Verified*. |
 
 Comportement :
 - Sans `RESEND_API_KEY`, l'app fonctionne normalement : aucun email n'est

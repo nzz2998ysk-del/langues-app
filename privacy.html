@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Papote — Politique de confidentialité</title><!--BRAND_HEAD-->
+<script>(function(){try{
+  var t = localStorage.getItem('lang_theme');
+  if(t!=='dark'&&t!=='light'){t=((window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light');} document.documentElement.setAttribute('data-theme',t);
+}catch(e){}})();</script>
+<link rel="stylesheet" href="/design-system/ios27-liquid-glass.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:var(--ig27-font-family)}
+html,body{height:100%}
+body{display:block;background:
+    radial-gradient(1100px 520px at 8% -10%, color-mix(in srgb,var(--ig27-accent) 10%,transparent), transparent 60%),
+    radial-gradient(900px 480px at 100% 100%, color-mix(in srgb,var(--ig27-accent) 12%,transparent), transparent 55%),
+    var(--bg);
+  color:var(--ink);min-height:100vh;padding:24px}
+.wrap{max-width:400px;width:100%}
+h1{font-size:var(--ig27-fs-title2);line-height:var(--ig27-lh-title2);letter-spacing:var(--ig27-ls-title2);font-weight:var(--ig27-weight-bold);margin-bottom:8px;text-align:center}
+.lead{color:var(--muted);font-size:var(--ig27-fs-subheadline);line-height:var(--ig27-lh-subheadline);letter-spacing:var(--ig27-ls-subheadline);margin-bottom:22px;text-align:center}
+.card{background:var(--ig27-glass-regular-bg);-webkit-backdrop-filter:blur(var(--ig27-glass-regular-blur)) saturate(var(--ig27-glass-regular-saturate));backdrop-filter:blur(var(--ig27-glass-regular-blur)) saturate(var(--ig27-glass-regular-saturate));
+  border:1px solid var(--ig27-glass-rim-color);border-radius:var(--ig27-radius-xxxl);padding:26px;
+  box-shadow:0 20px 48px -16px color-mix(in srgb,var(--ig27-black) 18%,transparent),inset 0 1px 0 color-mix(in srgb,var(--ig27-white) 50%,transparent)}
+label{display:block;font-size:var(--ig27-fs-caption1);line-height:var(--ig27-lh-caption1);letter-spacing:var(--ig27-ls-caption1);font-weight:var(--ig27-weight-semibold);color:var(--muted);margin-bottom:8px}
+.field + .field{margin-top:18px}
+input[type=password]{width:100%;background:var(--ig27-fill-quaternary);border:1px solid var(--line);border-radius:var(--ig27-radius-xl);
+  padding:13px 14px;font-size:var(--ig27-fs-subheadline);line-height:var(--ig27-lh-subheadline);letter-spacing:var(--ig27-ls-subheadline);color:var(--ink);font-family:inherit}
+input[type=password]:focus{outline:none;box-shadow:0 0 0 4px var(--ig27-accent-soft);border-color:var(--primary)}
+button{margin-top:20px;width:100%;background:var(--primary);color:var(--ig27-on-accent);border:none;border-radius:var(--ig27-radius-glass);padding:15px;
+  font-size:var(--ig27-fs-subheadline);line-height:var(--ig27-lh-subheadline);letter-spacing:var(--ig27-ls-subheadline);font-weight:var(--ig27-weight-semibold);cursor:pointer;transition:background var(--ig27-duration-fast),transform var(--ig27-duration-fast) var(--ig27-ease-spring);
+  box-shadow:0 6px 16px -4px color-mix(in srgb,var(--ig27-accent) 40%,transparent)}
+button:hover{background:var(--primary-dark)}
+button:active{transform:scale(.97)}
+button:disabled{opacity:.5;cursor:default;box-shadow:var(--ig27-shadow-sm)}
+.msg{font-size:var(--ig27-fs-footnote);line-height:var(--ig27-lh-footnote);letter-spacing:var(--ig27-ls-footnote);margin-top:14px;text-align:center;color:var(--red)}
+.msg.ok{color:var(--green)}
+.back{display:block;text-align:center;margin-top:18px;color:var(--muted);font-size:var(--ig27-fs-footnote);line-height:var(--ig27-lh-footnote);letter-spacing:var(--ig27-ls-footnote);text-decoration:none}
+
+.wrap{max-width:760px;margin:0 auto}
+.doc h1{text-align:left}
+.doc h2{font-size:var(--ig27-fs-title3);line-height:var(--ig27-lh-title3);font-weight:var(--ig27-weight-semibold);margin:26px 0 8px}
+.doc p,.doc li{font-size:var(--ig27-fs-subheadline);line-height:1.6;color:var(--ink)}
+.doc ul{padding-left:20px;margin:6px 0}
+.doc table{width:100%;border-collapse:collapse;margin:8px 0;font-size:var(--ig27-fs-footnote)}
+.doc th,.doc td{text-align:left;padding:8px;border-bottom:1px solid var(--line);vertical-align:top}
+.doc a{color:var(--primary)}
+.todo{background:color-mix(in srgb,var(--ig27-orange) 18%,transparent);color:var(--ink);border-radius:6px;padding:0 5px}
+.updated{color:var(--muted);font-size:var(--ig27-fs-footnote)}
+.back{text-align:left;margin:0 0 16px}
+</style>
+<link rel="stylesheet" href="/design-system/ios27-app.css">
+</head>
+<body>
+<div class="wrap doc">
+<a class="back" href="/">‹ Papote</a>
+<div class="card">
+<h1>Politique de confidentialité</h1>
+<p class="updated">Dernière mise à jour : 30 septembre 2026</p>
+<h2>Responsable du traitement</h2>
+<p>{{LEGAL_PUBLISHER}}, {{LEGAL_ADDRESS}} — contact : {{LEGAL_CONTACT_EMAIL}}.</p>
+<h2>Données collectées et finalités</h2>
+<table>
+<tr><th>Données</th><th>Pourquoi</th><th>Base légale</th><th>Durée</th></tr>
+<tr><td>Email, mot de passe (haché, jamais lisible), prénom affiché, langue de base, ordre des langues</td><td>Créer et faire fonctionner ton compte</td><td>Exécution du contrat</td><td>Jusqu'à la suppression du compte</td></tr>
+<tr><td>Progression d'apprentissage (réponses, révisions, badges, mots personnels)</td><td>Suivre ta progression et la synchroniser entre appareils</td><td>Exécution du contrat</td><td>Jusqu'à la suppression du compte</td></tr>
+<tr><td>Idées envoyées dans la boîte à idées</td><td>Améliorer l'application</td><td>Intérêt légitime</td><td>Jusqu'à la suppression du compte</td></tr>
+<tr><td>Abonnement et factures (montant, date, identifiants Stripe)</td><td>Gérer l'abonnement Premium, obligations comptables</td><td>Contrat, obligation légale</td><td>10 ans (factures), détachées du compte s'il est supprimé</td></tr>
+<tr><td>Adresse IP et données techniques</td><td>Sécurité (limitation des tentatives, journal des actions d'administration), journaux du serveur</td><td>Intérêt légitime</td><td>Quelques heures en mémoire ; journaux d'hébergement selon l'hébergeur</td></tr>
+<tr><td>Jetons de réinitialisation et de confirmation d'email</td><td>Sécuriser ton compte</td><td>Exécution du contrat</td><td>1 heure / 7 jours</td></tr>
+</table>
+<p>Aucune publicité, aucun traceur, aucune revente de données.</p>
+<h2>Audio et reconnaissance vocale</h2>
+<p>La lecture audio et la reconnaissance vocale (exercices de prononciation) utilisent les fonctions intégrées à ton navigateur. Papote n'enregistre ni ne stocke ta voix. Selon le navigateur, l'audio peut être traité par son éditeur (par exemple Google pour Chrome, Apple pour Safari) : consulte leur politique de confidentialité. Le micro n'est utilisé que lorsque tu appuies sur « Parler ».</p>
+<h2>Sous-traitants</h2>
+<ul>
+<li><b>Render</b> (hébergement, États-Unis) — transferts encadrés par les clauses contractuelles types de la Commission européenne.</li>
+<li><b>Stripe</b> (paiement, Irlande / États-Unis).</li>
+<li><b>Resend</b> (envoi des emails transactionnels, États-Unis).</li>
+</ul>
+<h2>Cookies et stockage local</h2>
+<p>Un seul cookie : la session de connexion, strictement nécessaire (aucun consentement requis). Le stockage local du navigateur garde tes préférences (thème, réglages audio) et une copie de ta progression pour le mode hors ligne ; il est effacé à la déconnexion pour le mode hors ligne.</p>
+<h2>Sécurité</h2>
+<p>Connexion chiffrée (HTTPS), mots de passe hachés (bcrypt), sessions révocables, double authentification pour les administrateurs, journal des actions d'administration, sauvegardes chiffrées de la base.</p>
+<h2>Tes droits</h2>
+<p>Tu peux à tout moment accéder à tes données, les rectifier, les exporter (portabilité), t'opposer à un traitement, en demander la limitation ou l'effacement. Depuis <a href="/profile">ton profil</a>, section « Mes données » : téléchargement de toutes tes données (JSON) et suppression définitive du compte. Pour toute autre demande : {{LEGAL_CONTACT_EMAIL}}. Tu peux aussi introduire une réclamation auprès de la <a href="https://www.cnil.fr" rel="noopener">CNIL</a>.</p>
+<h2>Mineurs</h2>
+<p>Le service s'adresse aux personnes de 15 ans et plus ; en dessous, l'accord d'un parent est nécessaire.</p>
+
+</div>
+</div>
+</body>
+</html>

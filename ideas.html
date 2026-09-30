@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Mes langues — Boîte à idées</title>
+<title>Papote — Boîte à idées</title><!--BRAND_HEAD-->
 <script>(function(){try{
   var t = localStorage.getItem('lang_theme');
   if(t!=='dark'&&t!=='light'){t=((window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light');} document.documentElement.setAttribute('data-theme',t);
@@ -63,7 +63,7 @@ button:disabled{opacity:.5;cursor:default;box-shadow:var(--ig27-shadow-sm)}
     <label for="msg" data-i18n="ideas_label">Ton idée</label>
     <textarea id="msg" maxlength="2000" data-i18n-ph="ideas_ph" placeholder="Ex : Ajouter un mode audio pour la prononciation en coréen..."></textarea>
     <div class="count"><span id="count">0</span> / 2000</div>
-    <button id="sendBtn" onclick="sendSuggestion()" data-i18n="send">Envoyer</button>
+    <button id="sendBtn" data-click="sendSuggestion" data-i18n="send">Envoyer</button>
     <div class="msg" id="status"></div>
   </div>
   <div class="note" data-i18n="ideas_note">Chaque idée est lue par l'équipe et reçoit un statut (vue, en cours, acceptée ou refusée).</div>
@@ -109,6 +109,16 @@ async function sendSuggestion(){
   btn.disabled = false;
   btn.textContent = tr('send');
 }
+</script>
+<script>
+// Click delegation: [data-click="fn"] calls the global fn (with data-arg if set).
+// No inline onclick attributes, so the Content-Security-Policy can forbid them.
+document.addEventListener('click', function (e) {
+  var el = e.target.closest('[data-click]');
+  if (!el) return;
+  var fn = window[el.dataset.click];
+  if (typeof fn === 'function') fn.apply(null, el.dataset.arg !== undefined ? [el.dataset.arg] : []);
+});
 </script>
 </body>
 </html>

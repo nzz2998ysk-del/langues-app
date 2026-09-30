@@ -11,6 +11,7 @@ const { spawn } = require("node:child_process");
 const crypto = require("node:crypto");
 const path = require("node:path");
 const { Pool } = require("pg");
+const totp = require("../lib/totp");
 
 const DB = process.env.TEST_DATABASE_URL;
 const PORT = 3900 + Math.floor(Math.random() * 90);
@@ -27,22 +28,27 @@ function stripeEvent(event) {
   return fetch(BASE + "/api/webhooks/stripe", { method: "POST", headers: { "content-type": "application/json", "stripe-signature": `t=${t},v1=${sig}` }, body });
 }
 
-// Minimal cookie-aware client.
+// Minimal cookie-aware client (keeps every cookie the server sets).
 function client() {
-  let cookie = "";
+  const jar = new Map();
+  const cookieHeader = () => [...jar].map(([k, v]) => `${k}=${v}`).join("; ");
   return async function req(method, url, body, headers = {}) {
     const res = await fetch(BASE + url, {
       method,
       redirect: "manual",
-      headers: { ...(body !== undefined ? { "content-type": "application/json" } : {}), ...(cookie ? { cookie } : {}), ...headers },
+      headers: { ...(body !== undefined ? { "content-type": "application/json" } : {}), ...(jar.size ? { cookie: cookieHeader() } : {}), ...headers },
       body: body === undefined ? undefined : typeof body === "string" ? body : JSON.stringify(body),
     });
-    const set = res.headers.get("set-cookie");
-    if (set) cookie = set.split(";")[0].endsWith("=") ? "" : set.split(";")[0];
+    for (const c of res.headers.getSetCookie()) {
+      const [pair] = c.split(";");
+      const i = pair.indexOf("=");
+      const k = pair.slice(0, i), v = pair.slice(i + 1);
+      if (!v || /Expires=Thu, 01 Jan 1970/i.test(c)) jar.delete(k); else jar.set(k, v);
+    }
     let json = null;
     const text = await res.text();
     try { json = JSON.parse(text); } catch (e) { /* not JSON */ }
-    return { status: res.status, headers: res.headers, json, text, cookie: () => cookie };
+    return { status: res.status, headers: res.headers, json, text, cookie: () => cookieHeader() };
   };
 }
 async function signup(email, password = PW) {
@@ -76,9 +82,21 @@ after(async () => {
   if (pool) await pool.end();
 });
 
-test("security headers are set", { skip }, async () => {
+test("security headers are set, CSP forbids inline scripts", { skip }, async () => {
   const r = await client()("GET", "/");
-  assert.match(r.headers.get("content-security-policy") || "", /default-src 'self'/);
+  const csp = r.headers.get("content-security-policy") || "";
+  assert.match(csp, /default-src 'self'/);
+  const scriptSrc = (csp.match(/script-src ([^;]+)/) || [])[1] || "";
+  assert.doesNotMatch(scriptSrc, /unsafe-inline|unsafe-eval/);
+  const nonce = (scriptSrc.match(/'nonce-([^']+)'/) || [])[1];
+  assert.ok(nonce, "script nonce missing");
+  // Every <script> of the page carries this request's nonce; no inline handlers.
+  const tags = r.text.match(/<script[^>]*>/g) || [];
+  assert.ok(tags.length > 0 && tags.every((t) => t.includes(`nonce="${nonce}"`)), "script without nonce");
+  assert.doesNotMatch(r.text, /\son(click|change|input|submit|load|error)=/i);
+  // A new nonce per request.
+  const r2 = await client()("GET", "/");
+  assert.notEqual(((r2.headers.get("content-security-policy") || "").match(/'nonce-([^']+)'/) || [])[1], nonce);
   assert.equal(r.headers.get("x-frame-options"), "SAMEORIGIN");
   assert.equal(r.headers.get("x-content-type-options"), "nosniff");
   assert.equal(r.headers.get("x-powered-by"), null);
@@ -128,7 +146,56 @@ test("signing up with ADMIN_EMAIL does not grant admin until the address is veri
     [crypto.createHash("sha256").update(raw).digest("hex"), ADMIN]);
   r = await client()("GET", "/api/verify-email?token=" + raw);
   assert.equal(r.status, 302);
+  // Now admin, but the admin area still demands two-factor authentication.
+  r = await c("GET", "/api/admin/users");
+  assert.equal(r.status, 403);
+  assert.equal(r.json.code, "mfa_setup_required");
+});
+
+// Sets up TOTP for the admin account and returns a client with an MFA session.
+let adminSecret = null, adminRecovery = null;
+async function adminClient() {
+  const c = client();
+  const r = await c("POST", "/api/login", { email: ADMIN, password: PW });
+  if (r.json && r.json.mfaRequired) {
+    const step = Math.floor(Date.now() / 30000);
+    // Use the next time step so a code is never replayed within the same window.
+    const used = (await pool.query("SELECT totp_last_step FROM users WHERE email = $1", [ADMIN])).rows[0].totp_last_step;
+    const s = Number(used) >= step ? step + 1 : step;
+    const m = await c("POST", "/api/login/mfa", { code: totp.hotp(adminSecret, s) });
+    assert.equal(m.status, 200, m.text);
+    return c;
+  }
+  const setup = await c("POST", "/api/admin/mfa/setup", {});
+  assert.equal(setup.status, 200, setup.text);
+  adminSecret = setup.json.secret;
+  const en = await c("POST", "/api/admin/mfa/enable", { code: totp.hotp(adminSecret, Math.floor(Date.now() / 30000)) });
+  assert.equal(en.status, 200, en.text);
+  adminRecovery = en.json.recoveryCodes;
+  return c;
+}
+
+test("admin routes require two-factor authentication, codes cannot be replayed", { skip }, async () => {
+  const admin = await adminClient();
+  assert.equal((await admin("GET", "/api/admin/users")).status, 200);
+  // A fresh password-only login does not open a session: the code is required.
+  const c = client();
+  const r = await c("POST", "/api/login", { email: ADMIN, password: PW });
+  assert.equal(r.json.mfaRequired, true);
+  assert.equal((await c("GET", "/api/me")).status, 401);
+  assert.equal((await c("POST", "/api/login/mfa", { code: "000000" })).status, 401);
+  // The code that was just used is refused (replay protection).
+  const last = Number((await pool.query("SELECT totp_last_step FROM users WHERE email = $1", [ADMIN])).rows[0].totp_last_step);
+  assert.equal((await c("POST", "/api/login/mfa", { code: totp.hotp(adminSecret, last) })).status, 401);
+  // A recovery code works exactly once.
+  assert.equal((await c("POST", "/api/login/mfa", { code: adminRecovery[0] })).status, 200);
   assert.equal((await c("GET", "/api/admin/users")).status, 200);
+  const c3 = client();
+  await c3("POST", "/api/login", { email: ADMIN, password: PW });
+  assert.equal((await c3("POST", "/api/login/mfa", { code: adminRecovery[0] })).status, 401);
+  // The TOTP secret is stored encrypted, never in clear.
+  const row = (await pool.query("SELECT totp_secret_enc FROM users WHERE email = $1", [ADMIN])).rows[0];
+  assert.ok(!row.totp_secret_enc.includes(adminSecret));
 });
 
 test("regular users cannot reach admin endpoints (privilege escalation)", { skip }, async () => {
@@ -253,8 +320,7 @@ test("GDPR: export contains the account's data, deletion needs the password", { 
 });
 
 test("admin actions are written to the audit trail", { skip }, async () => {
-  const admin = client();
-  await admin("POST", "/api/login", { email: ADMIN, password: PW });
+  const admin = await adminClient();
   await signup("gift@example.com");
   const me = await pool.query("SELECT id FROM users WHERE email = 'gift@example.com'");
   const r = await admin("PATCH", "/api/admin/users/" + me.rows[0].id, { subscribed: true });
@@ -288,6 +354,17 @@ test("Premium follows the real Stripe subscription state", { skip }, async () =>
   r = await stripeEvent({ type: "customer.subscription.deleted", data: { object: { id: "sub_1", customer: "cus_1", status: "canceled" } } });
   assert.equal(r.status, 200);
   assert.equal(await subscribed(), false);
+});
+
+test("legal pages are public and never inject raw environment values", { skip }, async () => {
+  for (const u of ["/mentions-legales", "/confidentialite"]) {
+    const r = await client()("GET", u);
+    assert.equal(r.status, 200);
+    assert.match(r.text, /Papote/);
+    assert.doesNotMatch(r.text, /\{\{[A-Z_]+\}\}/);
+  }
+  const csp = await fetch(BASE + "/api/csp-report", { method: "POST", headers: { "content-type": "application/csp-report" }, body: JSON.stringify({ "csp-report": { "violated-directive": "script-src" } }) });
+  assert.equal(csp.status, 204);
 });
 
 test("the digest trigger needs its secret", { skip }, async () => {

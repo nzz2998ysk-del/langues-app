@@ -15,17 +15,20 @@ const {
 } = require("./lib/email");
 const { LEVELS, PREMIUM_FEATURES, loadCourse, courseForUser, syncVocabulary } = require("./lib/course");
 const stripeLib = require("./lib/stripe");
+const totp = require("./lib/totp");
 
 const PORT = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET;
 const DATABASE_URL = process.env.DATABASE_URL;
 const COOKIE_NAME = "langues_session";
+// Short-lived cookie between "password OK" and "2FA code OK" at login.
+const MFA_COOKIE = "langues_mfa";
 const isProd = process.env.NODE_ENV === "production";
 // Account that becomes administrator — only once it has proved it owns the
 // address (email verification link or password-reset link), so nobody can
 // pre-register this address and grab the admin role. No hard-coded default.
 const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || "").trim().toLowerCase();
-const BUSINESS_NAME = process.env.BUSINESS_NAME || "Mes langues";
+const BUSINESS_NAME = process.env.BUSINESS_NAME || "Papote";
 // Where the daily "boîte à idées" digest is sent. Defaults to the admin account.
 const DIGEST_EMAIL = (process.env.DIGEST_EMAIL || ADMIN_EMAIL).toLowerCase();
 // Minimum length for new passwords (signup, reset). Existing shorter passwords
@@ -101,22 +104,56 @@ if (!JWT_SECRET) {
   console.error("FATAL: JWT_SECRET environment variable is not set.");
   process.exit(1);
 }
+// Encryption key material for the admins' TOTP secrets.
+const TOTP_KEY = process.env.TOTP_ENC_KEY || JWT_SECRET;
 if (!DATABASE_URL) {
   console.error("FATAL: DATABASE_URL environment variable is not set.");
   process.exit(1);
 }
 
-// TLS to the database. Render's managed Postgres uses a certificate Node does
-// not know, hence rejectUnauthorized:false by default; set DATABASE_SSL_CA (PEM)
-// to verify the server certificate strictly.
-const pool = new Pool({
-  connectionString: DATABASE_URL,
-  ssl: DATABASE_URL.includes("localhost")
-    ? false
-    : process.env.DATABASE_SSL_CA
-      ? { rejectUnauthorized: true, ca: process.env.DATABASE_SSL_CA }
-      : { rejectUnauthorized: false },
-});
+// ---- Database connection with TLS ----
+// DATABASE_SSL = auto (default) | verify | no-verify | disable.
+// auto: first try a TLS connection that VERIFIES the server certificate (system
+// CAs, plus DATABASE_SSL_CA if set); only if the certificate cannot be verified,
+// fall back to encrypted-but-unverified TLS and report it in /admin.
+// DATABASE_SSL_CA may be the PEM text or its base64.
+const DB_TLS = { mode: "", note: "" };
+let pool;
+function databaseCa() {
+  const raw = process.env.DATABASE_SSL_CA || "";
+  if (!raw) return undefined;
+  return raw.includes("BEGIN CERTIFICATE") ? raw : Buffer.from(raw, "base64").toString("utf8");
+}
+const CERT_ERRORS = /SELF_SIGNED|UNABLE_TO_VERIFY|UNABLE_TO_GET_ISSUER|CERT_|ERR_TLS_CERT|altnames|self.signed/i;
+async function createPool() {
+  const pref = String(process.env.DATABASE_SSL || "auto").toLowerCase();
+  const local = /@(localhost|127\.0\.0\.1)[:/]/.test(DATABASE_URL);
+  const make = (ssl) => new Pool({ connectionString: DATABASE_URL, ssl });
+  if (local || pref === "disable") {
+    DB_TLS.mode = "disabled";
+    DB_TLS.note = local ? "base locale" : "DATABASE_SSL=disable";
+    return make(false);
+  }
+  if (pref === "no-verify") {
+    DB_TLS.mode = "unverified";
+    DB_TLS.note = "DATABASE_SSL=no-verify";
+    return make({ rejectUnauthorized: false });
+  }
+  const strict = make({ rejectUnauthorized: true, ca: databaseCa() });
+  try {
+    await strict.query("SELECT 1");
+    DB_TLS.mode = "verified";
+    DB_TLS.note = databaseCa() ? "certificat vérifié avec DATABASE_SSL_CA" : "certificat vérifié (autorités publiques)";
+    return strict;
+  } catch (err) {
+    await strict.end().catch(() => {});
+    if (pref === "verify" || !CERT_ERRORS.test(`${err.code || ""} ${err.message || ""}`)) throw err;
+    console.warn(`[db] TLS certificate could not be verified (${err.code || err.message}); falling back to unverified TLS. Set DATABASE_SSL_CA to fix.`);
+    DB_TLS.mode = "unverified";
+    DB_TLS.note = `certificat non vérifiable (${err.code || "erreur"}) : renseigner DATABASE_SSL_CA`;
+    return make({ rejectUnauthorized: false });
+  }
+}
 
 // Access model: every language is free at a basic level for every account.
 // What the admin can toggle free <-> premium here is no longer "which
@@ -243,6 +280,11 @@ async function initDb() {
   await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS token_version INTEGER NOT NULL DEFAULT 0;`);
   await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS stripe_customer_id TEXT;`);
   await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS stripe_subscription_id TEXT;`);
+  // Two-factor authentication (TOTP), mandatory for administrators.
+  await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS totp_secret_enc TEXT;`);
+  await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS totp_enabled BOOLEAN NOT NULL DEFAULT FALSE;`);
+  await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS totp_last_step BIGINT NOT NULL DEFAULT -1;`);
+  await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS totp_recovery JSONB NOT NULL DEFAULT '[]'::jsonb;`);
   // Admins that already exist keep their role (it was granted before email
   // verification existed); new grants require a verified address.
   await pool.query("UPDATE users SET email_verified = TRUE WHERE is_admin = TRUE AND email_verified = FALSE");
@@ -434,29 +476,122 @@ app.use((req, res, next) => {
 });
 
 // ---- baseline security headers (A05: Security Misconfiguration) ----
+// Content-Security-Policy without 'unsafe-inline' for scripts: every <script>
+// and <style> element of the HTML pages (including the 936 course pages that
+// app.html embeds as srcdoc iframes, which inherit this policy) carries a
+// per-request nonce, and no page uses inline event handlers (onclick=...).
+// Only style="" attributes stay allowed (style-src-attr): they cannot run code.
 app.disable("x-powered-by");
 app.use((req, res, next) => {
+  const nonce = crypto.randomBytes(16).toString("base64");
+  res.locals.nonce = nonce;
   res.setHeader("X-Frame-Options", "SAMEORIGIN");
   res.setHeader("X-Content-Type-Options", "nosniff");
   res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
   // microphone=(self): the pronunciation pages (embedded same-origin iframes with
   // allow="microphone") use speech recognition; everything else stays off.
   res.setHeader("Permissions-Policy", "geolocation=(), microphone=(self), camera=()");
-  // Defense-in-depth against XSS: no external origins are ever loaded (everything
-  // is same-origin or inline), so a same-origin-only CSP costs nothing today but
-  // stops an accidentally-introduced injection from loading attacker script/data
-  // from elsewhere. 'unsafe-inline' is kept because the pages use inline <script>
-  // blocks without a nonce; tightening that further would need a template rework.
   res.setHeader(
     "Content-Security-Policy",
-    "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; " +
-    "img-src 'self' data:; font-src 'self' data:; connect-src 'self'; " +
-    "object-src 'none'; base-uri 'self'; frame-ancestors 'self'"
+    `default-src 'self'; script-src 'self' 'nonce-${nonce}'; style-src 'self' 'nonce-${nonce}'; ` +
+    `style-src-elem 'self' 'nonce-${nonce}'; style-src-attr 'unsafe-inline'; ` +
+    "img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; media-src 'self' blob: data:; " +
+    "worker-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'; " +
+    "report-uri /api/csp-report"
   );
   if (isProd) {
-    res.setHeader("Strict-Transport-Security", "max-age=15552000; includeSubDomains");
+    res.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
   }
   next();
+});
+
+// HTML pages are served with the request's CSP nonce added to every <script>
+// and <style> tag. Templates are read once (placeholder pre-inserted), so each
+// request is a single string split/join.
+const NONCE_MARK = "__CSP_NONCE__";
+const htmlTemplates = new Map();
+function htmlTemplate(name) {
+  if (isProd && htmlTemplates.has(name)) return htmlTemplates.get(name);
+  const raw = require("fs").readFileSync(path.join(__dirname, name), "utf8");
+  const tpl = raw.split("\n").map((line) =>
+    // app.html's ALL_PAGES line is JSON: its attribute quotes must be escaped.
+    line.startsWith("var ALL_PAGES = ")
+      ? line.replace(/<(script|style)(?=[\s>])/g, `<$1 nonce=\\"${NONCE_MARK}\\"`)
+      : line.replace(/<(script|style)(?=[\s>])/g, `<$1 nonce="${NONCE_MARK}"`)
+  ).join("\n").split(NONCE_MARK);
+  htmlTemplates.set(name, tpl);
+  return tpl;
+}
+// ---- Papote brand (logo, icons, mascot) ----
+// Files are produced by scripts/brand/process-brand.py into design-system/brand/
+// and listed in brand.json; everything degrades gracefully when absent.
+const BRAND_DIR = path.join(__dirname, "design-system", "brand");
+let brandCache = { mtime: -1, data: { logo: false, icons: false, mascot: [] } };
+function brandInfo() {
+  try {
+    const file = path.join(BRAND_DIR, "brand.json");
+    const st = require("fs").statSync(file);
+    if (st.mtimeMs !== brandCache.mtime) {
+      const d = JSON.parse(require("fs").readFileSync(file, "utf8"));
+      brandCache = { mtime: st.mtimeMs, data: { logo: !!d.logo, icons: !!d.icons, mascot: Array.isArray(d.mascot) ? d.mascot.filter((m) => /^[a-z]+$/.test(m)) : [] } };
+    }
+  } catch (e) {
+    brandCache = { mtime: -1, data: { logo: false, icons: false, mascot: [] } };
+  }
+  return brandCache.data;
+}
+function brandMarkup() {
+  const b = brandInfo();
+  return {
+    "<!--BRAND_HEAD-->": b.icons
+      ? '<link rel="icon" type="image/png" href="/design-system/brand/favicon-32.png"><link rel="apple-touch-icon" href="/design-system/brand/apple-touch-icon.png"><link rel="manifest" href="/manifest.webmanifest">'
+      : "",
+    "<!--BRAND_LOGO-->": b.logo ? '<img class="brand-logo" src="/design-system/brand/logo-512.png" alt="Papote">' : "",
+    "<!--BRAND_SPLASH-->": b.logo ? '<img class="intro-logo" src="/design-system/brand/logo-512.png" alt="">' : "",
+    "<!--BRAND_HERO-->": b.logo ? '<img class="hero-logo" src="/design-system/brand/logo-512.png" alt="Papote" fetchpriority="high">' : "",
+    "<!--BRAND_MASCOTS-->": ["wave", "laugh", "question", "cool", "love", "celebrate"]
+      .filter((m) => b.mascot.includes(m))
+      .map((m) => `<img src="/design-system/brand/mascot/${m}.png" alt="" loading="lazy" width="128" height="128">`).join(""),
+  };
+}
+
+function sendHtml(res, name, vars) {
+  res.setHeader("Content-Type", "text/html; charset=utf-8");
+  res.setHeader("Cache-Control", "no-store");
+  let html = htmlTemplate(name).join(res.locals.nonce);
+  const brand = brandMarkup();
+  html = html.replace(/<!--BRAND_[A-Z]+-->/g, (m) => brand[m] || "");
+  if (vars) html = html.replace(/\{\{([A-Z_]+)\}\}/g, (m, k) => (k in vars ? vars[k] : m));
+  res.send(html);
+}
+
+// ---- Legal notice & privacy policy: publisher identity from the environment ----
+const LEGAL_FIELDS = ["LEGAL_PUBLISHER", "LEGAL_ADDRESS", "LEGAL_CONTACT_EMAIL"];
+const escapeHtmlText = (v) => String(v).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+function legalVars() {
+  const val = (k) => {
+    const v = (process.env[k] || "").trim();
+    return v ? escapeHtmlText(v) : `<span class="todo">[à compléter : ${k}]</span>`;
+  };
+  const contact = (process.env.LEGAL_CONTACT_EMAIL || "").trim();
+  return {
+    LEGAL_PUBLISHER: val("LEGAL_PUBLISHER"),
+    LEGAL_ADDRESS: val("LEGAL_ADDRESS"),
+    LEGAL_CONTACT_EMAIL: contact ? `<a href="mailto:${escapeHtmlText(contact)}">${escapeHtmlText(contact)}</a>` : val("LEGAL_CONTACT_EMAIL"),
+    LEGAL_DIRECTOR: process.env.LEGAL_DIRECTOR ? escapeHtmlText(process.env.LEGAL_DIRECTOR) : val("LEGAL_PUBLISHER"),
+    LEGAL_SIRET_LINE: process.env.LEGAL_SIRET ? "SIRET : " + escapeHtmlText(process.env.LEGAL_SIRET) : "",
+  };
+}
+app.get("/mentions-legales", (req, res) => sendHtml(res, "legal.html", legalVars()));
+app.get("/confidentialite", (req, res) => sendHtml(res, "privacy.html", legalVars()));
+
+// CSP violation reports (browsers POST them here): logged, rate-limited.
+app.post("/api/csp-report", express.json({ type: ["application/csp-report", "application/json"], limit: "20kb" }), (req, res) => {
+  if (!rateLimited("csp:" + (req.ip || "unknown"), 30, 15 * 60 * 1000)) {
+    const r = (req.body && req.body["csp-report"]) || req.body || {};
+    console.warn("[csp] violation:", String(r["violated-directive"] || r.effectiveDirective || "?"), String(r["blocked-uri"] || r.blockedURL || "").slice(0, 200), String(r["document-uri"] || "").slice(0, 120));
+  }
+  res.status(204).end();
 });
 
 // ---- design system (iOS 27 Liquid Glass tokens + app layer) ----
@@ -500,15 +635,19 @@ setInterval(() => {
   }
 }, 60000).unref();
 
-function signSession(user) {
-  return jwt.sign({ uid: user.id, email: user.email, tv: user.token_version || 0 }, JWT_SECRET, { expiresIn: "30d", algorithm: "HS256" });
+// `mfa: true` marks a session opened with the second factor (required for
+// every admin route). Admin sessions last 12 h instead of 30 days.
+function signSession(user, opts = {}) {
+  const claims = { uid: user.id, email: user.email, tv: user.token_version || 0 };
+  if (opts.mfa) claims.mfa = true;
+  return jwt.sign(claims, JWT_SECRET, { expiresIn: opts.mfa ? "12h" : "30d", algorithm: "HS256" });
 }
-function setSessionCookie(res, user) {
-  res.cookie(COOKIE_NAME, signSession(user), {
+function setSessionCookie(res, user, opts = {}) {
+  res.cookie(COOKIE_NAME, signSession(user, opts), {
     httpOnly: true,
     secure: isProd,
     sameSite: "lax",
-    maxAge: 30 * 24 * 60 * 60 * 1000,
+    maxAge: (opts.mfa ? 12 * 60 * 60 : 30 * 24 * 60 * 60) * 1000,
   });
 }
 
@@ -547,6 +686,7 @@ async function authMiddleware(req, res, next) {
     if (v !== null && v === (payload.tv || 0)) {
       req.userId = payload.uid;
       req.userEmail = payload.email;
+      req.mfa = payload.mfa === true;
     }
     next();
   } catch (err) {
@@ -567,12 +707,34 @@ async function audit(req, action, target, details) {
   }
 }
 
+// Administrator, whatever the 2FA state (only for the 2FA setup routes).
+async function requireAdminBase(req, res, next) {
+  if (!req.userId) return res.status(401).json({ error: "Connecte-toi d'abord." });
+  try {
+    const result = await pool.query("SELECT is_admin, totp_enabled FROM users WHERE id = $1", [req.userId]);
+    if (!result.rows[0] || !result.rows[0].is_admin) {
+      return res.status(403).json({ error: "Accès réservé à l'administrateur." });
+    }
+    req.totpEnabled = result.rows[0].totp_enabled;
+    next();
+  } catch (err) {
+    next(err);
+  }
+}
+
+// Administrator with two-factor authentication enabled AND used for this session.
 async function requireAdmin(req, res, next) {
   if (!req.userId) return res.status(401).json({ error: "Connecte-toi d'abord." });
   try {
-    const result = await pool.query("SELECT is_admin FROM users WHERE id = $1", [req.userId]);
+    const result = await pool.query("SELECT is_admin, totp_enabled FROM users WHERE id = $1", [req.userId]);
     if (!result.rows[0] || !result.rows[0].is_admin) {
       return res.status(403).json({ error: "Accès réservé à l'administrateur." });
+    }
+    if (!result.rows[0].totp_enabled) {
+      return res.status(403).json({ error: "Active la double authentification pour accéder à l'administration.", code: "mfa_setup_required" });
+    }
+    if (!req.mfa) {
+      return res.status(403).json({ error: "Reconnecte-toi avec ton code de double authentification.", code: "mfa_required" });
     }
     next();
   } catch (err) {
@@ -653,7 +815,7 @@ app.post("/api/login", async (req, res) => {
     }
 
     const result = await pool.query(
-      "SELECT id, email, password_hash, email_verified, token_version FROM users WHERE email = $1",
+      "SELECT id, email, password_hash, email_verified, token_version, totp_enabled FROM users WHERE email = $1",
       [email]
     );
     const user = result.rows[0];
@@ -668,6 +830,13 @@ app.post("/api/login", async (req, res) => {
       await pool.query("UPDATE users SET is_admin = TRUE WHERE id = $1", [user.id]);
     }
 
+    if (user.totp_enabled) {
+      // Password OK, second factor still needed: no session yet.
+      res.cookie(MFA_COOKIE, jwt.sign({ uid: user.id, purpose: "mfa", tv: user.token_version || 0 }, JWT_SECRET, { expiresIn: "5m", algorithm: "HS256" }), {
+        httpOnly: true, secure: isProd, sameSite: "strict", maxAge: 5 * 60 * 1000,
+      });
+      return res.json({ ok: true, mfaRequired: true });
+    }
     setSessionCookie(res, user);
     return res.json({ ok: true });
   } catch (err) {
@@ -676,7 +845,46 @@ app.post("/api/login", async (req, res) => {
   }
 });
 
+// Second login step for accounts with 2FA: a 6-digit code from the
+// authenticator app, or one of the one-time recovery codes.
+app.post("/api/login/mfa", async (req, res) => {
+  let pending;
+  try {
+    pending = jwt.verify(req.cookies[MFA_COOKIE] || "", JWT_SECRET, { algorithms: ["HS256"] });
+  } catch (e) {
+    return res.status(401).json({ error: "Session expirée : reconnecte-toi." });
+  }
+  if (pending.purpose !== "mfa") return res.status(401).json({ error: "Session expirée : reconnecte-toi." });
+  if (rateLimited("mfa:" + pending.uid, 8, 15 * 60 * 1000)) {
+    return res.status(429).json({ error: "Trop de tentatives. Réessaie dans quelques minutes." });
+  }
+  const r = await pool.query("SELECT id, email, token_version, totp_secret_enc, totp_last_step, totp_recovery FROM users WHERE id = $1 AND totp_enabled", [pending.uid]);
+  const user = r.rows[0];
+  if (!user || (user.token_version || 0) !== (pending.tv || 0)) return res.status(401).json({ error: "Session expirée : reconnecte-toi." });
+  const code = String((req.body && req.body.code) || "").trim();
+  let ok = false;
+  if (/^\d{6}$/.test(code.replace(/\s+/g, ""))) {
+    const step = totp.verify(totp.decrypt(user.totp_secret_enc, TOTP_KEY), code, Number(user.totp_last_step));
+    if (step >= 0) {
+      ok = true;
+      await pool.query("UPDATE users SET totp_last_step = $1 WHERE id = $2", [step, user.id]);
+    }
+  } else if (code) {
+    const h = totp.hashRecovery(code);
+    const codes = Array.isArray(user.totp_recovery) ? user.totp_recovery : [];
+    if (codes.includes(h)) {
+      ok = true;
+      await pool.query("UPDATE users SET totp_recovery = $1 WHERE id = $2", [JSON.stringify(codes.filter((c) => c !== h)), user.id]);
+    }
+  }
+  if (!ok) return res.status(401).json({ error: "Code incorrect." });
+  res.clearCookie(MFA_COOKIE, { httpOnly: true, secure: isProd, sameSite: "strict" });
+  setSessionCookie(res, user, { mfa: true });
+  return res.json({ ok: true });
+});
+
 app.post("/api/logout", (req, res) => {
+  res.clearCookie(MFA_COOKIE, { httpOnly: true, secure: isProd, sameSite: "strict" });
   res.clearCookie(COOKIE_NAME, { httpOnly: true, secure: isProd, sameSite: "lax" });
   res.json({ ok: true });
 });
@@ -891,7 +1099,7 @@ app.get("/api/account/export", async (req, res) => {
   const progress = await pool.query("SELECT lang, data, updated_at FROM user_progress WHERE user_id = $1 ORDER BY lang", [req.userId]);
   const ideas = await pool.query("SELECT message, category, status, created_at FROM suggestions WHERE user_id = $1 ORDER BY created_at", [req.userId]);
   const payments = await pool.query("SELECT invoice_number, amount_cents, currency, created_at FROM payments WHERE user_id = $1 ORDER BY created_at", [req.userId]);
-  res.setHeader("Content-Disposition", 'attachment; filename="mes-donnees.json"');
+  res.setHeader("Content-Disposition", 'attachment; filename="papote-mes-donnees.json"');
   return res.json({
     exportedAt: new Date().toISOString(),
     account: u.rows[0],
@@ -983,6 +1191,7 @@ app.get("/api/course/:lang", async (req, res) => {
       course: data,
       access: { premium: access.unlocked, isAdmin: access.user.is_admin, features: access.features },
       me: { name: access.user.name || "", baseLang: access.user.base_lang || "fr", id: access.user.id },
+      brand: brandInfo(),
     });
   } catch (err) {
     console.error("course error:", err);
@@ -1056,6 +1265,86 @@ app.get("/api/vocabulary", async (req, res) => {
     console.error("vocabulary error:", err);
     return res.status(500).json({ error: "Erreur serveur." });
   }
+});
+
+// ---- Stripe webhook: make sure the events Premium depends on are enabled ----
+// Uses the Stripe API with STRIPE_SECRET_KEY: finds the endpoint pointing at
+// APP_URL/api/webhooks/stripe and adds any missing event (keeps the others and
+// the signing secret). The result is shown in /admin -> Configuration.
+const STRIPE_REQUIRED_EVENTS = ["checkout.session.completed", "customer.subscription.updated", "customer.subscription.deleted"];
+const STRIPE_STATUS = { state: "unknown", detail: "" };
+async function checkStripeWebhook() {
+  if (!process.env.STRIPE_SECRET_KEY) {
+    Object.assign(STRIPE_STATUS, { state: "not_configured", detail: "STRIPE_SECRET_KEY absent" });
+    return;
+  }
+  const url = `${APP_URL}/api/webhooks/stripe`;
+  const result = await stripeLib.ensureWebhookEvents(url, STRIPE_REQUIRED_EVENTS);
+  Object.assign(STRIPE_STATUS, result);
+  console.log(`[stripe] webhook ${url}: ${result.state}${result.detail ? " - " + result.detail : ""}`);
+}
+
+// ---- Admin: configuration check (never returns secret values) ----
+app.get("/api/admin/config", requireAdmin, async (req, res) => {
+  const env = (k) => Boolean(process.env[k] && String(process.env[k]).trim());
+  const emailFrom = process.env.EMAIL_FROM || "";
+  const legalMissing = LEGAL_FIELDS.filter((k) => !env(k));
+  const admins = await pool.query("SELECT COUNT(*)::int AS n, COUNT(*) FILTER (WHERE totp_enabled)::int AS mfa FROM users WHERE is_admin");
+  const lastBackup = await pool.query("SELECT value FROM app_meta WHERE key = 'last_backup'");
+  const checks = [
+    { key: "admin_email", ok: Boolean(ADMIN_EMAIL), label: "ADMIN_EMAIL défini", help: "Render → Environment → ADMIN_EMAIL" },
+    { key: "admin_mfa", ok: admins.rows[0].n > 0 && admins.rows[0].mfa === admins.rows[0].n, label: `Double authentification active pour tous les admins (${admins.rows[0].mfa}/${admins.rows[0].n})`, help: "Section « Sécurité » ci-dessous" },
+    { key: "resend", ok: env("RESEND_API_KEY"), label: "Envoi d'emails (RESEND_API_KEY)", help: "Resend → API Keys, puis Render → Environment (jamais dans le code)" },
+    { key: "email_from", ok: /<[^@\s]+@[^>\s]+>/.test(emailFrom) && !/resend\.dev/.test(emailFrom), label: "Expéditeur sur ton domaine (EMAIL_FROM)", help: "Domaine vérifié dans Resend → Domains" },
+    { key: "stripe", ok: env("STRIPE_SECRET_KEY") && env("STRIPE_PRICE_ID") && env("STRIPE_WEBHOOK_SECRET"), label: "Paiement Stripe configuré", help: "STRIPE_SECRET_KEY, STRIPE_PRICE_ID, STRIPE_WEBHOOK_SECRET" },
+    { key: "stripe_events", ok: STRIPE_STATUS.state === "ok" || STRIPE_STATUS.state === "updated", label: "Webhook Stripe : événements d'abonnement", help: STRIPE_STATUS.detail || STRIPE_STATUS.state },
+    { key: "db_tls", ok: DB_TLS.mode === "verified" || DB_TLS.mode === "disabled", label: `TLS base de données : ${DB_TLS.mode}`, help: DB_TLS.note },
+    { key: "backup", ok: Boolean(lastBackup.rows[0]) && Date.now() - Date.parse(lastBackup.rows[0].value) < 3 * 86400000, label: "Sauvegarde de la base de moins de 3 jours", help: lastBackup.rows[0] ? `Dernière : ${lastBackup.rows[0].value}` : "GitHub → Settings → Secrets : BACKUP_DATABASE_URL, BACKUP_PASSPHRASE (voir README)" },
+    { key: "legal", ok: legalMissing.length === 0, label: "Mentions légales complètes", help: legalMissing.length ? "À définir : " + legalMissing.join(", ") : "" },
+    { key: "app_url", ok: env("APP_URL"), label: "APP_URL défini", help: APP_URL },
+  ];
+  return res.json({ checks });
+});
+
+// ---- Admin: two-factor authentication (mandatory for admin routes) ----
+app.get("/api/admin/mfa", requireAdminBase, async (req, res) => {
+  const r = await pool.query("SELECT totp_recovery FROM users WHERE id = $1", [req.userId]);
+  return res.json({ enabled: req.totpEnabled, sessionVerified: req.mfa, recoveryLeft: (r.rows[0].totp_recovery || []).length });
+});
+// Step 1: new secret (not active until confirmed with a code).
+app.post("/api/admin/mfa/setup", requireAdminBase, async (req, res) => {
+  if (req.totpEnabled) return res.status(409).json({ error: "La double authentification est déjà active." });
+  const secret = totp.newSecret();
+  await pool.query("UPDATE users SET totp_secret_enc = $1, totp_last_step = -1 WHERE id = $2", [totp.encrypt(secret, TOTP_KEY), req.userId]);
+  return res.json({ secret, otpauth: totp.otpauthUri(secret, req.userEmail || "admin", BUSINESS_NAME) });
+});
+// Step 2: confirm with a code from the app; returns the one-time recovery codes.
+app.post("/api/admin/mfa/enable", requireAdminBase, async (req, res) => {
+  if (rateLimited("mfa-enable:" + req.userId, 10, 15 * 60 * 1000)) return res.status(429).json({ error: "Trop de tentatives." });
+  if (req.totpEnabled) return res.status(409).json({ error: "La double authentification est déjà active." });
+  const r = await pool.query("SELECT id, email, token_version, totp_secret_enc FROM users WHERE id = $1", [req.userId]);
+  const user = r.rows[0];
+  if (!user.totp_secret_enc) return res.status(400).json({ error: "Commence par générer une clé." });
+  const step = totp.verify(totp.decrypt(user.totp_secret_enc, TOTP_KEY), req.body && req.body.code);
+  if (step < 0) return res.status(400).json({ error: "Code incorrect : vérifie l'heure du téléphone et réessaie." });
+  const codes = totp.newRecoveryCodes();
+  await pool.query("UPDATE users SET totp_enabled = TRUE, totp_last_step = $1, totp_recovery = $2 WHERE id = $3",
+    [step, JSON.stringify(codes.map(totp.hashRecovery)), user.id]);
+  setSessionCookie(res, user, { mfa: true });
+  await audit(req, "mfa.enable", user.id, {});
+  return res.json({ ok: true, recoveryCodes: codes });
+});
+// Turning 2FA off needs the password and a current code.
+app.post("/api/admin/mfa/disable", requireAdmin, async (req, res) => {
+  if (rateLimited("mfa-disable:" + req.userId, 5, 15 * 60 * 1000)) return res.status(429).json({ error: "Trop de tentatives." });
+  const r = await pool.query("SELECT password_hash, totp_secret_enc, totp_last_step FROM users WHERE id = $1", [req.userId]);
+  const u = r.rows[0];
+  const pwOk = await bcrypt.compare(String((req.body && req.body.password) || ""), u.password_hash);
+  const step = totp.verify(totp.decrypt(u.totp_secret_enc, TOTP_KEY), req.body && req.body.code, Number(u.totp_last_step));
+  if (!pwOk || step < 0) return res.status(403).json({ error: "Mot de passe ou code incorrect." });
+  await pool.query("UPDATE users SET totp_enabled = FALSE, totp_secret_enc = NULL, totp_recovery = '[]'::jsonb WHERE id = $1", [req.userId]);
+  await audit(req, "mfa.disable", req.userId, {});
+  return res.json({ ok: true });
 });
 
 // ---- Admin: CEFR level of any word ----
@@ -1383,42 +1672,55 @@ setInterval(() => {
 // ---- gate: serve the app only to authenticated users, else the login page ----
 app.get("/", (req, res) => {
   if (req.userId) {
-    res.sendFile(path.join(__dirname, "app.html"));
+    sendHtml(res, "app.html");
   } else {
-    res.sendFile(path.join(__dirname, "login.html"));
+    sendHtml(res, "login.html");
   }
 });
 
 app.get("/reset-password", (req, res) => {
-  res.sendFile(path.join(__dirname, "reset-password.html"));
+  sendHtml(res, "reset-password.html");
 });
 
 app.get("/ideas", (req, res) => {
   if (!req.userId) return res.redirect("/");
-  res.sendFile(path.join(__dirname, "ideas.html"));
+  sendHtml(res, "ideas.html");
 });
 
 app.get("/profile", (req, res) => {
   if (!req.userId) return res.redirect("/");
-  res.sendFile(path.join(__dirname, "profile.html"));
+  sendHtml(res, "profile.html");
 });
 
 app.get("/subscribe", (req, res) => {
   if (!req.userId) return res.redirect("/");
-  res.sendFile(path.join(__dirname, "subscribe.html"));
+  sendHtml(res, "subscribe.html");
 });
 
 app.get("/admin", async (req, res) => {
   if (!req.userId) return res.redirect("/");
   const result = await pool.query("SELECT is_admin FROM users WHERE id = $1", [req.userId]);
   if (!result.rows[0] || !result.rows[0].is_admin) return res.redirect("/");
-  res.sendFile(path.join(__dirname, "admin.html"));
+  sendHtml(res, "admin.html");
 });
 
 app.get("/healthz", (req, res) => res.status(200).send("ok"));
 // No favicon file: answer the browser's automatic request with 204 instead of a
 // 404 that shows up as a console error on every page load.
-app.get("/favicon.ico", (req, res) => res.status(204).end());
+app.get("/favicon.ico", (req, res) => {
+  if (!brandInfo().icons) return res.status(204).end();
+  res.sendFile(path.join(BRAND_DIR, "favicon-32.png"));
+});
+app.get("/manifest.webmanifest", (req, res) => {
+  res.type("application/manifest+json").json({
+    name: "Papote", short_name: "Papote", start_url: "/", display: "standalone",
+    background_color: "#ffffff", theme_color: "#4f46e5",
+    icons: brandInfo().icons ? [
+      { src: "/design-system/brand/icon-192.png", sizes: "192x192", type: "image/png" },
+      { src: "/design-system/brand/icon-512.png", sizes: "512x512", type: "image/png" },
+    ] : [],
+  });
+});
 
 // Unknown API routes answer JSON, not an HTML page.
 app.use("/api", (req, res) => res.status(404).json({ error: "Introuvable." }));
@@ -1434,11 +1736,18 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: "Erreur serveur." });
 });
 
-initDb()
+createPool()
+  .then((p) => {
+    pool = p;
+    console.log(`[db] TLS: ${DB_TLS.mode} (${DB_TLS.note})`);
+    return initDb();
+  })
   .then(() => {
     app.listen(PORT, () => {
       console.log(`langues-app listening on port ${PORT}`);
       logEmailConfig();
+      if (!ADMIN_EMAIL) console.warn("[config] ADMIN_EMAIL is not set: set it in Render -> Environment.");
+      checkStripeWebhook().catch((err) => console.warn("[stripe] webhook check failed:", err.message));
     });
   })
   .catch((err) => {

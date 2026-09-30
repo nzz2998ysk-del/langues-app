@@ -6,231 +6,547 @@
   if(t!=='dark'&&t!=='light'){t=((window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light');} document.documentElement.setAttribute('data-theme',t);
 }catch(e){}})();</script>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Mes langues — Connexion</title>
-<meta name="theme-color" content="var(--ig27-bg-grouped-primary)">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Papote — Apprends 39 langues en papotant</title><!--BRAND_HEAD-->
+<meta name="description" content="Papote : 39 langues du niveau A1 au C2, avec de l'audio sur chaque mot, des exercices variés, la révision intelligente et une mascotte qui t'encourage.">
 <link rel="stylesheet" href="/design-system/ios27-liquid-glass.css">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%}
-body{font-family:var(--ig27-font-family);
-  min-height:100vh;min-height:100dvh;color:var(--ig27-label-primary);
+html{scroll-behavior:smooth}
+body{font-family:var(--ig27-font-family);color:var(--ig27-label-primary);min-height:100vh;overflow-x:hidden;
+  --brand:var(--ig27-indigo);
   background:
-    radial-gradient(1100px 620px at 15% -10%, color-mix(in srgb,var(--ig27-accent) 10%,transparent), transparent 55%),
-    radial-gradient(900px 560px at 100% 110%, color-mix(in srgb,var(--ig27-accent) 14%,transparent), transparent 60%),
-    var(--ig27-bg-grouped-primary);
-  display:grid;grid-template-columns:1fr;overflow-x:hidden}
-@media(min-width:900px){body{grid-template-columns:1.15fr 1fr}}
+    radial-gradient(1200px 700px at 12% -8%, color-mix(in srgb,var(--brand) 16%,transparent), transparent 60%),
+    radial-gradient(900px 620px at 100% 30%, color-mix(in srgb,var(--ig27-accent) 12%,transparent), transparent 60%),
+    radial-gradient(900px 600px at 0% 100%, color-mix(in srgb,var(--ig27-pink) 8%,transparent), transparent 60%),
+    var(--ig27-bg-grouped-primary)}
+a{color:inherit}
+.wrap{max-width:1160px;margin:0 auto;padding:0 20px}
 
-.hero{display:none;position:relative;overflow:hidden;padding:64px;flex-direction:column;justify-content:space-between;
-  background:
-    radial-gradient(900px 520px at 10% 0%, color-mix(in srgb,var(--ig27-white) 12%,transparent), transparent 55%),
-    radial-gradient(700px 460px at 100% 100%, color-mix(in srgb,var(--ig27-accent) 35%,transparent), transparent 60%),
-    linear-gradient(155deg,var(--ig27-accent),var(--ig27-indigo) 80%)}
-@media(min-width:900px){.hero{display:flex}}
-.hero-brand{color:var(--ig27-on-accent);font-size:var(--ig27-fs-subheadline);line-height:var(--ig27-lh-subheadline);letter-spacing:var(--ig27-ls-subheadline);font-weight:var(--ig27-weight-semibold);display:flex;align-items:center;gap:10px}
-.hero-brand .dot{width:9px;height:9px;border-radius:50%;background:var(--ig27-on-accent)}
-.hero-title{color:var(--ig27-on-accent);font-size:var(--ig27-fs-large-title);line-height:var(--ig27-lh-large-title);letter-spacing:var(--ig27-ls-large-title);font-weight:var(--ig27-weight-bold);max-width:560px}
-.hero-sub{color:color-mix(in srgb,var(--ig27-white) 72%,transparent);font-size:var(--ig27-fs-body);line-height:var(--ig27-lh-body);letter-spacing:var(--ig27-ls-body);margin-top:18px;max-width:460px;font-weight:var(--ig27-weight-regular)}
-.hero-flags{display:flex;gap:10px;margin-top:34px;flex-wrap:wrap}
-.hero-flags span{color:var(--ig27-on-accent);font-size:var(--ig27-fs-title1);line-height:var(--ig27-lh-title1);letter-spacing:var(--ig27-ls-title1);background:color-mix(in srgb,var(--ig27-white) 14%,transparent);border-radius:var(--ig27-radius-xxl);padding:10px 12px;
-  backdrop-filter:blur(var(--ig27-glass-regular-blur)) saturate(var(--ig27-glass-regular-saturate));-webkit-backdrop-filter:blur(var(--ig27-glass-regular-blur)) saturate(var(--ig27-glass-regular-saturate));
-  border:1px solid color-mix(in srgb,var(--ig27-white) 14%,transparent)}
-.hero-foot{color:color-mix(in srgb,var(--ig27-white) 50%,transparent);font-size:var(--ig27-fs-footnote);line-height:var(--ig27-lh-footnote);letter-spacing:var(--ig27-ls-footnote);font-weight:var(--ig27-weight-regular)}
+/* ---------- top bar (glass) ---------- */
+.nav{position:sticky;top:0;z-index:50;padding:10px 0;
+  background:color-mix(in srgb,var(--ig27-bg-grouped-primary) 55%,transparent);
+  -webkit-backdrop-filter:blur(var(--ig27-glass-regular-blur)) saturate(var(--ig27-glass-regular-saturate));backdrop-filter:blur(var(--ig27-glass-regular-blur)) saturate(var(--ig27-glass-regular-saturate));
+  border-bottom:1px solid var(--ig27-glass-rim-color)}
+.nav .wrap{display:flex;align-items:center;gap:12px}
+.brand{display:flex;align-items:center;gap:8px;text-decoration:none;color:var(--ig27-label-primary);font-weight:800;font-size:22px;letter-spacing:-.02em}
+.brand .brand-logo{height:40px;width:auto}
+.brand:has(.brand-logo) .brand-word{display:none}
+.brand-word{display:flex;align-items:center;gap:7px}
+.brand-word i{display:inline-block;width:30px;height:24px;border-radius:12px;background:var(--brand);position:relative}
+.brand-word i::after{content:"";position:absolute;left:6px;bottom:-4px;width:9px;height:9px;background:var(--brand);border-radius:0 0 0 8px;transform:skewX(-18deg)}
+.nav .links{display:flex;gap:4px;margin-inline-start:auto}
+.nav .links a{text-decoration:none;color:var(--ig27-label-secondary);font-size:var(--ig27-fs-subheadline);padding:8px 12px;border-radius:999px}
+.nav .links a:hover{color:var(--ig27-label-primary);background:var(--ig27-fill-quaternary)}
+@media(max-width:760px){.nav .links{display:none}.nav .spacer{margin-inline-start:auto}}
+.pill{border:none;cursor:pointer;font:inherit;font-weight:var(--ig27-weight-semibold);border-radius:999px;padding:10px 18px;font-size:var(--ig27-fs-subheadline);
+  transition:transform var(--ig27-duration-fast) var(--ig27-ease-spring),box-shadow var(--ig27-duration-fast),background var(--ig27-duration-fast)}
+.pill:active{transform:scale(.96)}
+.pill:disabled{opacity:.55;cursor:default}
+.pill.primary{color:var(--ig27-on-accent);background:linear-gradient(135deg,var(--ig27-accent),var(--brand));box-shadow:0 10px 24px -10px var(--brand)}
+.pill.primary:hover{box-shadow:0 14px 30px -10px var(--brand);transform:translateY(-1px)}
+.pill.glass{color:var(--ig27-label-primary);background:var(--ig27-glass-regular-bg);border:1px solid var(--ig27-glass-rim-color);
+  -webkit-backdrop-filter:blur(var(--ig27-glass-regular-blur));backdrop-filter:blur(var(--ig27-glass-regular-blur))}
+.pill.big{padding:15px 26px;font-size:var(--ig27-fs-body)}
+.icon-btn{width:40px;height:40px;padding:0;display:grid;place-items:center}
 
-.form-side{display:flex;align-items:center;justify-content:center;padding:40px 24px}
-.auth-wrap{width:100%;max-width:380px}
-.auth-header{text-align:center;margin-bottom:22px}
-.auth-header .mobile-brand{display:block;font-size:var(--ig27-fs-title3);line-height:var(--ig27-lh-title3);letter-spacing:var(--ig27-ls-title3);font-weight:var(--ig27-weight-bold);margin-bottom:14px}
-@media(min-width:900px){.auth-header .mobile-brand{display:none}}
+/* ---------- hero ---------- */
+.hero{padding:56px 0 30px}
+.hero .wrap{display:grid;gap:40px;align-items:center;grid-template-columns:1fr}
+@media(min-width:920px){.hero .wrap{grid-template-columns:1.05fr .95fr}}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:var(--ig27-fs-footnote);font-weight:var(--ig27-weight-semibold);color:var(--brand);
+  background:color-mix(in srgb,var(--brand) 12%,transparent);border-radius:999px;padding:6px 12px}
+.eyebrow b{width:7px;height:7px;border-radius:50%;background:var(--brand);animation:pulse 1.8s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.7)}}
+h1{font-size:clamp(40px,6.2vw,72px);line-height:1.02;letter-spacing:-.035em;font-weight:800;margin:18px 0 18px}
+h1 .grad{background:linear-gradient(120deg,var(--ig27-accent),var(--brand) 55%,var(--ig27-pink));-webkit-background-clip:text;background-clip:text;color:transparent}
+.lead{font-size:clamp(17px,1.9vw,20px);line-height:1.55;color:var(--ig27-label-secondary);max-width:560px}
+.cta{display:flex;gap:12px;flex-wrap:wrap;margin-top:28px}
+.trust{display:flex;gap:18px;flex-wrap:wrap;margin-top:22px;color:var(--ig27-label-secondary);font-size:var(--ig27-fs-footnote)}
+.trust span::before{content:"✓ ";color:var(--ig27-green);font-weight:700}
+
+.stage{position:relative;min-height:380px;display:grid;place-items:center}
+.stage .halo{position:absolute;width:78%;aspect-ratio:1;border-radius:50%;
+  background:radial-gradient(circle,color-mix(in srgb,var(--brand) 30%,transparent),transparent 65%);filter:blur(10px);animation:breathe 6s ease-in-out infinite}
+@keyframes breathe{0%,100%{transform:scale(.94);opacity:.8}50%{transform:scale(1.04);opacity:1}}
+.hero-logo{position:relative;width:min(84vw,430px);height:auto;animation:logoIn .9s cubic-bezier(.34,1.56,.64,1) both,float 5s ease-in-out .9s infinite;
+  filter:drop-shadow(0 24px 40px color-mix(in srgb,var(--brand) 30%,transparent))}
+@keyframes logoIn{0%{opacity:0;transform:scale(.6) rotate(-6deg)}100%{opacity:1;transform:none}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+/* Wordmark shown until the logo file is installed */
+.wordmark{position:relative;display:flex;flex-direction:column;align-items:center;gap:14px;animation:logoIn .9s cubic-bezier(.34,1.56,.64,1) both,float 5s ease-in-out .9s infinite}
+.stage:has(.hero-logo) .wordmark{display:none}
+.wm-bubble{position:relative;isolation:isolate;background:linear-gradient(135deg,var(--brand),color-mix(in srgb,var(--brand) 70%,var(--ig27-accent)));
+  color:var(--ig27-on-accent);font-weight:800;font-size:clamp(56px,9vw,96px);letter-spacing:-.03em;line-height:1;padding:28px 44px 34px;border-radius:60px;
+  box-shadow:0 30px 60px -24px var(--brand),inset 0 2px 0 color-mix(in srgb,var(--ig27-white) 30%,transparent)}
+.wm-bubble::after{content:"";position:absolute;left:46px;bottom:-16px;width:40px;height:40px;background:var(--brand);border-radius:0 0 0 34px;transform:skewX(-20deg);z-index:-1}
+.wm-dots{display:flex;gap:10px;background:var(--ig27-glass-regular-bg);border:1px solid var(--ig27-glass-rim-color);padding:14px 20px;border-radius:26px;align-self:flex-start;margin-left:-14px}
+.wm-dots i{width:12px;height:12px;border-radius:50%;background:var(--brand);animation:typing 1.1s ease-in-out infinite}
+.wm-dots i:nth-child(2){animation-delay:.15s}.wm-dots i:nth-child(3){animation-delay:.3s}
+@keyframes typing{0%,60%,100%{transform:translateY(0);opacity:.5}30%{transform:translateY(-7px);opacity:1}}
+
+/* greeting bubbles popping around the logo */
+.say{position:absolute;padding:9px 14px;border-radius:18px;font-weight:var(--ig27-weight-semibold);font-size:var(--ig27-fs-subheadline);white-space:nowrap;
+  background:var(--ig27-glass-regular-bg);border:1px solid var(--ig27-glass-rim-color);box-shadow:0 12px 30px -14px color-mix(in srgb,var(--ig27-black) 35%,transparent);
+  -webkit-backdrop-filter:blur(var(--ig27-glass-regular-blur));backdrop-filter:blur(var(--ig27-glass-regular-blur));
+  opacity:0;transform:scale(.6) translateY(10px);transition:opacity .45s ease,transform .6s cubic-bezier(.34,1.56,.64,1)}
+.say.on{opacity:1;transform:none}
+.say small{display:block;font-weight:400;color:var(--ig27-label-secondary);font-size:var(--ig27-fs-caption2)}
+.say.s1{top:4%;left:30%}.say.s2{top:12%;right:0}.say.s3{bottom:18%;left:-2%}.say.s4{bottom:6%;right:6%}
+@media(max-width:520px){.say{font-size:var(--ig27-fs-footnote)}.say.s3,.say.s4{display:none}}
+
+/* ---------- stats ---------- */
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin:26px 0 10px}
+@media(min-width:760px){.stats{grid-template-columns:repeat(4,1fr)}}
+.stat{padding:18px;border-radius:24px;background:var(--ig27-glass-regular-bg);border:1px solid var(--ig27-glass-rim-color);text-align:center}
+.stat b{display:block;font-size:30px;letter-spacing:-.02em;background:linear-gradient(120deg,var(--ig27-accent),var(--brand));-webkit-background-clip:text;background-clip:text;color:transparent}
+.stat span{color:var(--ig27-label-secondary);font-size:var(--ig27-fs-footnote)}
+
+/* ---------- languages marquee ---------- */
+.marquee{overflow:hidden;padding:9px 0;-webkit-mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent);mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent)}
+.track{display:flex;gap:10px;width:max-content;animation:scroll 60s linear infinite}
+.marquee.rev .track{animation-direction:reverse;animation-duration:70s}
+.marquee:hover .track{animation-play-state:paused}
+@keyframes scroll{to{transform:translateX(-50%)}}
+.chip{display:inline-flex;align-items:center;gap:8px;padding:9px 15px;border-radius:999px;background:var(--ig27-glass-regular-bg);border:1px solid var(--ig27-glass-rim-color);font-weight:var(--ig27-weight-medium);white-space:nowrap}
+
+/* ---------- sections ---------- */
+section{padding:56px 0}
+.sec-title{font-size:clamp(28px,4vw,42px);letter-spacing:-.03em;font-weight:800;line-height:1.1;text-align:center}
+.sec-lead{color:var(--ig27-label-secondary);text-align:center;max-width:620px;margin:12px auto 0;font-size:var(--ig27-fs-body);line-height:1.55}
+.grid{display:grid;gap:16px;margin-top:34px;grid-template-columns:1fr}
+@media(min-width:640px){.grid{grid-template-columns:repeat(2,1fr)}}
+@media(min-width:980px){.grid{grid-template-columns:repeat(3,1fr)}}
+.card{padding:24px;border-radius:28px;background:var(--ig27-glass-regular-bg);border:1px solid var(--ig27-glass-rim-color);
+  -webkit-backdrop-filter:blur(var(--ig27-glass-regular-blur));backdrop-filter:blur(var(--ig27-glass-regular-blur));
+  box-shadow:0 20px 40px -28px color-mix(in srgb,var(--ig27-black) 40%,transparent);transition:transform .3s var(--ig27-ease-standard),box-shadow .3s,opacity .7s var(--ig27-ease-standard)}
+.card:hover{transform:translateY(-4px);box-shadow:0 26px 50px -26px color-mix(in srgb,var(--brand) 45%,transparent)}
+.card .ic{width:48px;height:48px;border-radius:16px;display:grid;place-items:center;font-size:24px;margin-bottom:14px;background:color-mix(in srgb,var(--c,var(--brand)) 16%,transparent)}
+.card h3{font-size:var(--ig27-fs-title3);letter-spacing:-.01em;margin-bottom:6px}
+.card p{color:var(--ig27-label-secondary);line-height:1.55;font-size:var(--ig27-fs-subheadline)}
+.demo-word{display:flex;align-items:center;gap:10px;margin-top:14px;padding:10px 12px;border-radius:16px;background:var(--ig27-fill-quaternary)}
+.demo-word button{width:32px;height:32px;border-radius:50%;border:none;cursor:pointer;background:var(--ig27-accent-soft);font-size:14px}
+.demo-word b{font-size:17px;white-space:nowrap}.demo-word span{color:var(--ig27-label-secondary);font-size:var(--ig27-fs-footnote)}
+.demo-word em{margin-inline-start:auto;font-style:normal;font-size:11px;font-weight:700;color:var(--ig27-green);background:var(--ig27-green-soft);padding:2px 7px;border-radius:999px}
+
+.mascots{display:flex;justify-content:center;gap:clamp(8px,2vw,22px);flex-wrap:wrap;margin-top:30px}
+.mascots img{width:clamp(84px,12vw,128px);height:auto;transition:transform .35s cubic-bezier(.34,1.56,.64,1)}
+.mascots img:hover{transform:translateY(-8px) rotate(-4deg) scale(1.06)}
+#mascotSection:not(:has(.mascots img)){display:none}
+
+.steps{display:grid;gap:16px;margin-top:34px;grid-template-columns:1fr}
+@media(min-width:820px){.steps{grid-template-columns:repeat(3,1fr)}}
+.step{position:relative;padding:26px 24px 24px;border-radius:28px;background:var(--ig27-glass-regular-bg);border:1px solid var(--ig27-glass-rim-color)}
+.step .n{position:absolute;top:-14px;left:22px;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-weight:800;color:var(--ig27-on-accent);
+  background:linear-gradient(135deg,var(--ig27-accent),var(--brand));box-shadow:0 8px 18px -8px var(--brand)}
+.step h3{margin:6px 0 6px;font-size:var(--ig27-fs-headline)}
+.step p{color:var(--ig27-label-secondary);line-height:1.5;font-size:var(--ig27-fs-subheadline)}
+
+.premium{margin-top:10px;border-radius:34px;padding:36px;display:grid;gap:24px;align-items:center;color:var(--ig27-white);
+  background:radial-gradient(600px 300px at 90% 0%,color-mix(in srgb,var(--ig27-pink) 45%,transparent),transparent 60%),linear-gradient(135deg,var(--brand),color-mix(in srgb,var(--brand) 55%,var(--ig27-accent)));
+  box-shadow:0 30px 60px -30px var(--brand)}
+@media(min-width:860px){.premium{grid-template-columns:1.2fr 1fr}}
+.premium h2{font-size:clamp(26px,3.4vw,36px);letter-spacing:-.02em}
+.premium p{opacity:.88;margin-top:10px;line-height:1.55}
+.premium ul{list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:8px 16px;font-size:var(--ig27-fs-subheadline)}
+.premium li::before{content:"★ ";color:var(--ig27-yellow)}
+.premium .pill{background:var(--ig27-white);color:var(--brand);margin-top:18px}
+
+.final{text-align:center}
+.final .cta{justify-content:center}
+footer{padding:34px 0 44px;color:var(--ig27-label-secondary);font-size:var(--ig27-fs-footnote)}
+footer .wrap{display:flex;gap:14px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+footer nav{display:flex;gap:16px;flex-wrap:wrap}
+footer a{text-decoration:none}footer a:hover{color:var(--ig27-label-primary)}
+
+/* reveal on scroll */
+.reveal{opacity:0;transform:translateY(24px);transition:opacity .7s var(--ig27-ease-standard),transform .7s var(--ig27-ease-standard)}
+.reveal.in{opacity:1;transform:none}
+
+/* ---------- auth sheet (modal) ---------- */
+.sheet{position:fixed;inset:0;z-index:100;display:grid;place-items:center;padding:20px;visibility:hidden;opacity:0;transition:opacity .3s ease,visibility .3s}
+.sheet.open{visibility:visible;opacity:1}
+.sheet .backdrop{position:absolute;inset:0;background:color-mix(in srgb,var(--ig27-black) 35%,transparent);
+  -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.auth-wrap{position:relative;width:100%;max-width:400px;max-height:100%;overflow:auto;transform:translateY(24px) scale(.97);transition:transform .45s cubic-bezier(.34,1.56,.64,1)}
+.sheet.open .auth-wrap{transform:none}
+.auth-close{position:absolute;top:14px;right:14px;z-index:2}
+.auth-header{text-align:center;margin-bottom:6px;padding:0 34px}
 .auth-title{font-size:var(--ig27-fs-title2);line-height:var(--ig27-lh-title2);letter-spacing:var(--ig27-ls-title2);font-weight:var(--ig27-weight-bold)}
-.auth-subtitle{font-size:var(--ig27-fs-subheadline);line-height:var(--ig27-lh-subheadline);letter-spacing:var(--ig27-ls-subheadline);color:var(--ig27-label-secondary);margin-top:6px;font-weight:var(--ig27-weight-regular)}
-.auth-card{background:var(--ig27-glass-regular-bg);-webkit-backdrop-filter:blur(var(--ig27-glass-regular-blur)) saturate(var(--ig27-glass-regular-saturate));backdrop-filter:blur(var(--ig27-glass-regular-blur)) saturate(var(--ig27-glass-regular-saturate));
-  border-radius:var(--ig27-radius-xxxl);padding:26px;
-  box-shadow:0 20px 48px -16px color-mix(in srgb,var(--ig27-black) 18%,transparent),0 2px 8px var(--ig27-fill-quaternary),inset 0 1px 0 var(--ig27-glass-regular-bg);
-  border:1px solid var(--ig27-glass-rim-color);
-  display:flex;flex-direction:column;gap:14px}
+.auth-subtitle{font-size:var(--ig27-fs-subheadline);line-height:var(--ig27-lh-subheadline);color:var(--ig27-label-secondary);margin-top:6px}
+.auth-card{position:relative;background:var(--ig27-material-thick-bg);-webkit-backdrop-filter:blur(var(--ig27-material-thick-blur));backdrop-filter:blur(var(--ig27-material-thick-blur));
+  border-radius:var(--ig27-radius-xxxl);padding:30px 26px 22px;border:1px solid var(--ig27-glass-rim-color);
+  box-shadow:0 40px 80px -30px color-mix(in srgb,var(--ig27-black) 45%,transparent);display:flex;flex-direction:column;gap:14px}
 .field-group{display:flex;flex-direction:column;gap:6px}
-.auth-label{font-size:var(--ig27-fs-caption1);line-height:var(--ig27-lh-caption1);letter-spacing:var(--ig27-ls-caption1);font-weight:var(--ig27-weight-semibold);color:var(--ig27-label-secondary)}
-.auth-input{border:1px solid color-mix(in srgb,var(--ig27-black) 8%,transparent);border-radius:var(--ig27-radius-xl);padding:12px 13px;
-  font-size:var(--ig27-fs-subheadline);line-height:var(--ig27-lh-subheadline);letter-spacing:var(--ig27-ls-subheadline);font-family:inherit;background:var(--ig27-fill-quaternary);color:var(--ig27-label-primary);outline:none;
+.auth-label{font-size:var(--ig27-fs-caption1);letter-spacing:var(--ig27-ls-caption1);font-weight:var(--ig27-weight-semibold);color:var(--ig27-label-secondary)}
+.auth-input{border:1px solid color-mix(in srgb,var(--ig27-black) 8%,transparent);border-radius:var(--ig27-radius-xl);padding:13px 14px;
+  font-size:var(--ig27-fs-subheadline);font-family:inherit;background:var(--ig27-fill-quaternary);color:var(--ig27-label-primary);outline:none;
   transition:border-color var(--ig27-duration-fast) ease,box-shadow var(--ig27-duration-fast) ease}
 .auth-input:focus{border-color:var(--ig27-accent);box-shadow:0 0 0 4px var(--ig27-accent-soft)}
-.auth-error{background:color-mix(in srgb,var(--ig27-red) 10%,transparent);color:var(--ig27-red);border-radius:var(--ig27-radius-xl);padding:9px 12px;font-size:var(--ig27-fs-footnote);line-height:var(--ig27-lh-footnote);letter-spacing:var(--ig27-ls-footnote);font-weight:var(--ig27-weight-medium)}
-.btn-auth-primary{background:var(--ig27-accent);color:var(--ig27-on-accent);border:none;border-radius:var(--ig27-radius-glass);padding:14px;
-  font-size:var(--ig27-fs-subheadline);line-height:var(--ig27-lh-subheadline);letter-spacing:var(--ig27-ls-subheadline);font-weight:var(--ig27-weight-semibold);cursor:pointer;transition:transform var(--ig27-duration-fast) var(--ig27-ease-spring),background var(--ig27-duration-fast);
-  box-shadow:0 6px 16px -4px color-mix(in srgb,var(--ig27-accent) 45%,transparent)}
-.btn-auth-primary:hover{background:var(--ig27-accent-hover)}
-.btn-auth-primary:active{transform:scale(.97)}
-.btn-auth-primary:disabled{opacity:.5;cursor:default;box-shadow:var(--ig27-shadow-sm)}
-.btn-auth-link{background:none;border:none;color:var(--ig27-accent);font-size:var(--ig27-fs-footnote);line-height:var(--ig27-lh-footnote);letter-spacing:var(--ig27-ls-footnote);font-weight:var(--ig27-weight-medium);
-  cursor:pointer;text-align:center;padding:4px}
-.auth-note{font-size:var(--ig27-fs-caption2);line-height:var(--ig27-lh-caption2);letter-spacing:var(--ig27-ls-caption2);color:var(--ig27-label-tertiary);text-align:center}
+.auth-error{background:color-mix(in srgb,var(--ig27-red) 10%,transparent);color:var(--ig27-red);border-radius:var(--ig27-radius-xl);padding:9px 12px;font-size:var(--ig27-fs-footnote);font-weight:var(--ig27-weight-medium)}
+.auth-ok{background:var(--ig27-green-soft);color:var(--ig27-green)}
+.btn-auth-primary{width:100%}
+.btn-auth-link{background:none;border:none;color:var(--ig27-accent);font:inherit;font-size:var(--ig27-fs-footnote);font-weight:var(--ig27-weight-medium);cursor:pointer;padding:4px}
+.auth-note{font-size:var(--ig27-fs-caption2);color:var(--ig27-label-tertiary);text-align:center;line-height:1.5}
+.auth-note a{color:var(--ig27-label-secondary)}
+
+@media (prefers-reduced-motion: reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  .reveal{opacity:1;transform:none}.say{opacity:1;transform:none}
+}
 </style>
 <link rel="stylesheet" href="/design-system/ios27-app.css">
 </head>
 <body>
-<div class="hero">
-  <div class="hero-brand"><span class="dot"></span>Mes langues</div>
-  <div>
-    <div class="hero-title">Apprends une langue, à ton rythme.</div>
-    <div class="hero-sub">39 langues accessibles gratuitement — de l'anglais à l'espagnol, en passant par le coréen, l'arabe, le hongrois... et même le klingon. Vocabulaire, grammaire, exercices et lecture, tout au même endroit. Réorganise-les comme tu veux.</div>
-    <div class="hero-flags"><span>🇬🇧</span><span>🇪🇸</span><span>🇮🇹</span><span>🇮🇱</span><span>🇨🇳</span><span>🇯🇵</span><span>🇰🇷</span><span>🇸🇦</span><span>🇫🇷</span><span>+30</span></div>
+
+<header class="nav">
+  <div class="wrap">
+    <a class="brand" href="#top" aria-label="Papote"><!--BRAND_LOGO--><span class="brand-word"><i></i>Papote</span></a>
+    <nav class="links"><a href="#fonctionnalites">Fonctionnalités</a><a href="#langues">Langues</a><a href="#comment">Comment ça marche</a><a href="#premium">Premium</a></nav>
+    <span class="spacer"></span>
+    <button type="button" class="pill glass icon-btn" id="themeBtn" aria-label="Mode clair / sombre">🌙</button>
+    <button type="button" class="pill glass" data-click="openAuth" data-arg="login">Se connecter</button>
   </div>
-  <div class="hero-foot">Tes données sont stockées de façon sécurisée sur notre serveur.</div>
-</div>
-<div class="form-side">
-<div class="auth-wrap">
-  <div class="auth-header">
-    <div class="mobile-brand">Mes langues</div>
-    <div class="auth-title" id="authTitle">Bon retour</div>
-    <div class="auth-subtitle" id="authSubtitle">Connecte-toi pour accéder à l'application</div>
+</header>
+
+<main id="top">
+  <div class="hero">
+    <div class="wrap">
+      <div>
+        <span class="eyebrow"><b></b>39 langues · du A1 au C2</span>
+        <h1>Papote avec <span class="grad">le monde entier.</span></h1>
+        <p class="lead">Apprends une nouvelle langue en quelques minutes par jour : du vocabulaire avec l'audio de chaque mot, des exercices ludiques, une révision qui s'adapte à ta mémoire, et un petit chat qui t'encourage à chaque réponse.</p>
+        <div class="cta">
+          <button type="button" class="pill primary big" data-click="openAuth" data-arg="signup">Commencer gratuitement</button>
+          <button type="button" class="pill glass big" data-click="openAuth" data-arg="login">J'ai déjà un compte</button>
+        </div>
+        <div class="trust"><span>Gratuit pour démarrer</span><span>Sans publicité</span><span>Données protégées</span></div>
+      </div>
+      <div class="stage" aria-hidden="true">
+        <div class="halo"></div>
+        <!--BRAND_HERO-->
+        <div class="wordmark"><div class="wm-dots"><i></i><i></i><i></i></div><div class="wm-bubble">Papote</div></div>
+        <div class="say s1"></div><div class="say s2"></div><div class="say s3"></div><div class="say s4"></div>
+      </div>
+    </div>
   </div>
-  <form id="authForm" class="auth-card" onsubmit="return false;">
-    <div class="field-group" id="authNameGroup" style="display:none">
-      <label class="auth-label" for="authName">Prénom</label>
-      <input class="auth-input" id="authName" type="text" placeholder="Ton prénom" autocomplete="name">
+
+  <div class="wrap">
+    <div class="stats reveal">
+      <div class="stat"><b data-count="39">39</b><span>langues, du japonais au klingon</span></div>
+      <div class="stat"><b>A1 → C2</b><span>chaque mot a son niveau</span></div>
+      <div class="stat"><b data-count="20000">20 000+</b><span>mots et expressions</span></div>
+      <div class="stat"><b>🔊</b><span>de l'audio partout</span></div>
     </div>
-    <div class="field-group">
-      <label class="auth-label" for="authEmail">Email</label>
-      <input class="auth-input" id="authEmail" type="email" placeholder="toi@exemple.com" autocomplete="email">
+  </div>
+
+  <div id="langues">
+    <div class="marquee"><div class="track" id="track1"></div></div>
+    <div class="marquee rev"><div class="track" id="track2"></div></div>
+  </div>
+
+  <section id="fonctionnalites">
+    <div class="wrap">
+      <h2 class="sec-title reveal">Tout pour progresser, au même endroit</h2>
+      <p class="sec-lead reveal">Le même parcours soigné pour chacune des 39 langues, expliqué dans ta langue à toi.</p>
+      <div class="grid">
+        <div class="card reveal" style="--c:var(--ig27-accent)"><div class="ic">📚</div><h3>Vocabulaire par niveau</h3><p>Des milliers de mots classés par thème et par niveau CECRL, avec exemples et prononciation.</p>
+          <div class="demo-word"><button type="button" id="demoSay" aria-label="Écouter">🔊</button><b>こんにちは</b><span>konnichiwa · bonjour</span><em>A1</em></div></div>
+        <div class="card reveal" style="--c:var(--ig27-green)"><div class="ic">🎯</div><h3>Exercices variés</h3><p>QCM, écoute, écriture, dictée, texte à trous, phrases à remettre en ordre, conjugaison… jamais la même séance.</p></div>
+        <div class="card reveal" style="--c:var(--ig27-purple)"><div class="ic">🧠</div><h3>Révision intelligente</h3><p>La répétition espacée te fait revoir chaque mot juste avant que tu l'oublies.</p></div>
+        <div class="card reveal" style="--c:var(--ig27-orange)"><div class="ic">🎙️</div><h3>Prononciation</h3><p>Écoute, répète, et vois tout de suite à quel point tu es proche du modèle.</p></div>
+        <div class="card reveal" style="--c:var(--ig27-pink)"><div class="ic">📖</div><h3>Lecture &amp; culture</h3><p>Des textes par niveau avec questions, des points de grammaire clairs et des notes de culture.</p></div>
+        <div class="card reveal" style="--c:var(--ig27-cyan)"><div class="ic">🏆</div><h3>Motivation</h3><p>Séries de jours, XP, badges, examens de niveau et certificats à imprimer.</p></div>
+      </div>
     </div>
-    <div class="field-group">
-      <label class="auth-label" for="authPassword">Mot de passe</label>
-      <input class="auth-input" id="authPassword" type="password" placeholder="••••••••" autocomplete="current-password">
+  </section>
+
+  <section id="mascotSection">
+    <div class="wrap">
+      <h2 class="sec-title reveal">Papote t'accompagne</h2>
+      <p class="sec-lead reveal">Il fête tes bonnes réponses, te console quand tu te trompes et fait la sieste quand tu as tout révisé.</p>
+      <div class="mascots reveal"><!--BRAND_MASCOTS--></div>
     </div>
-    <div class="field-group" id="authConfirmGroup" style="display:none">
-      <label class="auth-label" for="authConfirm">Confirme le mot de passe</label>
-      <input class="auth-input" id="authConfirm" type="password" placeholder="••••••••" autocomplete="new-password">
+  </section>
+
+  <section id="comment">
+    <div class="wrap">
+      <h2 class="sec-title reveal">Comment ça marche</h2>
+      <div class="steps">
+        <div class="step reveal"><span class="n">1</span><h3>Crée ton compte</h3><p>Gratuit, en 30 secondes. Choisis ta langue de base : toute l'application s'y adapte.</p></div>
+        <div class="step reveal"><span class="n">2</span><h3>Choisis une langue</h3><p>Anglais, espagnol, coréen, arabe, hébreu, swahili… Commence au niveau A1 ou teste ton niveau.</p></div>
+        <div class="step reveal"><span class="n">3</span><h3>Papote chaque jour</h3><p>Une leçon, quelques exercices, une révision : quelques minutes suffisent pour progresser.</p></div>
+      </div>
     </div>
-    <div id="authError" class="auth-error" style="display:none"></div>
-    <div id="authOk" class="auth-error" style="display:none;background:var(--ig27-green-soft);color:var(--ig27-green)"></div>
-    <button type="button" class="btn-auth-primary" id="authSubmitBtn" onclick="authSubmit()">Se connecter</button>
-    <button type="button" class="btn-auth-link" id="authForgotBtn" onclick="authGoForgot()">Mot de passe oublié&nbsp;?</button>
-    <button type="button" class="btn-auth-link" id="authToggleBtn" onclick="authToggleMode()">Pas encore de compte&nbsp;? Créer un compte</button>
-    <div class="auth-note">Tes données de compte sont stockées de façon sécurisée sur notre serveur (mot de passe chiffré, jamais en clair).</div>
-  </form>
+  </section>
+
+  <section id="premium">
+    <div class="wrap">
+      <div class="premium reveal">
+        <div>
+          <h2>Envie d'aller plus loin ?</h2>
+          <p>Tout le contenu A1 → B2 est gratuit. Premium débloque le reste, dans les 39 langues, sans engagement.</p>
+          <button type="button" class="pill big" data-click="openAuth" data-arg="signup">Essayer Papote</button>
+        </div>
+        <ul><li>Niveaux C1 et C2</li><li>Leçons illimitées</li><li>Révision avancée</li><li>Prononciation notée</li><li>Statistiques détaillées</li><li>Certificats</li><li>Mode hors ligne</li><li>Examens blancs</li></ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="final">
+    <div class="wrap">
+      <h2 class="sec-title reveal">Prêt à papoter ?</h2>
+      <p class="sec-lead reveal">Ta première leçon t'attend.</p>
+      <div class="cta reveal"><button type="button" class="pill primary big" data-click="openAuth" data-arg="signup">Créer mon compte gratuit</button></div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>© <span id="year">2026</span> Papote</span>
+    <nav><a href="/mentions-legales">Mentions légales</a><a href="/confidentialite">Confidentialité</a><a href="#top">Haut de page ↑</a></nav>
+  </div>
+</footer>
+
+<!-- Login / signup / forgotten password / 2FA -->
+<div class="sheet" id="authSheet" role="dialog" aria-modal="true" aria-labelledby="authTitle">
+  <div class="backdrop" data-click="closeAuth"></div>
+  <div class="auth-wrap">
+    <form id="authForm" class="auth-card" novalidate>
+      <button type="button" class="pill glass icon-btn auth-close" data-click="closeAuth" aria-label="Fermer">✕</button>
+      <div class="auth-header">
+        <div class="auth-title" id="authTitle">Bon retour 👋</div>
+        <div class="auth-subtitle" id="authSubtitle">Connecte-toi pour continuer à papoter.</div>
+      </div>
+      <div class="field-group" id="authNameGroup" style="display:none">
+        <label class="auth-label" for="authName">Prénom</label>
+        <input class="auth-input" id="authName" type="text" placeholder="Ton prénom" autocomplete="given-name" maxlength="80">
+      </div>
+      <div class="field-group" id="authEmailGroup">
+        <label class="auth-label" for="authEmail">Email</label>
+        <input class="auth-input" id="authEmail" type="email" placeholder="toi@exemple.com" autocomplete="email">
+      </div>
+      <div class="field-group" id="authPasswordGroup">
+        <label class="auth-label" for="authPassword">Mot de passe</label>
+        <input class="auth-input" id="authPassword" type="password" placeholder="••••••••" autocomplete="current-password">
+      </div>
+      <div class="field-group" id="authConfirmGroup" style="display:none">
+        <label class="auth-label" for="authConfirm">Confirme le mot de passe</label>
+        <input class="auth-input" id="authConfirm" type="password" placeholder="••••••••" autocomplete="new-password">
+      </div>
+      <div class="field-group" id="authMfaGroup" style="display:none">
+        <label class="auth-label" for="authMfa">Code de double authentification</label>
+        <input class="auth-input" id="authMfa" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="123 456 ou code de secours">
+      </div>
+      <div id="authError" class="auth-error" style="display:none"></div>
+      <div id="authOk" class="auth-error auth-ok" style="display:none"></div>
+      <button type="button" class="pill primary big btn-auth-primary" id="authSubmitBtn" data-click="authSubmit">Se connecter</button>
+      <button type="button" class="btn-auth-link" id="authForgotBtn" data-click="authGoForgot">Mot de passe oublié&nbsp;?</button>
+      <button type="button" class="btn-auth-link" id="authToggleBtn" data-click="authToggleMode">Pas encore de compte&nbsp;? Créer un compte</button>
+      <div class="auth-note" id="authNote">Mot de passe chiffré, jamais stocké en clair. En créant un compte, tu acceptes notre <a href="/confidentialite">politique de confidentialité</a>.</div>
+    </form>
+  </div>
 </div>
-</div>
+
 <script>
+// ---------- auth ----------
 var authMode = 'login';
+var MODES = {
+  login:  { title: 'Bon retour 👋', sub: 'Connecte-toi pour continuer à papoter.', btn: 'Se connecter', toggle: 'Pas encore de compte ? Créer un compte', toggleFn: 'authToggleMode' },
+  signup: { title: 'Crée ton compte', sub: 'Gratuit, en 30 secondes.', btn: 'Créer mon compte', toggle: 'Déjà un compte ? Se connecter', toggleFn: 'authToggleMode' },
+  forgot: { title: 'Mot de passe oublié', sub: "Indique ton email, on t'envoie un lien pour le réinitialiser.", btn: 'Envoyer le lien', toggle: '‹ Retour à la connexion', toggleFn: 'authBackToLogin' },
+  mfa:    { title: 'Double authentification', sub: "Saisis le code à 6 chiffres de ton application d'authentification.", btn: 'Valider', toggle: '', toggleFn: '' }
+};
+function $(id){ return document.getElementById(id); }
+function show(id, on){ $(id).style.display = on ? '' : 'none'; }
+function authClearError(){ $('authError').style.display = 'none'; $('authError').textContent = ''; }
+function authShowError(msg){ $('authError').textContent = msg; $('authError').style.display = 'block'; }
+function authSetMode(mode){
+  authMode = mode;
+  var m = MODES[mode];
+  authClearError(); show('authOk', false);
+  show('authNameGroup', mode === 'signup');
+  show('authConfirmGroup', mode === 'signup');
+  show('authEmailGroup', mode !== 'mfa');
+  show('authPasswordGroup', mode === 'login' || mode === 'signup');
+  show('authMfaGroup', mode === 'mfa');
+  show('authForgotBtn', mode === 'login');
+  show('authToggleBtn', !!m.toggle);
+  show('authNote', mode === 'signup' || mode === 'login');
+  $('authPassword').setAttribute('autocomplete', mode === 'signup' ? 'new-password' : 'current-password');
+  $('authSubmitBtn').textContent = m.btn;
+  $('authToggleBtn').textContent = m.toggle;
+  $('authToggleBtn').dataset.click = m.toggleFn;
+  $('authTitle').textContent = m.title;
+  $('authSubtitle').textContent = m.sub;
+}
+function authToggleMode(){ authSetMode(authMode === 'login' ? 'signup' : 'login'); }
+function authGoForgot(){ authSetMode('forgot'); }
+function authBackToLogin(){ authSetMode('login'); }
+function authShowMfa(){ authSetMode('mfa'); $('authMfa').focus(); }
 
-function authClearError(){
-  var el = document.getElementById('authError');
-  el.style.display = 'none'; el.textContent = '';
+function openAuth(mode){
+  if (authMode !== 'mfa') authSetMode(mode === 'signup' ? 'signup' : 'login');
+  $('authSheet').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  setTimeout(function(){ (authMode === 'signup' ? $('authName') : $('authEmail')).focus(); }, 250);
 }
-function authShowError(msg){
-  var el = document.getElementById('authError');
-  el.textContent = msg; el.style.display = 'block';
+function closeAuth(){
+  $('authSheet').classList.remove('open');
+  document.body.style.overflow = '';
 }
-function authToggleMode(){
-  authMode = (authMode === 'login') ? 'signup' : 'login';
-  authClearError();
-  document.getElementById('authOk').style.display = 'none';
-  document.getElementById('authNameGroup').style.display = authMode === 'signup' ? 'block' : 'none';
-  document.getElementById('authConfirmGroup').style.display = authMode === 'signup' ? 'block' : 'none';
-  document.getElementById('authForgotBtn').style.display = authMode === 'signup' ? 'none' : 'block';
-  document.getElementById('authSubmitBtn').textContent = authMode === 'signup' ? 'Créer mon compte' : 'Se connecter';
-  document.getElementById('authToggleBtn').textContent = authMode === 'signup' ? 'Déjà un compte ? Se connecter' : "Pas encore de compte ? Créer un compte";
-  document.getElementById('authTitle').textContent = authMode === 'signup' ? "Crée ton compte" : "Bon retour";
-  document.getElementById('authSubtitle').textContent = authMode === 'signup' ? "Crée ton compte pour accéder à l'application" : "Connecte-toi pour accéder à l'application";
-}
+document.addEventListener('keydown', function(e){ if (e.key === 'Escape' && $('authSheet').classList.contains('open')) closeAuth(); });
 
-function authGoForgot(){
-  authMode = 'forgot';
-  authClearError();
-  document.getElementById('authOk').style.display = 'none';
-  document.getElementById('authNameGroup').style.display = 'none';
-  document.getElementById('authConfirmGroup').style.display = 'none';
-  document.getElementById('authPassword').closest('.field-group').style.display = 'none';
-  document.getElementById('authForgotBtn').style.display = 'none';
-  document.getElementById('authSubmitBtn').textContent = 'Envoyer le lien';
-  var toggle = document.getElementById('authToggleBtn');
-  toggle.textContent = '‹ Retour à la connexion';
-  toggle.onclick = authBackToLogin;
-  document.getElementById('authTitle').textContent = 'Mot de passe oublié';
-  document.getElementById('authSubtitle').textContent = "Indique ton email, on t'envoie un lien pour le réinitialiser.";
-}
-
-function authBackToLogin(){
-  authMode = 'login';
-  authClearError();
-  document.getElementById('authOk').style.display = 'none';
-  document.getElementById('authNameGroup').style.display = 'none';
-  document.getElementById('authConfirmGroup').style.display = 'none';
-  document.getElementById('authPassword').closest('.field-group').style.display = '';
-  document.getElementById('authForgotBtn').style.display = '';
-  document.getElementById('authSubmitBtn').textContent = 'Se connecter';
-  var toggle = document.getElementById('authToggleBtn');
-  toggle.textContent = "Pas encore de compte ? Créer un compte";
-  toggle.onclick = authToggleMode;
-  document.getElementById('authTitle').textContent = 'Bon retour';
-  document.getElementById('authSubtitle').textContent = "Connecte-toi pour accéder à l'application";
+function authSubmitMfa(){
+  var btn = $('authSubmitBtn');
+  var code = ($('authMfa').value || '').trim();
+  if (!code){ authShowError('Saisis ton code.'); return; }
+  btn.disabled = true;
+  fetch('/api/login/mfa', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ code: code }) })
+    .then(function(res){ return res.json().then(function(d){ return { status: res.status, data: d }; }); })
+    .then(function(r){
+      btn.disabled = false;
+      if (r.status === 200){ window.location.href = '/admin'; return; }
+      authShowError((r.data && r.data.error) || 'Code incorrect.');
+      if (r.status === 401 && /expir/i.test((r.data && r.data.error) || '')) setTimeout(function(){ location.reload(); }, 1500);
+    })
+    .catch(function(){ btn.disabled = false; authShowError('Impossible de contacter le serveur. Réessaie.'); });
 }
 
 function authSubmit(){
   authClearError();
-  document.getElementById('authOk').style.display = 'none';
-  var email = (document.getElementById('authEmail').value || '').trim().toLowerCase();
-  var btn = document.getElementById('authSubmitBtn');
-
+  show('authOk', false);
+  if (authMode === 'mfa'){ authSubmitMfa(); return; }
+  var email = ($('authEmail').value || '').trim().toLowerCase();
+  var btn = $('authSubmitBtn');
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ authShowError('Adresse email invalide.'); return; }
 
   if (authMode === 'forgot'){
     btn.disabled = true;
-    fetch('/api/forgot-password', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({email: email})
-    }).then(function(res){
-      return res.json().then(function(data){ return {status: res.status, data: data}; });
-    }).then(function(r){
-      btn.disabled = false;
-      var ok = document.getElementById('authOk');
-      ok.textContent = (r.data && r.data.message) || 'Si un compte existe avec cet email, un lien a été envoyé.';
-      ok.style.display = 'block';
-    }).catch(function(){
-      btn.disabled = false;
-      authShowError('Impossible de contacter le serveur. Réessaie.');
-    });
+    fetch('/api/forgot-password', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ email: email }) })
+      .then(function(res){ return res.json().then(function(d){ return { status: res.status, data: d }; }); })
+      .then(function(r){
+        btn.disabled = false;
+        if (r.status >= 400){ authShowError((r.data && r.data.error) || 'Une erreur est survenue.'); return; }
+        $('authOk').textContent = (r.data && r.data.message) || 'Si un compte existe avec cet email, un lien a été envoyé.';
+        show('authOk', true);
+      })
+      .catch(function(){ btn.disabled = false; authShowError('Impossible de contacter le serveur. Réessaie.'); });
     return;
   }
 
-  var pass = document.getElementById('authPassword').value || '';
+  var pass = $('authPassword').value || '';
   if (!pass){ authShowError('Saisis ton mot de passe.'); return; }
   if (authMode === 'signup' && pass.length < 8){ authShowError('Le mot de passe doit contenir au moins 8 caractères.'); return; }
-
   var body, url;
   if (authMode === 'signup'){
-    var name = (document.getElementById('authName').value || '').trim();
-    var confirm = document.getElementById('authConfirm').value || '';
+    var confirm = $('authConfirm').value || '';
     if (pass !== confirm){ authShowError('Les mots de passe ne correspondent pas.'); return; }
     url = '/api/signup';
-    body = { email: email, password: pass, name: name };
+    body = { email: email, password: pass, name: ($('authName').value || '').trim() };
   } else {
     url = '/api/login';
     body = { email: email, password: pass };
   }
-
   btn.disabled = true;
-  fetch(url, {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify(body)
-  }).then(function(res){
-    return res.json().then(function(data){ return {status: res.status, data: data}; });
-  }).then(function(r){
-    btn.disabled = false;
-    if (r.status >= 200 && r.status < 300){
-      window.location.href = '/';
-    } else {
-      authShowError(r.data && r.data.error ? r.data.error : "Une erreur est survenue.");
-    }
-  }).catch(function(){
-    btn.disabled = false;
-    authShowError("Impossible de contacter le serveur. Réessaie.");
-  });
+  fetch(url, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body) })
+    .then(function(res){ return res.json().then(function(data){ return { status: res.status, data: data }; }); })
+    .then(function(r){
+      btn.disabled = false;
+      if (r.status >= 200 && r.status < 300){
+        if (r.data && r.data.mfaRequired){ authShowMfa(); return; }
+        window.location.href = '/';
+      } else {
+        authShowError(r.data && r.data.error ? r.data.error : 'Une erreur est survenue.');
+      }
+    })
+    .catch(function(){ btn.disabled = false; authShowError('Impossible de contacter le serveur. Réessaie.'); });
 }
+$('authForm').addEventListener('submit', function(e){ e.preventDefault(); authSubmit(); });
+$('authForm').addEventListener('keydown', function(e){ if (e.key === 'Enter' && e.target.tagName === 'INPUT'){ e.preventDefault(); authSubmit(); } });
+
+// Email-confirmation link result (/?verified=1|0).
+(function(){
+  var v = new URLSearchParams(location.search).get('verified');
+  if (v === null) return;
+  openAuth('login');
+  if (v === '1'){ $('authOk').textContent = 'Adresse email confirmée ✓ Tu peux te connecter.'; show('authOk', true); }
+  else authShowError('Ce lien de confirmation a expiré ou est invalide.');
+  history.replaceState(null, '', '/');
+})();
+
+// ---------- landing animations ----------
+$('year').textContent = new Date().getFullYear();
+
+var LANGS = [["🇬🇧","English"],["🇪🇸","Español"],["🇮🇹","Italiano"],["🇮🇱","עברית"],["🇨🇳","中文"],["🇵🇹","Português"],["🇷🇺","Русский"],["🇩🇪","Deutsch"],["🇯🇵","日本語"],["🇫🇷","Français"],["🇮🇳","हिन्दी"],["🇰🇷","한국어"],["🇸🇦","العربية"],["🇹🇷","Türkçe"],["🇳🇱","Nederlands"],["🇬🇷","Ελληνικά"],["🇵🇱","Polski"],["🇸🇪","Svenska"],["🇻🇳","Tiếng Việt"],["📜","Latina"],
+  ["🇳🇴","Norsk"],["🇮🇪","Gaeilge"],["🇮🇩","Bahasa Indonesia"],["🐉","High Valyrian"],["🇺🇦","Українська"],["🇫🇮","Suomi"],["🇩🇰","Dansk"],["🇷🇴","Română"],["🇨🇿","Čeština"],["🇿🇦","isiZulu"],["🌺","ʻŌlelo Hawaiʻi"],["🌍","Kiswahili"],["🏴","Cymraeg"],["🇭🇺","Magyar"],["🏴","Gàidhlig"],["🇭🇹","Kreyòl"],["🌐","Esperanto"],["🖖","tlhIngan Hol"],["🪶","Diné bizaad"]];
+function chips(list){ return list.map(function(l){ return '<span class="chip"><span>' + l[0] + '</span>' + l[1] + '</span>'; }).join(''); }
+var half = Math.ceil(LANGS.length / 2);
+// Each track holds its list twice so the -50% translation loops seamlessly.
+$('track1').innerHTML = chips(LANGS.slice(0, half)) + chips(LANGS.slice(0, half));
+$('track2').innerHTML = chips(LANGS.slice(half)) + chips(LANGS.slice(half));
+
+var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+// Greeting bubbles popping around the logo.
+var GREET = [["Bonjour !","français"],["Hello!","English"],["¡Hola!","español"],["こんにちは","japonais"],["안녕하세요","coréen"],["Ciao!","italiano"],["مرحبا","arabe"],["Olá!","português"],["שלום","hébreu"],["Привет!","russe"],["Hallo!","Deutsch"],["你好","chinois"],["Jambo!","swahili"],["Merhaba!","türkçe"],["Γεια σου!","grec"],["Qapla'!","klingon"]];
+var slots = document.querySelectorAll('.say'), gi = 0;
+function sayNext(slot){
+  var g = GREET[gi++ % GREET.length];
+  slot.classList.remove('on');
+  setTimeout(function(){
+    slot.textContent = g[0];
+    var sm = document.createElement('small'); sm.textContent = g[1]; slot.appendChild(sm);
+    slot.classList.add('on');
+  }, reduce ? 0 : 350);
+}
+slots.forEach(function(s, i){ setTimeout(function(){ sayNext(s); if (!reduce) setInterval(function(){ sayNext(s); }, 4800); }, reduce ? 0 : 700 + i * 1200); });
+
+// Reveal on scroll.
+var io = ('IntersectionObserver' in window) ? new IntersectionObserver(function(entries){
+  entries.forEach(function(e){ if (e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
+}, { threshold: .12 }) : null;
+document.querySelectorAll('.reveal').forEach(function(el, i){ el.style.transitionDelay = (i % 3) * 80 + 'ms'; if (io && !reduce) io.observe(el); else el.classList.add('in'); });
+
+// Count-up for the numbers.
+document.querySelectorAll('[data-count]').forEach(function(el){
+  var target = +el.dataset.count, suffix = target >= 1000 ? '+' : '';
+  if (reduce || !io) return;
+  var o = new IntersectionObserver(function(en){
+    if (!en[0].isIntersecting) return; o.disconnect();
+    var t0 = performance.now();
+    (function tick(t){ var k = Math.min(1, (t - t0) / 1200), v = Math.round(target * (1 - Math.pow(1 - k, 3)));
+      el.textContent = v.toLocaleString('fr-FR') + (k === 1 ? suffix : ''); if (k < 1) requestAnimationFrame(tick); })(t0);
+  });
+  o.observe(el);
+});
+
+// Audio demo (browser speech synthesis).
+$('demoSay').addEventListener('click', function(){
+  try { var u = new SpeechSynthesisUtterance('こんにちは'); u.lang = 'ja-JP'; speechSynthesis.cancel(); speechSynthesis.speak(u); } catch (e) {}
+});
+
+// Theme toggle (shared with the app: localStorage 'lang_theme').
+function paintThemeBtn(){ $('themeBtn').textContent = document.documentElement.getAttribute('data-theme') === 'dark' ? '☀️' : '🌙'; }
+$('themeBtn').addEventListener('click', function(){
+  var t = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', t);
+  try { localStorage.setItem('lang_theme', t); } catch (e) {}
+  paintThemeBtn();
+});
+paintThemeBtn();
+</script>
+<script>
+// Click delegation: [data-click="fn"] calls the global fn (with data-arg if set).
+// No inline onclick attributes, so the Content-Security-Policy can forbid them.
+document.addEventListener('click', function (e) {
+  var el = e.target.closest('[data-click]');
+  if (!el) return;
+  var fn = window[el.dataset.click];
+  if (typeof fn === 'function') fn.apply(null, el.dataset.arg !== undefined ? [el.dataset.arg] : []);
+});
 </script>
 </body>
 </html>

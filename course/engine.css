@@ -273,3 +273,21 @@ input,select,textarea{font-family:inherit;color:var(--ink)}
   .duo-bar{padding:var(--ig27-space-2) var(--ig27-space-4);gap:var(--ig27-space-2)}
   .hbar{grid-template-columns:90px 1fr 40px}
 }
+
+/* ===== Papote mascot ===== */
+.masc{display:inline-block;object-fit:contain;flex:none;pointer-events:none;user-select:none;
+  animation:mascIn .55s cubic-bezier(.34,1.56,.64,1) both}
+@keyframes mascIn{0%{opacity:0;transform:translateY(10px) scale(.6) rotate(-6deg)}100%{opacity:1;transform:none}}
+.masc-big{width:132px;height:132px;animation:mascIn .6s cubic-bezier(.34,1.56,.64,1) both,mascFloat 3s ease-in-out .6s infinite}
+@keyframes mascFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.complete .big .masc-big{display:block;margin:0 auto}
+.feedback.with-masc{display:flex;align-items:center;gap:var(--ig27-space-3)}
+.feedback.ko .masc-fb{animation:mascIn .55s cubic-bezier(.34,1.56,.64,1) both,mascShake .5s ease .1s}
+@keyframes mascShake{0%,100%{transform:none}25%{transform:rotate(-7deg)}75%{transform:rotate(7deg)}}
+.with-masc{display:flex;align-items:center;gap:var(--ig27-space-3)}
+p.with-masc{justify-content:center}
+.masc-hero{float:right;margin:-8px 0 0 var(--ig27-space-3);width:104px;height:104px}
+.rtl-ui .masc-hero,[dir=rtl] .masc-hero{float:left;margin:-8px var(--ig27-space-3) 0 0}
+.masc-toast{width:40px;height:40px;vertical-align:middle;margin-inline-end:8px;animation:none}
+@media (max-width:520px){.masc-hero{width:76px;height:76px}.masc-big{width:112px;height:112px}}
+@media (prefers-reduced-motion: reduce){.masc,.masc-big,.feedback.ko .masc-fb{animation:none}}

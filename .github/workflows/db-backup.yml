@@ -1,0 +1,50 @@
+# Daily encrypted backup of the production PostgreSQL database.
+#
+# One-time setup (GitHub → repository → Settings → Secrets and variables → Actions):
+#   BACKUP_DATABASE_URL  Render → database → Connect → "External Database URL"
+#   BACKUP_PASSPHRASE    a long random passphrase (keep a copy offline!)
+# Backups are kept 30 days as workflow artifacts (Actions → DB backup → run →
+# Artifacts). Restore: see scripts/restore-db.sh.
+name: DB backup
+
+on:
+  schedule:
+    - cron: "17 2 * * *"   # every day at 02:17 UTC
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    container: postgres:17
+    env:
+      DATABASE_URL: ${{ secrets.BACKUP_DATABASE_URL }}
+      BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+    steps:
+      - name: Check secrets
+        run: |
+          if [ -z "$DATABASE_URL" ] || [ -z "$BACKUP_PASSPHRASE" ]; then
+            echo "::warning::BACKUP_DATABASE_URL / BACKUP_PASSPHRASE not set: no backup made."
+            exit 1
+          fi
+      - name: Dump, compress and encrypt
+        run: |
+          set -euo pipefail
+          apt-get update -qq && apt-get install -y -qq openssl >/dev/null
+          STAMP=$(date -u +%Y-%m-%dT%H%MZ)
+          mkdir -p out
+          pg_dump "$DATABASE_URL" --no-owner --no-privileges --format=custom \
+            | openssl enc -aes-256-cbc -pbkdf2 -iter 200000 -salt -pass env:BACKUP_PASSPHRASE \
+            > "out/papote-$STAMP.dump.enc"
+          test -s "out/papote-$STAMP.dump.enc"
+          ls -lh out
+          # Tell the app (shown in /admin → Sécurité & configuration).
+          psql "$DATABASE_URL" -q -c "INSERT INTO app_meta (key, value) VALUES ('last_backup', '$(date -u +%Y-%m-%dT%H:%M:%SZ)') ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: papote-db-backup
+          path: out/*.dump.enc
+          retention-days: 30
+          if-no-files-found: error

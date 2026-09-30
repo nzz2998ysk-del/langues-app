@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Mes langues — Mon profil</title>
+<title>Papote — Mon profil</title><!--BRAND_HEAD-->
 <script>(function(){try{
   var t = localStorage.getItem('lang_theme');
   if(t!=='dark'&&t!=='light'){t=((window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light');} document.documentElement.setAttribute('data-theme',t);
@@ -69,20 +69,20 @@ button.danger{background:var(--ig27-red);margin-top:12px}
     <div class="field email-row">
       <div><label style="margin-bottom:2px">Email</label><div class="val" id="emailVal">…</div><div class="val" id="emailUnverified" style="display:none;color:var(--ig27-orange)" data-i18n="email_unverified"></div></div>
     </div>
-    <button id="saveBtn" onclick="saveProfile()" data-i18n="save">Enregistrer</button>
+    <button id="saveBtn" data-click="saveProfile" data-i18n="save">Enregistrer</button>
     <div class="msg" id="status"></div>
   </div>
 
   <div class="card">
     <h2 style="margin:0 0 6px;font-size:var(--ig27-fs-title3);line-height:var(--ig27-lh-title3)" data-i18n="data_title">Mes données</h2>
     <p class="lead" style="margin:0" data-i18n="data_lead"></p>
-    <button type="button" id="exportBtn" onclick="exportData()" data-i18n="data_export">Télécharger mes données</button>
-    <button type="button" class="secondary" onclick="logoutAll()" data-i18n="logout_all">Déconnecter tous les appareils</button>
+    <button type="button" id="exportBtn" data-click="exportData" data-i18n="data_export">Télécharger mes données</button>
+    <button type="button" class="secondary" data-click="logoutAll" data-i18n="logout_all">Déconnecter tous les appareils</button>
     <details style="margin-top:18px">
       <summary style="cursor:pointer;color:var(--ig27-red);font-weight:600" data-i18n="delete_account">Supprimer mon compte</summary>
       <p class="lead" style="margin:10px 0 0" data-i18n="delete_lead"></p>
       <input type="password" id="delPw" autocomplete="current-password" data-i18n-ph="delete_pw_ph" style="margin-top:12px">
-      <button type="button" class="danger" onclick="deleteAccount()" data-i18n="delete_account">Supprimer mon compte</button>
+      <button type="button" class="danger" data-click="deleteAccount" data-i18n="delete_account">Supprimer mon compte</button>
     </details>
     <div class="msg" id="dataStatus"></div>
   </div>
@@ -141,7 +141,7 @@ async function exportData(){
   var r = await fetch('/api/account/export');
   if (!r.ok){ st.textContent = tr('save_error'); return; }
   var blob = await r.blob();
-  var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'mes-donnees.json';
+  var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'papote-mes-donnees.json';
   document.body.appendChild(a); a.click(); a.remove(); setTimeout(function(){ URL.revokeObjectURL(a.href); }, 1000);
 }
 async function logoutAll(){
@@ -188,6 +188,16 @@ async function saveProfile(){
 }
 
 loadProfile();
+</script>
+<script>
+// Click delegation: [data-click="fn"] calls the global fn (with data-arg if set).
+// No inline onclick attributes, so the Content-Security-Policy can forbid them.
+document.addEventListener('click', function (e) {
+  var el = e.target.closest('[data-click]');
+  if (!el) return;
+  var fn = window[el.dataset.click];
+  if (typeof fn === 'function') fn.apply(null, el.dataset.arg !== undefined ? [el.dataset.arg] : []);
+});
 </script>
 </body>
 </html>
