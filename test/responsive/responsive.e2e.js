@@ -147,10 +147,12 @@ for (const browserName of BROWSERS) {
           const auth = await lp.evaluate(() => {
             const btn = document.getElementById("authSubmitBtn").getBoundingClientRect(), sheet = document.getElementById("authSheet").getBoundingClientRect();
             const z = parseFloat(document.documentElement.style.zoom) || 1;
-            return { btnOk: btn.top >= 0 && btn.bottom <= innerHeight + 1, sheetOk: sheet.width * (z > 1 ? z : 1) >= innerWidth - 2 };
+            // clientWidth, not innerWidth: WebKit counts a classic scrollbar in innerWidth
+            const vw = document.documentElement.clientWidth, k = z > 1 ? z : 1;
+            return { btnOk: btn.top >= 0 && btn.bottom <= innerHeight + 1, sheetOk: sheet.left * k <= 1 && sheet.right * k >= vw - 2, sheetW: Math.round(sheet.width * k), vw };
           });
           if (!auth.btnOk) problems.push("login button off screen");
-          if (!auth.sheetOk) problems.push("login backdrop does not cover the screen");
+          if (!auth.sheetOk) problems.push(`login backdrop does not cover the screen (${auth.sheetW} < ${auth.vw})`);
           // Liquid Glass is active and the transparency setting applies
           const glass = await lp.evaluate(() => {
             const nav = document.querySelector("header.nav"), cs = getComputedStyle(nav);
@@ -168,7 +170,7 @@ for (const browserName of BROWSERS) {
 
           const ctx = await browser.newContext(contextOptions(browserName, d, userState));
           const page = await ctx.newPage();
-          const errors = []; page.on("pageerror", (e) => errors.push(e.message));
+          const errors = []; page.on("pageerror", (e) => { if (!/ResizeObserver loop/.test(e.message)) errors.push(e.message); }); // benign browser notice
           for (const p of ["/profile", "/subscribe", "/ideas"]) {
             await page.goto(BASE + p); await page.waitForTimeout(p === "/subscribe" ? 1200 : 500);
             const o = await overflowOf(page); if (o.length) problems.push(`${p} overflow: ${o.join(", ")}`);

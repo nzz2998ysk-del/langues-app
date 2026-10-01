@@ -96,7 +96,7 @@
     var input = coarse ? (anyFine ? "hybrid" : "touch") : (touch ? "hybrid" : "mouse");
     var shortSide = Math.min(sw, sh), longSide = Math.max(sw, sh);
     var type;
-    if (UA.tvUA || (!touch && !hover && vw >= 1280)) type = "tv";
+    if (UA.tvUA) type = "tv"; // UA only: headless/remote-desktop browsers also report no hover
     else if (UA.os === "ipados") type = "tablet";
     else if (UA.os === "ios") type = "phone";
     else if ((coarse || touch && UA.os === "android") && shortSide < 600) type = "phone";
@@ -106,8 +106,9 @@
     else type = "laptop";
     var bp = "xs"; for (var i = 0; i < BPS.length; i++) if (vw >= BPS[i][1]) bp = BPS[i][0];
     if (type === "tv") bp = "tv";
-    var orient = (w.screen && w.screen.orientation && w.screen.orientation.type) ? (w.screen.orientation.type.indexOf("portrait") === 0 ? "portrait" : "landscape") : (vh >= vw ? "portrait" : "landscape");
-    if (!TOP) orient = vh >= vw ? "portrait" : "landscape"; // an iframe follows its own box
+    // From the viewport, not screen.orientation: that is what the layout sees
+    // (split screen, resized windows) and it is reliable in every engine.
+    var orient = vh >= vw ? "portrait" : "landscape";
     // Approximate browser zoom (desktop) and pinch zoom (mobile).
     var pageZoom = (!coarse && w.outerWidth && vw) ? Math.round((w.outerWidth / vw) * 100) / 100 : 1;
     var pinch = vv && vv.scale ? Math.round(vv.scale * 100) / 100 : 1;

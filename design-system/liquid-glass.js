@@ -138,7 +138,12 @@
     var bar = d.getElementById("tabbar"); if (!bar || bar.querySelector(".lg-drop")) return;
     var drop = d.createElement("span"); drop.className = "lg-drop"; drop.setAttribute("aria-hidden", "true");
     bar.insertBefore(drop, bar.firstChild); bar.classList.add("lg-has-drop");
-    var place = function () {
+    var raf = 0, place = function () {
+      if (raf) return;
+      // next frame: avoids "ResizeObserver loop" warnings (WebKit)
+      raf = requestAnimationFrame(function () { raf = 0; placeNow(); });
+    };
+    var placeNow = function () {
       var on = bar.querySelector(".tabbtn.on");
       if (!on || !bar.offsetWidth) { drop.style.width = "0"; return; }
       drop.style.width = on.offsetWidth + "px";
@@ -147,7 +152,7 @@
     new MutationObserver(place).observe(bar, { subtree: true, attributes: true, attributeFilter: ["class"] });
     w.addEventListener("resize", place);
     if (w.ResizeObserver) new ResizeObserver(place).observe(bar);
-    place();
+    placeNow();
   }
 
   function ready() {

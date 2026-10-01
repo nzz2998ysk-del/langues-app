@@ -434,7 +434,7 @@ function buildFrame(key){
     try{
       var doc = f.contentDocument;
       if (doc && window.ResizeObserver){
-        var ro = new ResizeObserver(function(){ resizeFrame(key); });
+        var pending = 0, ro = new ResizeObserver(function(){ if (pending) return; pending = requestAnimationFrame(function(){ pending = 0; resizeFrame(key); }); });
         ro.observe(doc.documentElement);
         resizers[key] = ro;
       }
