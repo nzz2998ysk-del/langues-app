@@ -1495,8 +1495,8 @@ app.get("/api/admin/config", requireAdmin, async (req, res) => {
     { key: "admin_email", ok: Boolean(ADMIN_EMAIL), label: "ADMIN_EMAIL défini", help: "Render → Environment → ADMIN_EMAIL" },
     { key: "admin_mfa", ok: admins.rows[0].n > 0 && admins.rows[0].mfa === admins.rows[0].n, label: `Double authentification active pour tous les admins (${admins.rows[0].mfa}/${admins.rows[0].n})`, help: "Section « Sécurité » ci-dessous" },
     { key: "anthropic", ok: env("ANTHROPIC_API_KEY"), label: "Conversation IA (ANTHROPIC_API_KEY)", help: "console.anthropic.com → API Keys, puis Render → Environment (jamais dans le code)" },
-    { key: "resend", ok: Boolean(emailProvider()), label: "Envoi d'emails (RESEND_API_KEY)", help: "Resend → API Keys, puis Render → Environment (jamais dans le code)" },
-    { key: "email_from", ok: /<[^@\s]+@[^>\s]+>/.test(emailFrom) && !/resend\.dev/.test(emailFrom), label: "Expéditeur sur ton domaine (EMAIL_FROM)", help: "Sans domaine vérifié dans Resend → Domains, seule l'adresse du compte Resend reçoit les emails" },
+    { key: "sendgrid", ok: Boolean(emailProvider()), label: "Envoi d'emails (SENDGRID_API_KEY)", help: "SendGrid → Settings → API Keys (Mail Send), puis Render → Environment (jamais dans le code)" },
+    { key: "email_from", ok: true, label: `Expéditeur : ${emailFrom || "Papote <papotelangues@icloud.com>"}`, help: "Doit être un expéditeur vérifié dans SendGrid → Settings → Sender Authentication" },
     { key: "stripe", ok: env("STRIPE_SECRET_KEY") && env("STRIPE_PRICE_ID") && env("STRIPE_WEBHOOK_SECRET"), label: "Paiement Stripe configuré", help: "STRIPE_SECRET_KEY, STRIPE_PRICE_ID, STRIPE_WEBHOOK_SECRET" },
     { key: "stripe_events", ok: STRIPE_STATUS.state === "ok" || STRIPE_STATUS.state === "updated", label: "Webhook Stripe : événements d'abonnement", help: STRIPE_STATUS.detail || STRIPE_STATUS.state },
     { key: "db_tls", ok: DB_TLS.mode === "verified" || DB_TLS.mode === "disabled", label: `TLS base de données : ${DB_TLS.mode}`, help: DB_TLS.note },
@@ -1512,7 +1512,7 @@ app.get("/api/admin/config", requireAdmin, async (req, res) => {
 // are harmless (the sample reset link is not a valid token).
 app.post("/api/admin/test-emails", requireAdmin, async (req, res) => {
   if (rateLimited("test-emails:" + req.userId, 3, 10 * 60 * 1000)) return res.status(429).json({ error: "Trop d'envois de test, réessaie dans quelques minutes." });
-  if (!emailProvider()) return res.status(400).json({ error: "Aucun envoi d'email configuré (RESEND_API_KEY manquante dans Render → Environment)." });
+  if (!emailProvider()) return res.status(400).json({ error: "Aucun envoi d'email configuré (SENDGRID_API_KEY manquante dans Render → Environment)." });
   const to = (await pool.query("SELECT email FROM users WHERE id = $1", [req.userId])).rows[0].email;
   const now = new Date();
   const number = "TEST-" + now.toISOString().slice(0, 10).replace(/-/g, "");
@@ -1861,7 +1861,7 @@ async function sendSuggestionsDigest() {
     html: suggestionsDigestHtml(pending.rows),
   });
   if (result && result.ok === false) {
-    // Sending failed (Resend error/network issue): leave sent_at NULL so these
+    // Sending failed (SendGrid error/network issue): leave sent_at NULL so these
     // suggestions are retried on the next check instead of being silently lost.
     return 0;
   }

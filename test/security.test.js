@@ -78,7 +78,7 @@ before(async () => {
   });
   await new Promise((r) => aiMock.listen(0, r));
   server = spawn(process.execPath, [path.join(__dirname, "..", "server.js")], {
-    env: { ...process.env, PORT: String(PORT), DATABASE_URL: DB, JWT_SECRET: "test-secret-" + crypto.randomBytes(8).toString("hex"), ADMIN_EMAIL: ADMIN, NODE_ENV: "test", RESEND_API_KEY: "", STRIPE_WEBHOOK_SECRET: WHSEC,
+    env: { ...process.env, PORT: String(PORT), DATABASE_URL: DB, JWT_SECRET: "test-secret-" + crypto.randomBytes(8).toString("hex"), ADMIN_EMAIL: ADMIN, NODE_ENV: "test", SENDGRID_API_KEY: "", STRIPE_WEBHOOK_SECRET: WHSEC,
       ANTHROPIC_API_KEY: AI_KEY, AI_API_URL: `http://localhost:${aiMock.address().port}`, AI_DAILY_FREE: "3", DIGEST_CRON_SECRET: "" },
     stdio: ["ignore", "pipe", "pipe"],
   });
@@ -383,8 +383,8 @@ test("test emails: admin only, refused clearly when no email provider is set", {
   assert.equal((await user("POST", "/api/admin/test-emails", {})).status, 403);
   const admin = await sharedAdmin();
   const r = await admin("POST", "/api/admin/test-emails", {});
-  assert.equal(r.status, 400); // the test server has no SMTP / Resend
-  assert.match(r.json.error, /RESEND_API_KEY/);
+  assert.equal(r.status, 400); // the test server has no SendGrid key
+  assert.match(r.json.error, /SENDGRID_API_KEY/);
 });
 
 test("invoices: one per payment, numbered in sequence, PDF only for its owner", { skip }, async () => {

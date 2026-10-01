@@ -54,7 +54,7 @@ before(async () => {
   pool = new Pool({ connectionString: DB });
   await pool.query("DROP SCHEMA public CASCADE; CREATE SCHEMA public;");
   server = spawn(process.execPath, [path.join(__dirname, "..", "..", "server.js")], {
-    env: { ...process.env, PORT: String(PORT), DATABASE_URL: DB, JWT_SECRET: "resp-" + crypto.randomBytes(8).toString("hex"), NODE_ENV: "test", RESEND_API_KEY: "" },
+    env: { ...process.env, PORT: String(PORT), DATABASE_URL: DB, JWT_SECRET: "resp-" + crypto.randomBytes(8).toString("hex"), NODE_ENV: "test", SENDGRID_API_KEY: "" },
     stdio: ["ignore", "pipe", "pipe"],
   });
   await new Promise((resolve, reject) => {

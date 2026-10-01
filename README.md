@@ -221,7 +221,7 @@ dans [`SECURITY.md`](SECURITY.md). En bref :
   passe, Google Authenticator, 1Password…, avec 8 codes de secours) ; secret
   chiffré en base (AES-256-GCM).
 - **Configuration vérifiée** : `/admin` → « 🔐 Sécurité & configuration » liste
-  ce qui est en place ou manquant (ADMIN_EMAIL, Resend, Stripe et ses
+  ce qui est en place ou manquant (ADMIN_EMAIL, SendGrid, Stripe et ses
   événements de webhook — ajoutés automatiquement via l'API Stripe —, TLS de
   la base, dernière sauvegarde, mentions légales).
 - **Sauvegardes** : `.github/workflows/db-backup.yml` fait chaque nuit un
@@ -239,10 +239,10 @@ dans [`SECURITY.md`](SECURITY.md). En bref :
 - **Tests** : `TEST_DATABASE_URL=postgresql://… npm test` lance 23 tests
   d'attaque contre le vrai serveur (base de test effacée à chaque lancement).
 
-## Emails transactionnels (Resend)
+## Emails transactionnels (SendGrid)
 
 Deux emails automatiques côté compte, envoyés par `lib/email.js` via l'API
-Resend :
+SendGrid :
 - **bienvenue** — juste après la création du compte (`POST /api/signup`) ;
 - **réinitialisation du mot de passe** — sur `POST /api/forgot-password`,
   uniquement si le compte existe (réponse identique sinon).
@@ -260,42 +260,41 @@ oublié, facture Premium avec son PDF, rappel quotidien, boîte à idées) part 
 l'adresse de l'admin connecté, sujet préfixé par `[TEST]`. Rien n'est créé
 (ni compte, ni paiement, ni numéro de facture) ; limité à 3 envois / 10 min.
 
-Les emails passent par **l'API HTTP de Resend** (HTTPS). L'offre gratuite de
-Render bloque tout le trafic SMTP sortant (ports 25, 465 et 587) : un envoi
-direct par une boîte iCloud ou Gmail ne peut pas y fonctionner. Les variables
+Les emails passent par **l'API HTTP de SendGrid** (`POST
+https://api.sendgrid.com/v3/mail/send`, HTTPS). L'offre gratuite de Render
+bloque tout le trafic SMTP sortant (ports 25, 465 et 587). `RESEND_API_KEY`,
 `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM`, `SMTP_HOST`, `SMTP_PORT`, `GMAIL_USER`
 et `GMAIL_APP_PASSWORD` ne sont **plus utilisées** : tu peux les retirer de
 Render (un avertissement le rappelle dans les logs tant qu'elles existent).
 
-Offre gratuite de Resend : 100 emails par jour, 3 000 par mois.
-
 ### Configuration
 
-Deux variables d'environnement, à créer dans **Render → ton service →
-Settings → Environment** (jamais dans le code ni dans un commit — voir aussi
-`.env.example`) :
+À créer dans **Render → ton service → Environment** (jamais dans le code ni
+dans un commit — voir aussi `.env.example`) :
 
 | Variable | Où l'obtenir |
 |---|---|
-| `RESEND_API_KEY` | resend.com → dashboard → **API Keys** → *Create API Key* (accès « Sending » suffit). |
-| `EMAIL_FROM` | L'expéditeur, ex. `Papote <no-reply@ton-domaine.com>`. Le domaine doit d'abord être **vérifié** dans Resend → **Domains** → *Add domain*, puis ajouter chez ton hébergeur DNS les enregistrements affichés (SPF + DKIM, DMARC conseillé) et attendre le statut *Verified*. |
+| `SENDGRID_API_KEY` | SendGrid → **Settings → API Keys** → *Create API Key* (accès restreint, permission **Mail Send**). |
+| `EMAIL_FROM` | Facultatif. Par défaut `Papote <papotelangues@icloud.com>`. L'adresse doit être **vérifiée** dans SendGrid → **Settings → Sender Authentication** (*Single Sender Verification* : SendGrid envoie un lien de confirmation à cette adresse), sinon SendGrid répond 403. |
 
 Comportement :
-- Sans `RESEND_API_KEY`, l'app fonctionne normalement : aucun email n'est
+- Sans `SENDGRID_API_KEY`, l'app fonctionne normalement : aucun email n'est
   envoyé, un avertissement est loggé au démarrage et à chaque envoi sauté
-  (`[email] RESEND_API_KEY not set - skipping ...`). Jamais de crash.
-- Sans `EMAIL_FROM`, l'expéditeur de test de Resend (`onboarding@resend.dev`)
-  est utilisé : il ne délivre qu'à l'adresse du propriétaire du compte Resend.
-  Un avertissement le rappelle au démarrage.
+  (`[email] SENDGRID_API_KEY not set - skipping ...`). Jamais de crash.
 - Un envoi échoué (réseau, 429, 5xx) est retenté une fois ; une erreur de
-  configuration (clé invalide, domaine non vérifié) est loggée avec la réponse
-  de Resend. Un email qui échoue ne fait jamais échouer l'inscription ni la
-  demande de réinitialisation.
+  configuration (clé invalide → 401, expéditeur non vérifié → 403) est loggée
+  avec la réponse de SendGrid et une indication de correction. Un email qui
+  échoue ne fait jamais échouer l'inscription ni la demande de
+  réinitialisation.
+- Délivrabilité : envoyer « de la part de » une adresse `@icloud.com` depuis
+  SendGrid échoue au contrôle DMARC d'iCloud, donc une partie des emails peut
+  arriver en spam. Pour une délivrabilité fiable, authentifie un nom de domaine
+  dans SendGrid (*Domain Authentication*) et mets `EMAIL_FROM` sur ce domaine.
 
 ## Mot de passe oublié
 
 Un lien « Mot de passe oublié ? » sur la page de connexion envoie un email
-(même template Resend) avec un lien de réinitialisation valable 1 heure
+(même helper SendGrid) avec un lien de réinitialisation valable 1 heure
 (`POST /api/forgot-password`, puis `/reset-password?token=...` →
 `POST /api/reset-password`). Le token est stocké haché (SHA-256) en base,
 à usage unique, et la réponse de `/api/forgot-password` est volontairement
