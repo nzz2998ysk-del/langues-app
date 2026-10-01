@@ -145,14 +145,19 @@ for (const browserName of BROWSERS) {
           await lp.evaluate(() => openAuth("login")); // eslint-disable-line no-undef
           await lp.waitForTimeout(700);
           const auth = await lp.evaluate(() => {
-            const btn = document.getElementById("authSubmitBtn").getBoundingClientRect(), sheet = document.getElementById("authSheet").getBoundingClientRect();
-            const z = parseFloat(document.documentElement.style.zoom) || 1;
-            // clientWidth, not innerWidth: WebKit counts a classic scrollbar in innerWidth
-            const vw = document.documentElement.clientWidth, k = z > 1 ? z : 1;
-            return { btnOk: btn.top >= 0 && btn.bottom <= innerHeight + 1, sheetOk: sheet.left * k <= 1 && sheet.right * k >= vw - 2, sheetW: Math.round(sheet.width * k), vw };
+            const btn = document.getElementById("authSubmitBtn").getBoundingClientRect(), sheet = document.getElementById("authSheet");
+            // What matters is what the user sees: every corner of the visible
+            // viewport must land on the sheet (backdrop), not on the page below.
+            // Hit-testing is engine-neutral (zoom, scrollbars, mobile layout viewport).
+            const vv = window.visualViewport, w = Math.floor(vv ? vv.width : innerWidth), h = Math.floor(vv ? vv.height : innerHeight);
+            const miss = [[2, 2], [w - 3, 2], [2, h - 3], [w - 3, h - 3]].map(([x, y]) => {
+              const el = document.elementFromPoint(x, y);
+              return el && sheet.contains(el) ? null : `${x},${y}→${el ? el.tagName.toLowerCase() + (el.id ? "#" + el.id : "") + (el.className && typeof el.className === "string" ? "." + el.className.split(" ")[0] : "") : "none"}`;
+            }).filter(Boolean);
+            return { btnOk: btn.top >= 0 && btn.bottom <= innerHeight + 1, sheetOk: !miss.length, miss: miss.join(" ") };
           });
           if (!auth.btnOk) problems.push("login button off screen");
-          if (!auth.sheetOk) problems.push(`login backdrop does not cover the screen (${auth.sheetW} < ${auth.vw})`);
+          if (!auth.sheetOk) problems.push(`login backdrop does not cover the screen (${auth.miss})`);
           // Liquid Glass is active and the transparency setting applies
           const glass = await lp.evaluate(() => {
             const nav = document.querySelector("header.nav"), cs = getComputedStyle(nav);
