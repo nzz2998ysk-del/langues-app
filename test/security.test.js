@@ -52,12 +52,12 @@ function client() {
     return { status: res.status, headers: res.headers, json, text, cookie: () => cookieHeader() };
   };
 }
-async function signup(email, password = PW) {
+async function signup(email, password = PW, extra = {}) {
   const c = client();
   // Distinct client address per signup, so the per-IP signup rate limit does not
   // interfere (the server trusts one proxy hop, like behind Render).
   const ip = `10.0.${Math.floor(Math.random() * 250)}.${Math.floor(Math.random() * 250)}`;
-  const r = await c("POST", "/api/signup", { email, password, name: "Test" }, { "x-forwarded-for": ip });
+  const r = await c("POST", "/api/signup", { email, password, name: "Test", ...extra }, { "x-forwarded-for": ip });
   assert.equal(r.status, 201, r.text);
   return c;
 }
@@ -465,4 +465,38 @@ test("client errors are stored deduplicated and scrubbed", { skip }, async () =>
   const e = await admin("GET", "/api/admin/errors");
   assert.equal(e.status, 200);
   assert.ok(e.json.errors.length >= 1);
+});
+
+test("friends: codes, weekly XP leaderboard without emails, referral reward once", { skip }, async () => {
+  const alice = await signup("alice.friend@example.com");
+  const a = await alice("GET", "/api/friends");
+  assert.equal(a.status, 200);
+  assert.match(a.json.code, /^[A-Z2-9]{8}$/);
+  assert.equal((await alice("POST", "/api/friends", { code: a.json.code })).status, 400); // own code
+  assert.equal((await alice("POST", "/api/friends", { code: "ZZZZZZZZ" })).status, 404);
+  // Bob signs up through Alice's invitation link: they become friends.
+  const bob = await signup("bob.friend@example.com", PW, { ref: a.json.code });
+  const today = new Date().toISOString().slice(0, 10);
+  await bob("PUT", "/api/progress/de", { data: { updatedAt: Date.now(), xp: 999, days: { [today]: { xp: 42 }, "2001-01-01": { xp: 5000 } } } });
+  const board = (await alice("GET", "/api/friends")).json;
+  assert.equal(board.board.length, 2);
+  assert.equal(board.invited, 1);
+  const b = board.board.find((x) => !x.me);
+  assert.equal(b.xp, 42); // only this week's XP counts
+  assert.ok(!JSON.stringify(board).includes("@example.com"));
+  // Bob subscribes: Alice gets REFERRAL_DAYS of Premium, only once.
+  const bobId = (await pool.query("SELECT id FROM users WHERE email = 'bob.friend@example.com'")).rows[0].id;
+  const pay = (n) => stripeEvent({ type: "checkout.session.completed", data: { object: { id: "cs_ref" + n, client_reference_id: String(bobId), payment_status: "paid", customer: "cus_b", subscription: "sub_b", amount_total: 500, currency: "eur" } } });
+  assert.equal((await pay(1)).status, 200);
+  const until1 = (await pool.query("SELECT premium_until FROM users WHERE email = 'alice.friend@example.com'")).rows[0].premium_until;
+  assert.ok(until1 && new Date(until1) > new Date(Date.now() + 25 * 86400000));
+  await pay(2);
+  const until2 = (await pool.query("SELECT premium_until FROM users WHERE email = 'alice.friend@example.com'")).rows[0].premium_until;
+  assert.equal(new Date(until2).getTime(), new Date(until1).getTime());
+  // The offered period unlocks Premium content server-side.
+  const course = await alice("GET", "/api/course/de");
+  assert.equal(course.json.access.premium, true);
+  // Removing a friend works both ways.
+  assert.equal((await alice("DELETE", "/api/friends/" + bobId)).status, 200);
+  assert.equal((await bob("GET", "/api/friends")).json.board.length, 1);
 });

@@ -127,6 +127,17 @@ Le japonais, le coréen, l'hébreu, le grec, l'ukrainien et les langues rares
 utilisent la voix de l'appareil (pas de voix libre de qualité suffisante).
 Chacun peut aussi choisir « Voix de l'appareil » dans le profil d'une langue.
 
+## Amis, défis et parrainage
+
+Chaque compte a un code ami (8 caractères) et un lien d'invitation
+`/?ref=CODE`. Le module « Amis & défis » affiche le classement de la semaine
+(XP gagnés depuis lundi, toutes langues ; seuls les prénoms affichés sont
+visibles, jamais les emails). Quand une personne invitée s'abonne (webhook
+Stripe), la personne qui l'a invitée reçoit `REFERRAL_DAYS` jours de Premium
+(30 par défaut), une seule fois par filleul. Les tenues de Papote (écharpe,
+nœud, fleur, casquette, toque, couronne) se débloquent avec les XP de chaque
+langue ; des tenues dessinées en HD demanderont des illustrations dédiées.
+
 ## Rappels quotidiens
 
 Depuis son profil, chaque compte peut activer un rappel par email (heure au

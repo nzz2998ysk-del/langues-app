@@ -50,6 +50,8 @@ const DIGEST_CRON_SECRET = process.env.DIGEST_CRON_SECRET || "";
 const APP_URL = (process.env.APP_URL || "https://langues-app.onrender.com").replace(/\/$/, "");
 // How long a password-reset link stays valid.
 const RESET_TOKEN_TTL_MS = 60 * 60 * 1000; // 1h
+// Days of Premium offered to whoever invited a friend who then subscribes.
+const REFERRAL_DAYS = parseInt(process.env.REFERRAL_DAYS || "30", 10);
 
 // All 39 languages the app teaches, with display metadata — mirrors app.html's
 // LANG_META exactly, and is the source of truth for the per-language admin toggles.
@@ -371,6 +373,20 @@ async function initDb() {
       PRIMARY KEY (user_id, lang)
     );
   `);
+  // ---- Friends, weekly challenge and referral ----
+  await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS friend_code TEXT UNIQUE;`);
+  await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS referred_by INTEGER REFERENCES users(id) ON DELETE SET NULL;`);
+  await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS referral_rewarded BOOLEAN NOT NULL DEFAULT FALSE;`);
+  // Premium offered for a time (referral reward), on top of a paid subscription.
+  await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS premium_until TIMESTAMPTZ;`);
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS friends (
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      friend_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      PRIMARY KEY (user_id, friend_id)
+    );
+  `);
   // ---- Error tracking: client + server errors, deduplicated by fingerprint ----
   await pool.query(`
     CREATE TABLE IF NOT EXISTS app_errors (
@@ -468,6 +484,17 @@ app.post("/api/webhooks/stripe", express.raw({ type: "application/json" }), asyn
             "UPDATE users SET subscribed = TRUE, stripe_customer_id = COALESCE($2, stripe_customer_id), stripe_subscription_id = COALESCE($3, stripe_subscription_id) WHERE id = $1",
             [userId, session.customer || null, session.subscription || null]
           );
+          // Referral reward, once per invited account: the friend who invited
+          // them gets REFERRAL_DAYS of Premium (added after any current period).
+          const rw = await pool.query(
+            "UPDATE users SET referral_rewarded = TRUE WHERE id = $1 AND referred_by IS NOT NULL AND NOT referral_rewarded RETURNING referred_by", [userId]
+          );
+          if (rw.rows[0]) {
+            await pool.query(
+              "UPDATE users SET premium_until = GREATEST(COALESCE(premium_until, NOW()), NOW()) + make_interval(days => $2) WHERE id = $1",
+              [rw.rows[0].referred_by, REFERRAL_DAYS]
+            );
+          }
           const amount = session.amount_total || 0;
           const currency = session.currency || "eur";
           const invoiceNumber = `INV-${new Date().getFullYear()}-${String(userId).padStart(4, "0")}-${Date.now()
@@ -876,6 +903,18 @@ app.post("/api/signup", async (req, res) => {
     const user = result.rows[0];
     setSessionCookie(res, user);
 
+    // Invited by a friend (link /?ref=CODE): remember who, and make them friends.
+    const ref = String((req.body && req.body.ref) || "").trim().toUpperCase();
+    if (/^[A-Z0-9]{8}$/.test(ref)) {
+      try {
+        const r = await pool.query("SELECT id FROM users WHERE friend_code = $1", [ref]);
+        if (r.rows[0]) {
+          await pool.query("UPDATE users SET referred_by = $1 WHERE id = $2", [r.rows[0].id, user.id]);
+          await pool.query("INSERT INTO friends (user_id, friend_id) VALUES ($1, $2), ($2, $1) ON CONFLICT DO NOTHING", [user.id, r.rows[0].id]);
+        }
+      } catch (e) { console.error("referral error:", e.message); }
+    }
+
     sendEmail({
       to: user.email,
       subject: `Bienvenue sur ${BUSINESS_NAME}`,
@@ -1102,7 +1141,7 @@ app.get("/api/me", async (req, res) => {
   if (!req.userId) return res.status(401).json({ authenticated: false });
   try {
     const result = await pool.query(
-      "SELECT id, email, name, subscribed, is_admin, lang_order, base_lang, email_verified, reminder_enabled, reminder_hour, reminder_tz FROM users WHERE id = $1",
+      "SELECT id, email, name, subscribed, is_admin, lang_order, base_lang, email_verified, reminder_enabled, reminder_hour, reminder_tz, premium_until FROM users WHERE id = $1",
       [req.userId]
     );
     const user = result.rows[0];
@@ -1126,6 +1165,7 @@ app.get("/api/me", async (req, res) => {
       baseLang: user.base_lang || "fr",
       emailVerified: user.email_verified,
       reminder: { enabled: user.reminder_enabled, hour: user.reminder_hour, tz: user.reminder_tz },
+      premiumUntil: user.premium_until && new Date(user.premium_until) > new Date() ? user.premium_until : null,
     });
   } catch (err) {
     console.error("me error:", err);
@@ -1188,10 +1228,11 @@ app.get("/api/account/export", async (req, res) => {
   if (!req.userId) return res.status(401).json({ error: "Connecte-toi d'abord." });
   if (rateLimited("export:" + req.userId, 10, 60 * 60 * 1000)) return res.status(429).json({ error: "Trop de requêtes." });
   const u = await pool.query(
-    "SELECT id, email, name, base_lang, lang_order, subscribed, is_admin, email_verified, created_at FROM users WHERE id = $1",
+    "SELECT id, email, name, base_lang, lang_order, subscribed, is_admin, email_verified, created_at, friend_code, premium_until, reminder_enabled, reminder_hour, reminder_tz FROM users WHERE id = $1",
     [req.userId]
   );
   if (!u.rows[0]) return res.status(404).json({ error: "Compte introuvable." });
+  const friends = await pool.query("SELECT u.name, f.created_at FROM friends f JOIN users u ON u.id = f.friend_id WHERE f.user_id = $1 ORDER BY f.created_at", [req.userId]);
   const progress = await pool.query("SELECT lang, data, updated_at FROM user_progress WHERE user_id = $1 ORDER BY lang", [req.userId]);
   const ideas = await pool.query("SELECT message, category, status, created_at FROM suggestions WHERE user_id = $1 ORDER BY created_at", [req.userId]);
   const payments = await pool.query("SELECT invoice_number, amount_cents, currency, created_at FROM payments WHERE user_id = $1 ORDER BY created_at", [req.userId]);
@@ -1202,6 +1243,7 @@ app.get("/api/account/export", async (req, res) => {
     progress: progress.rows,
     ideas: ideas.rows,
     payments: payments.rows,
+    friends: friends.rows,
   });
 });
 
@@ -1229,8 +1271,8 @@ app.get("/api/features", async (req, res) => {
     const result = await pool.query("SELECT key, label, category, is_premium FROM features ORDER BY sort_order");
     let unlocked = false;
     if (req.userId) {
-      const u = await pool.query("SELECT subscribed, is_admin FROM users WHERE id = $1", [req.userId]);
-      if (u.rows[0]) unlocked = u.rows[0].subscribed || u.rows[0].is_admin;
+      const u = await pool.query("SELECT subscribed, is_admin, premium_until FROM users WHERE id = $1", [req.userId]);
+      if (u.rows[0]) unlocked = hasPremium(u.rows[0]);
     }
     const features = result.rows.map((f) => ({
       key: f.key,
@@ -1251,13 +1293,17 @@ app.get("/api/features", async (req, res) => {
 
 // Full per-language × per-module grid, plus the language metadata (flag/name)
 // admin.html needs to render it without hard-coding 39 languages itself.
+// Paid subscription, admin, or Premium offered until a date (referral reward).
+function hasPremium(u) {
+  return Boolean(u && (u.subscribed || u.is_admin || (u.premium_until && new Date(u.premium_until) > new Date())));
+}
 // ---- Course engine API --------------------------------------------------------
 // Access for one account: `features[key] === true` means LOCKED for this account.
 async function accessFor(userId) {
-  const u = await pool.query("SELECT id, name, subscribed, is_admin, base_lang FROM users WHERE id = $1", [userId]);
+  const u = await pool.query("SELECT id, name, subscribed, is_admin, base_lang, premium_until FROM users WHERE id = $1", [userId]);
   const user = u.rows[0];
   if (!user) return null;
-  const unlocked = Boolean(user.subscribed || user.is_admin);
+  const unlocked = hasPremium(user);
   const f = await pool.query("SELECT key, is_premium FROM features WHERE category IN ('global', 'module')");
   const features = {};
   f.rows.forEach((r) => { features[r.key] = r.is_premium && !unlocked; });
@@ -1976,6 +2022,80 @@ app.post("/api/chat", async (req, res) => {
     console.error("chat error:", err.name === "TimeoutError" ? "timeout" : err);
     return res.status(502).json({ error: "Le partenaire de conversation ne répond pas. Réessaie." });
   }
+});
+
+// ---- Friends & weekly challenge ------------------------------------------------
+// Each account has an 8-character friend code; adding a code makes both people
+// friends. The leaderboard shows display names and this week's XP only (never
+// emails). Weekly XP = sum of the per-day XP stored in each language's progress.
+const CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+async function friendCode(uid) {
+  const r = await pool.query("SELECT friend_code FROM users WHERE id = $1", [uid]);
+  if (r.rows[0] && r.rows[0].friend_code) return r.rows[0].friend_code;
+  for (let i = 0; i < 5; i++) {
+    const code = Array.from(crypto.randomBytes(8), (b) => CODE_ALPHABET[b % CODE_ALPHABET.length]).join("");
+    try {
+      const u = await pool.query("UPDATE users SET friend_code = $1 WHERE id = $2 AND friend_code IS NULL RETURNING friend_code", [code, uid]);
+      if (u.rows[0]) return u.rows[0].friend_code;
+      return (await pool.query("SELECT friend_code FROM users WHERE id = $1", [uid])).rows[0].friend_code;
+    } catch (e) { if (e.code !== "23505") throw e; }
+  }
+  throw new Error("could not allocate a friend code");
+}
+function weekDays(now = new Date()) {
+  const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+  const monday = new Date(d); monday.setUTCDate(d.getUTCDate() - ((d.getUTCDay() + 6) % 7));
+  return Array.from({ length: 7 }, (_, i) => { const x = new Date(monday); x.setUTCDate(monday.getUTCDate() + i); return x.toISOString().slice(0, 10); });
+}
+app.get("/api/friends", async (req, res) => {
+  if (!req.userId) return res.status(401).json({ error: "Connecte-toi d'abord." });
+  try {
+    const code = await friendCode(req.userId);
+    const f = await pool.query("SELECT friend_id FROM friends WHERE user_id = $1", [req.userId]);
+    const ids = [req.userId, ...f.rows.map((r) => r.friend_id)];
+    const users = await pool.query("SELECT id, name FROM users WHERE id = ANY($1::int[])", [ids]);
+    const xp = await pool.query(
+      `SELECT p.user_id, COALESCE(SUM(CASE WHEN jsonb_typeof(d.value->'xp') = 'number' THEN (d.value->>'xp')::numeric ELSE 0 END), 0)::int AS xp
+       FROM user_progress p
+       CROSS JOIN LATERAL jsonb_each(CASE WHEN jsonb_typeof(p.data->'days') = 'object' THEN p.data->'days' ELSE '{}'::jsonb END) d
+       WHERE p.user_id = ANY($1::int[]) AND d.key = ANY($2::text[]) GROUP BY p.user_id`,
+      [ids, weekDays()]
+    );
+    const xpBy = new Map(xp.rows.map((r) => [r.user_id, r.xp]));
+    const refs = await pool.query("SELECT COUNT(*)::int AS n, COUNT(*) FILTER (WHERE referral_rewarded)::int AS rewarded FROM users WHERE referred_by = $1", [req.userId]);
+    const board = users.rows.map((u) => ({
+      id: u.id, me: u.id === req.userId, name: u.name || "Papote #" + String(u.id).padStart(4, "0"), xp: xpBy.get(u.id) || 0,
+    })).sort((a, b) => b.xp - a.xp || a.name.localeCompare(b.name));
+    return res.json({ code, link: `${APP_URL}/?ref=${code}`, board, invited: refs.rows[0].n, rewarded: refs.rows[0].rewarded, referralDays: REFERRAL_DAYS, week: weekDays()[0] });
+  } catch (err) {
+    console.error("friends error:", err);
+    return res.status(500).json({ error: "Erreur serveur." });
+  }
+});
+app.post("/api/friends", async (req, res) => {
+  if (!req.userId) return res.status(401).json({ error: "Connecte-toi d'abord." });
+  if (rateLimited("friend-add:" + req.userId, 20, 15 * 60 * 1000)) return res.status(429).json({ error: "Trop de tentatives." });
+  const code = String((req.body && req.body.code) || "").trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
+  if (!/^[A-Z0-9]{8}$/.test(code)) return res.status(400).json({ error: "Code invalide." });
+  try {
+    const r = await pool.query("SELECT id FROM users WHERE friend_code = $1", [code]);
+    if (!r.rows[0]) return res.status(404).json({ error: "Aucun compte avec ce code." });
+    if (r.rows[0].id === req.userId) return res.status(400).json({ error: "C'est ton propre code 😺" });
+    const n = await pool.query("SELECT COUNT(*)::int AS n FROM friends WHERE user_id = $1", [req.userId]);
+    if (n.rows[0].n >= 100) return res.status(400).json({ error: "100 amis au maximum." });
+    await pool.query("INSERT INTO friends (user_id, friend_id) VALUES ($1, $2), ($2, $1) ON CONFLICT DO NOTHING", [req.userId, r.rows[0].id]);
+    return res.json({ ok: true });
+  } catch (err) {
+    console.error("friend add error:", err);
+    return res.status(500).json({ error: "Erreur serveur." });
+  }
+});
+app.delete("/api/friends/:id", async (req, res) => {
+  if (!req.userId) return res.status(401).json({ error: "Connecte-toi d'abord." });
+  const id = parseInt(req.params.id, 10);
+  if (!Number.isInteger(id)) return res.status(400).json({ error: "Requête invalide." });
+  await pool.query("DELETE FROM friends WHERE (user_id = $1 AND friend_id = $2) OR (user_id = $2 AND friend_id = $1)", [req.userId, id]);
+  return res.json({ ok: true });
 });
 
 // ---- daily practice reminders (opt-in) ----

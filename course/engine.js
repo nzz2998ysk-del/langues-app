@@ -279,6 +279,7 @@
     { id: "conversation", ic: "🤖" },
     { id: "culture", ic: "🌍", need: function () { return C.culture && C.culture.length; } },
     { id: "examen", ic: "🎓", premium: "premium:exam" },
+    { id: "amis", ic: "🏆" },
     { id: "stats", ic: "📊" },
     { id: "badges", ic: "🏅", premium: "premium:badges" },
     { id: "certificat", ic: "📜", premium: "premium:certificates" },
@@ -364,7 +365,7 @@
     var wotd = C.words.length ? C.words[(new Date().getDate() * 37 + new Date().getMonth() * 11) % C.words.length] : null;
     var due = dueWords().length;
     var hero = '<section class="hero"><div class="hero-watermark" aria-hidden="true">' + esc(C.watermark || C.flag) + "</div>" +
-      masc("wave", 104, "masc-hero") +
+      heroMascot() +
       "<h1>" + esc(C.greeting || "👋") + (ME.name ? ", " + esc(ME.name) : "") + " !</h1>" +
       "<p>" + esc(T("hub_intro", { lang: langName(LANG) })) + "</p>" +
       '<div class="stat-grid">' +
@@ -1018,6 +1019,78 @@
   }
 
   // ------------------------------------------------------------------ culture
+  // ------------------------------------------------------------------ mascot outfits
+  // Accessories unlocked with this language's XP, worn by Papote on the home
+  // screen (emoji overlays; HD outfits will need dedicated artwork).
+  var OUTFITS = [
+    { id: "none", ic: "", xp: 0 },
+    { id: "scarf", ic: "🧣", xp: 50 },
+    { id: "bow", ic: "🎀", xp: 150 },
+    { id: "flower", ic: "🌸", xp: 300 },
+    { id: "cap", ic: "🧢", xp: 600 },
+    { id: "grad", ic: "🎓", xp: 1200 },
+    { id: "crown", ic: "👑", xp: 2500 },
+  ];
+  function outfitOk(o) { return (P.xp || 0) >= o.xp; }
+  function heroMascot() {
+    var img = masc("wave", 104, "masc-hero-img"); if (!img) return "";
+    var o = OUTFITS.filter(function (x) { return x.id === P.settings.outfit && outfitOk(x); })[0];
+    return '<span class="masc-hero">' + img + (o && o.ic ? '<span class="outfit outfit-' + o.id + '" aria-hidden="true">' + o.ic + "</span>" : "") + "</span>";
+  }
+  function outfitPicker() {
+    return '<div class="outfits" role="radiogroup" aria-label="' + esc(T("outfit_title")) + '">' + OUTFITS.map(function (o) {
+      var ok = outfitOk(o), on = (P.settings.outfit || "none") === o.id;
+      return '<button type="button" class="outfit-opt' + (on ? " on" : "") + '" role="radio" aria-checked="' + on + '" data-outfit="' + o.id + '"' + (ok ? "" : " disabled") + ' title="' + esc(ok ? T("outfit_" + o.id) : T("outfit_locked", { n: o.xp })) + '">' +
+        '<span class="oi">' + (o.ic || "∅") + '</span><span class="small">' + esc(ok ? T("outfit_" + o.id) : "🔒 " + o.xp + " XP") + "</span></button>";
+    }).join("") + "</div>";
+  }
+
+  // ------------------------------------------------------------------ friends & challenges
+  PAGES.amis = function () {
+    var html = '<h1 class="ttl">' + esc(T("mod_amis")) + '</h1><p class="sub">' + esc(T("friends_sub")) + "</p>" +
+      '<div id="friendsBox">' + mascTyping(T("loading")) + "</div>";
+    return shell("mod_amis", html);
+  };
+  function bindAmis() {
+    var box = document.getElementById("friendsBox");
+    var load = function () {
+      fetch("/api/friends", { credentials: "same-origin" }).then(function (r) { return r.ok ? r.json() : Promise.reject(); }).then(function (d) {
+        var medals = ["🥇", "🥈", "🥉"];
+        var board = d.board.map(function (u, i) {
+          return '<li class="lb-row' + (u.me ? " me" : "") + '"><span class="lb-rank">' + (medals[i] || i + 1) + '</span><span class="lb-name">' + esc(u.name) + (u.me ? " (" + esc(T("you")) + ")" : "") + '</span><b class="lb-xp">' + u.xp + " XP</b>" +
+            (u.me ? "" : '<button type="button" class="btn2 small" data-unfriend="' + u.id + '" aria-label="' + esc(T("friend_remove")) + " " + esc(u.name) + '">✕</button>') + "</li>";
+        }).join("");
+        box.innerHTML =
+          '<div class="box"><h2>🏁 ' + esc(T("week_challenge")) + '</h2><p class="muted small">' + esc(T("week_challenge_d")) + "</p>" +
+          (d.board.length > 1 ? '<ol class="leaderboard">' + board + "</ol>" : '<div class="with-masc">' + masc("curious", 56, "masc-inline") + "<p>" + esc(T("no_friends")) + "</p></div>") + "</div>" +
+          '<div class="grid cols-2" style="margin-top:var(--ig27-space-4)">' +
+          '<div class="box"><h2>🎟️ ' + esc(T("my_code")) + '</h2><p class="friend-code" id="myCode">' + esc(d.code) + '</p><div class="row" style="gap:var(--ig27-space-2);flex-wrap:wrap"><button type="button" class="bpr" id="shareLink">🔗 ' + esc(T("invite_friend")) + '</button><button type="button" class="btn2" id="copyCode">📋 ' + esc(T("copy_code")) + "</button></div>" +
+          '<p class="muted small" style="margin-top:var(--ig27-space-3)">🎁 ' + esc(T("referral_d", { n: d.referralDays })) + "</p>" +
+          (d.invited ? '<p class="small">' + esc(T("referral_stats", { n: d.invited, r: d.rewarded })) + "</p>" : "") + "</div>" +
+          '<form class="box" id="addFriend"><h2>➕ ' + esc(T("add_friend")) + '</h2><label class="small" for="friendCode">' + esc(T("friend_code_label")) + '</label><div class="row" style="gap:var(--ig27-space-2);margin-top:var(--ig27-space-2)"><input class="field" id="friendCode" maxlength="9" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="ABCD2345" style="flex:1;text-transform:uppercase"><button type="submit" class="bpr">' + esc(T("add")) + "</button></div></form></div>";
+        var copy = function (text, okMsg) { (navigator.clipboard ? navigator.clipboard.writeText(text) : Promise.reject()).then(function () { toast(okMsg, "wink"); }).catch(function () { prompt(T("copy_code"), text); }); };
+        document.getElementById("copyCode").addEventListener("click", function () { copy(d.code, T("copied")); });
+        document.getElementById("shareLink").addEventListener("click", function () {
+          var text = T("invite_text", { lang: langName(LANG) });
+          if (navigator.share) navigator.share({ title: "Papote", text: text, url: d.link }).catch(function () {});
+          else copy(text + " " + d.link, T("link_copied"));
+        });
+        document.getElementById("addFriend").addEventListener("submit", function (e) {
+          e.preventDefault();
+          var code = document.getElementById("friendCode").value;
+          fetch("/api/friends", { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ code: code }) })
+            .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
+            .then(function (res) { if (res.ok) { toast(T("friend_added"), "excited"); load(); } else toast(res.j.error || T("chat_error"), "sad"); });
+        });
+        box.querySelectorAll("[data-unfriend]").forEach(function (b) { b.addEventListener("click", function () {
+          if (!confirm(T("friend_remove_confirm"))) return;
+          fetch("/api/friends/" + b.getAttribute("data-unfriend"), { method: "DELETE", credentials: "same-origin" }).then(load);
+        }); });
+      }).catch(function () { box.innerHTML = '<div class="box">' + esc(T("chat_error")) + "</div>"; });
+    };
+    load();
+  }
+
   // ------------------------------------------------------------------ AI conversation
   // Chat with Papote (an AI tutor) through the server proxy /api/chat; the
   // conversation stays in this tab (sessionStorage), never on the server.
@@ -1441,6 +1514,7 @@
       '<button type="button" class="btn2" id="offline">📴 ' + esc(T("feat_offline")) + (locked("premium:offline") ? " 🔒" : "") + "</button>" +
       '<button type="button" class="btn2" id="export">⬇️ ' + esc(T("feat_export")) + (locked("premium:export") ? " 🔒" : "") + "</button>" +
       '</div><p class="muted small" id="offState" style="margin-top:var(--ig27-space-2)"></p></div>' +
+      '<div class="box"><h2>🐱 ' + esc(T("outfit_title")) + '</h2><p class="muted small">' + esc(T("outfit_d")) + "</p>" + outfitPicker() + "</div>" +
       '<div class="box"><h2>🧭 ' + esc(T("place_title")) + '</h2><p class="muted small">' + esc(P.placement && !P.placement.skipped ? T("place_result", { level: P.placement.level }) : T("place_d")) + '</p><button type="button" class="btn2" id="placeRedo" style="margin-top:var(--ig27-space-3)">' + esc(T("place_redo")) + "</button></div>" +
       '<div class="box"><h2>🗑️ ' + esc(T("danger")) + '</h2><button type="button" class="btn2 ko" id="reset">' + esc(T("reset_progress")) + "</button></div>";
     return shell("mod_profil", html);
@@ -1455,6 +1529,7 @@
     document.getElementById("goal").addEventListener("change", function (e) { P.settings.goal = +e.target.value; save(); });
     app.querySelectorAll("[data-set]").forEach(function (c) { c.addEventListener("change", function () { P.settings[c.getAttribute("data-set")] = c.checked; save(); }); });
     document.getElementById("placeRedo").addEventListener("click", placementFlow);
+    app.querySelectorAll("[data-outfit]").forEach(function (b) { b.addEventListener("click", function () { P.settings.outfit = b.getAttribute("data-outfit"); save(); render(); toast(T("outfit_saved"), "happy"); }); });
     document.getElementById("reset").addEventListener("click", function () { if (confirm(T("reset_confirm"))) { var s = P.settings; P = newProgress(); P.settings = s; save(); render(); } });
     document.getElementById("export").addEventListener("click", function () {
       if (locked("premium:export")) { toast(T("premium_only"), "cool"); return; }
@@ -1483,7 +1558,7 @@
   // ------------------------------------------------------------------ render
   var BINDERS = {
     vocabulaire: bindVocab, phrases: bindPhrases, grammaire: bindGrammar, conjugaison: bindConj, alphabet: bindAlphabet,
-    lecture: bindLecture, ecoute: bindEcoute, exercices: bindExercices, revision: bindRevision, prononciation: bindPron, conversation: bindConversation,
+    lecture: bindLecture, ecoute: bindEcoute, exercices: bindExercices, revision: bindRevision, prononciation: bindPron, conversation: bindConversation, amis: bindAmis,
     hub: bindGuided, culture: function () { decorateTargetText(app); }, dictionnaire: bindDict, profil: bindProfil,
     examen: function () { app.querySelectorAll("[data-exam]").forEach(function (b) { b.addEventListener("click", function () { examFlow(b.getAttribute("data-exam")); }); }); },
     certificat: function () {

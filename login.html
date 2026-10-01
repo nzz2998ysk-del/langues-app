@@ -456,6 +456,7 @@ function authSubmit(){
     if (pass !== confirm){ authShowError('Les mots de passe ne correspondent pas.'); return; }
     url = '/api/signup';
     body = { email: email, password: pass, name: ($('authName').value || '').trim() };
+    try { var ref = localStorage.getItem('papote_ref'); if (ref) body.ref = ref; } catch(e){}
   } else {
     url = '/api/login';
     body = { email: email, password: pass };
@@ -476,6 +477,15 @@ function authSubmit(){
 }
 $('authForm').addEventListener('submit', function(e){ e.preventDefault(); authSubmit(); });
 $('authForm').addEventListener('keydown', function(e){ if (e.key === 'Enter' && e.target.tagName === 'INPUT'){ e.preventDefault(); authSubmit(); } });
+
+// Invitation link (/?ref=CODE): remembered for the signup, then the sign-up sheet opens.
+(function(){
+  var ref = new URLSearchParams(location.search).get('ref');
+  if (!ref || !/^[A-Za-z0-9]{8}$/.test(ref)) return;
+  try { localStorage.setItem('papote_ref', ref.toUpperCase()); } catch(e){}
+  history.replaceState(null, '', '/');
+  setTimeout(function(){ openAuth('signup'); }, 400);
+})();
 
 // Email-confirmation link result (/?verified=1|0).
 (function(){
