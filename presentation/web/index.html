@@ -14,8 +14,7 @@
     Espace / → / ↓ / PageDown ... étape suivante (point suivant puis section suivante)
     Maj+Espace / ← / ↑ / PageUp  étape précédente
     Début / Fin ................. première / dernière section
-    F ... plein écran      N ... notes de l'orateur (sur cet écran)
-    P ... fenêtre présentateur (notes + chrono, à mettre sur l'écran du PC)
+    F ... plein écran
     B ... écran noir       H ... aide
 
   MODIFIER FACILEMENT
@@ -534,7 +533,7 @@ svg [data-reveal]{transform-box:fill-box;transform-origin:center}
   box-shadow:0 40px 90px -30px rgba(0,0,0,.8),0 0 0 10px rgba(255,255,255,.06),0 0 80px rgba(123,63,228,.45);animation:float 6s ease-in-out infinite}
 .qr{aspect-ratio:1;display:grid;place-items:center;position:relative;overflow:hidden;border-radius:10px}
 .qr svg,.qr img{width:100%;height:100%;display:block}
-.qr::after{content:"";position:absolute;left:0;right:0;height:18%;top:-20%;background:linear-gradient(180deg,transparent,rgba(123,63,228,.35),transparent);animation:scan 3.2s ease-in-out infinite 1.5s}
+.qr::after{content:"";position:absolute;left:0;right:0;height:18%;top:-20%;background:linear-gradient(180deg,transparent,rgba(123,63,228,.35),transparent);animation:scan 3.2s ease-in-out 2 1.5s both}
 @keyframes scan{0%{top:-20%}60%,100%{top:105%}}
 .qr .placeholder{width:100%;height:100%;border:3px dashed #B9A7E8;border-radius:12px;display:grid;place-content:center;text-align:center;color:#5B3FA8;font:700 1.1rem var(--font-title);gap:8px}
 .qr .placeholder small{font:500 .82rem var(--font-body);color:#8A7BB8}
@@ -602,22 +601,19 @@ svg [data-reveal]{transform-box:fill-box;transform-origin:center}
 <div class="progress" aria-hidden="true"><span id="progressBar"></span></div>
 <nav class="dots" id="dots" aria-label="Navigation entre les sections"></nav>
 <div class="hud" aria-live="polite"><b id="hudCurrent">01</b><span class="sep"></span><span id="hudTotal">22</span><span class="frags" id="hudFrags" style="margin-left:6px"></span></div>
-<div class="hint" id="hint"><kbd>F</kbd> plein écran · <kbd>P</kbd> vue présentateur · <kbd>H</kbd> aide</div>
+<div class="hint" id="hint"><kbd>F</kbd> plein écran · <kbd>H</kbd> aide</div>
 <canvas id="stars" aria-hidden="true"></canvas>
 <div class="grain" aria-hidden="true"></div>
 <div class="vignette" aria-hidden="true"></div>
 <div class="wipe" id="wipe" aria-hidden="true"><i style="--k:0"></i><i style="--k:1"></i><i style="--k:2"></i><i style="--k:3"></i><b id="wipeNum"></b></div>
 <div class="flash" id="flash" aria-hidden="true"></div>
 <div class="blackout" id="blackout"></div>
-<div class="notes-panel" id="notesPanel" aria-live="polite"><header><b id="npTitle"></b><span id="npMeta"></span></header><div id="npBody"></div></div>
 <div class="help" id="help"><div class="card">
   <h3>Raccourcis clavier</h3>
   <dl>
     <dt><kbd>Espace</kbd> <kbd>→</kbd></dt><dd>Étape suivante (point suivant, puis section suivante)</dd>
     <dt><kbd>⇧ Espace</kbd> <kbd>←</kbd></dt><dd>Étape précédente</dd>
     <dt><kbd>F</kbd></dt><dd>Plein écran</dd>
-    <dt><kbd>P</kbd></dt><dd>Fenêtre présentateur : notes, chrono, section suivante</dd>
-    <dt><kbd>N</kbd></dt><dd>Afficher / masquer les notes sur cet écran</dd>
     <dt><kbd>B</kbd></dt><dd>Écran noir (pause)</dd>
     <dt><kbd>Début</kbd> <kbd>Fin</kbd></dt><dd>Première / dernière section</dd>
   </dl>
@@ -1278,7 +1274,7 @@ svg [data-reveal]{transform-box:fill-box;transform-origin:center}
        Le QR code (vers kahoot.it/?pin=…) se génère tout seul, même sans Internet.
        Pour utiliser votre propre image de QR code à la place : data-qr="images/qr-kahoot.png"
      ===================================================================== -->
-<section class="slide bg-k" data-title="Kahoot" data-fx="zoom" data-trans="flash" data-pin="" data-qr="">
+<section class="slide bg-k" data-title="Kahoot" data-fx="zoom" data-trans="flash" data-pin="598 919" data-link="https://kahoot.it/?pin=598919&amp;refer_method=link" data-qr="">
   <div class="aurora k" aria-hidden="true"><i></i><i></i><i></i></div>
   <div class="wrap kahoot">
     <div>
@@ -3740,7 +3736,7 @@ var qrcode = function() {
       qrEl.innerHTML = '<div class="placeholder">QR code<small>apparaîtra ici dès que<br>le code PIN sera renseigné</small></div>';
       return;
     }
-    const url = 'https://kahoot.it/?pin=' + digits;
+    const url = sec.dataset.link || ('https://kahoot.it/?pin=' + digits);
     const qr = qrcode(0, 'M'); qr.addData(url); qr.make();
     qrEl.innerHTML = qr.createSvgTag({ cellSize: 8, margin: 0, scalable: true });
     qrEl.querySelector('svg').setAttribute('aria-label', 'QR code vers ' + url);
@@ -3811,7 +3807,6 @@ var qrcode = function() {
     // Étapes : à l'aller on repart de zéro, au retour (ou via la navigation) tout est affiché
     setFrags(dest, (i < from || opts.allFrags) ? fragsOf(dest).length : 0);
     targetIndex = i;
-    startClock();
     const start = scrollY, end = dest.offsetTop, dist = end - start;
     cancelAnimationFrame(animId);
     if (reduced || Math.abs(dist) < 2) { scrollTo(0, end); animId = null; return; }
@@ -3843,7 +3838,7 @@ var qrcode = function() {
   }
   const next = () => {
     const s = sections[animId ? targetIndex : currentIndex()], n = shownFrags(s), total = fragsOf(s).length;
-    if (!animId && n < total) { setFrags(s, n + 1); startClock(); return; }
+    if (!animId && n < total) { setFrags(s, n + 1); return; }
     goTo((animId ? targetIndex : currentIndex()) + 1);
   };
   const prev = () => {
@@ -3854,7 +3849,7 @@ var qrcode = function() {
   window.deck = { next, prev, goTo, sections };
 
   /* ---------- 7. Clavier ---------- */
-  const help = document.getElementById('help'), blackout = document.getElementById('blackout'), notesPanel = document.getElementById('notesPanel');
+  const help = document.getElementById('help'), blackout = document.getElementById('blackout');
   function onKey(e) {
     if (e.target.closest && e.target.closest('input,textarea,[contenteditable]')) return;
     const k = e.key;
@@ -3866,11 +3861,9 @@ var qrcode = function() {
       case 'Home': e.preventDefault(); goTo(0, { allFrags: true }); break;
       case 'End': e.preventDefault(); goTo(sections.length - 1, { allFrags: true }); break;
       case 'f': case 'F': document.fullscreenElement ? document.exitFullscreen?.() : root.requestFullscreen?.(); break;
-      case 'n': case 'N': notesPanel.classList.toggle('on'); updateUI(); break;
-      case 'p': case 'P': openPresenter(); break;
       case 'b': case 'B': case '.': blackout.classList.toggle('on'); break;
       case 'h': case 'H': case '?': help.classList.toggle('on'); break;
-      case 'Escape': help.classList.remove('on'); notesPanel.classList.remove('on'); break;
+      case 'Escape': help.classList.remove('on'); break;
       default: return;
     }
     hideHint();
@@ -3918,8 +3911,6 @@ var qrcode = function() {
     dots.forEach((d, i) => d.classList.toggle('active', i === idx));
     const total = fragsOf(s).length, n = shownFrags(s);
     hudFrags.innerHTML = total ? Array.from({ length: total }, (_, k) => `<i class="${k < n ? 'on' : ''}"></i>`).join('') : '';
-    if (notesPanel.classList.contains('on')) fillNotes(notesPanel, idx);
-    renderPresenter();
   }
 
   /* ---------- 9. Apparition / réinitialisation des animations ---------- */
@@ -4007,83 +3998,6 @@ var qrcode = function() {
   }
   if (!reduced) { sizeCanvas(); addEventListener('resize', sizeCanvas); requestAnimationFrame(frame);
     document.addEventListener('visibilitychange', () => { if (!document.hidden) requestAnimationFrame(frame); }); }
-
-  /* ---------- 13. Chronomètre, notes, fenêtre présentateur ---------- */
-  const TALK_MINUTES = 20;                       // durée visée de l'oral
-  let clockStart = null;
-  function startClock() { if (!clockStart) clockStart = Date.now(); }
-  const mmss = ms => { const s = Math.max(0, Math.floor(ms / 1000)); return pad(Math.floor(s / 60)) + ':' + pad(s % 60); };
-  // Temps prévu au début de chaque section (somme des data-minutes des parties précédentes)
-  // Fin prévue de la partie en cours (somme des data-minutes jusqu'à cette partie incluse)
-  const planEnd = []; { let acc = 0; sections.forEach(s => { if (s.dataset.minutes) acc += +s.dataset.minutes; planEnd.push(acc); }); }
-
-  function notesHTML(i) { const a = sections[i].querySelector('.notes'); return a ? a.innerHTML : '<p>—</p>'; }
-  function fillNotes(panel, i) {
-    const s = sections[i];
-    panel.querySelector('#npTitle').textContent = `${pad(i + 1)} · ${s.dataset.title}`;
-    panel.querySelector('#npMeta').textContent = `${clockStart ? mmss(Date.now() - clockStart) : '00:00'}`;
-    panel.querySelector('#npBody').innerHTML = notesHTML(i);
-  }
-
-  let pw = null;
-  function openPresenter() {
-    if (pw && !pw.closed) { pw.focus(); return; }
-    pw = open('', 'presentateur', 'width=1100,height=720');
-    if (!pw) { alert('Autorisez les fenêtres pop-up pour ouvrir la vue présentateur.'); return; }
-    pw.document.write(`<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><title>Vue présentateur</title><style>
-      body{margin:0;background:#06132B;color:#E6EEF8;font:16px/1.5 Inter,Segoe UI,system-ui,sans-serif;display:grid;grid-template-rows:auto 1fr auto;height:100vh}
-      header{display:flex;justify-content:space-between;align-items:center;padding:16px 24px;border-bottom:1px solid #1d3560}
-      #pClock{font:800 3rem Montserrat,sans-serif;color:#FFCC00;letter-spacing:.02em}
-      #pPlan{font-size:.95rem;color:#9FB5CF} #pPlan b{color:#fff}
-      main{display:grid;grid-template-columns:1.6fr 1fr;gap:24px;padding:20px 24px;overflow:hidden}
-      #pNotes{overflow:auto;font-size:1.15rem;padding-right:10px} #pNotes p{margin:0 0 .8em}
-      h1{font:800 1.6rem Montserrat,sans-serif;margin:0 0 .2em} .who{color:#FFCC00;font-weight:600;margin-bottom:1em}
-      .side{display:grid;gap:14px;align-content:start}
-      .box{border:1px solid #1d3560;border-radius:12px;padding:14px 16px;background:#0A1E3F}
-      .box small{display:block;text-transform:uppercase;letter-spacing:.14em;font-size:.7rem;color:#9FB5CF;margin-bottom:.3em}
-      .frags i{display:inline-block;width:10px;height:10px;border-radius:50%;background:#2a4270;margin-right:5px}.frags i.on{background:#FFCC00}
-      footer{display:flex;gap:10px;padding:14px 24px;border-top:1px solid #1d3560}
-      button{font:600 1rem Inter,sans-serif;padding:.7em 1.3em;border-radius:10px;border:1px solid #2d4f86;background:#0F2A55;color:#fff;cursor:pointer}
-      button.main{background:#FFCC00;color:#0A1E3F;border-color:#FFCC00;flex:1}
-      .late{color:#E0574B!important}.ok{color:#3CC48F!important}</style></head><body>
-      <header><div><div id="pClock">00:00</div><div id="pPlan"></div></div><div id="pCount" style="font:800 1.4rem Montserrat,sans-serif"></div></header>
-      <main><div id="pNotes"></div><div class="side">
-        <div class="box"><small>Étapes de cette section</small><div class="frags" id="pFrags">—</div></div>
-        <div class="box"><small>Section suivante</small><div id="pNext"></div></div>
-        <div class="box"><small>Prochain intervenant</small><div id="pNextWho"></div></div>
-      </div></main>
-      <footer><button id="bPrev">◀ Précédent</button><button class="main" id="bNext">Suivant ▶ (Espace)</button><button id="bReset">Remettre le chrono à zéro</button><button id="bBlack">Écran noir</button></footer>
-      </body></html>`);
-    pw.document.close();
-    const d = pw.document;
-    d.getElementById('bNext').onclick = () => next();
-    d.getElementById('bPrev').onclick = () => prev();
-    d.getElementById('bReset').onclick = () => { clockStart = Date.now(); renderPresenter(); };
-    d.getElementById('bBlack').onclick = () => blackout.classList.toggle('on');
-    pw.addEventListener('keydown', onKey);
-    renderPresenter();
-  }
-  function renderPresenter() {
-    if (!pw || pw.closed) return;
-    const d = pw.document, i = animId ? targetIndex : currentIndex(), s = sections[i], nx = sections[i + 1];
-    const el = d.getElementById('pNotes'); if (!el) return;
-    el.innerHTML = `<h1>${pad(i + 1)} · ${s.dataset.title}</h1><div class="who">${s.dataset.who}</div>${notesHTML(i)}`;
-    d.getElementById('pCount').textContent = `${pad(i + 1)} / ${pad(sections.length)}`;
-    const total = fragsOf(s).length, n = shownFrags(s);
-    d.getElementById('pFrags').innerHTML = total ? Array.from({ length: total }, (_, k) => `<i class="${k < n ? 'on' : ''}"></i>`).join('') + ` ${n}/${total}` : 'Aucune';
-    d.getElementById('pNext').textContent = nx ? `${pad(i + 2)} · ${nx.dataset.title}` : 'Fin de la présentation';
-    d.getElementById('pNextWho').textContent = nx && nx.dataset.who !== s.dataset.who ? nx.dataset.who : 'Même intervenant';
-  }
-  setInterval(() => {
-    const el = clockStart ? Date.now() - clockStart : 0;
-    if (notesPanel.classList.contains('on')) fillNotes(notesPanel, currentIndex());
-    if (!pw || pw.closed) return;
-    const d = pw.document, c = d.getElementById('pClock'); if (!c) return;
-    c.textContent = mmss(el);
-    const i = currentIndex(), end = planEnd[i] * 60000, diff = el - end;
-    const p = d.getElementById('pPlan');
-    p.innerHTML = `Objectif : <b>${TALK_MINUTES} min</b> · fin prévue de cette partie : <b>${mmss(end)}</b> · <span class="${diff > 0 ? 'late' : 'ok'}">${diff > 0 ? 'en retard de ' + mmss(diff) : 'encore ' + mmss(-diff)}</span>`;
-  }, 500);
 
   /* ---------- 14. Impression / PDF ---------- */
   function printMode(on) {
