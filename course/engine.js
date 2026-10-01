@@ -977,7 +977,7 @@
       document.getElementById("prlist").innerHTML = items.map(function (x, i) {
         return '<div class="prow">' + snd(x.t) + '<div style="flex:1">' + tgt(x.t) + (x.r ? '<div class="muted small">' + esc(x.r) + "</div>" : "") + '<div class="g">' + esc(gl(x.g)) + '</div><div class="small" id="prs' + i + '"></div></div>' +
           '<div class="pr-actions">' + (ai ? '<button type="button" class="btn2" data-rec="' + i + '">🎙️ ' + esc(T("record")) + "</button>" : "") +
-          (canRecord() ? '<button type="button" class="btn2" data-cmp="' + i + '">⏺ ' + esc(T("rec_compare")) + "</button>" : "") + "</div>" + lvBadge(x.level) + '<div class="pr-cmp" id="prc' + i + '" hidden></div></div>';
+          (canRecord() ? '<button type="button" class="btn2" data-cmp="' + i + '">🎤 ' + esc(T("rec_compare")) + "</button>" : "") + "</div>" + lvBadge(x.level) + '<div class="pr-cmp" id="prc' + i + '" hidden></div></div>';
       }).join("");
       paint.items = items;
     };

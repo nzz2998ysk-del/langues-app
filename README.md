@@ -112,6 +112,21 @@ idées (auteur, date, catégorie, contenu), avec recherche et filtres, un
 **statut** modifiable (nouvelle, vue, en cours, acceptée, refusée) et des
 **notes internes** visibles uniquement par l'administrateur.
 
+## Audio des cours
+
+Chaque mot et chaque phrase de 24 langues a un fichier MP3 pré-généré avec
+des voix neuronales libres (Piper, via sherpa-onnx) : `course/audio/<langue>/`
+(~54 Mo au total, mis en cache un an par le navigateur). Pour régénérer après
+un changement de contenu (seuls les textes nouveaux sont synthétisés) :
+
+    pip install sherpa-onnx numpy lameenc
+    PIPER_VOICES=/chemin/vers/voix python3 scripts/audio/generate.py [langue ...]
+    node scripts/course/build.js
+
+Le japonais, le coréen, l'hébreu, le grec, l'ukrainien et les langues rares
+utilisent la voix de l'appareil (pas de voix libre de qualité suffisante).
+Chacun peut aussi choisir « Voix de l'appareil » dans le profil d'une langue.
+
 ## Rappels quotidiens
 
 Depuis son profil, chaque compte peut activer un rappel par email (heure au
