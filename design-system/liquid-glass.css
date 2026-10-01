@@ -32,7 +32,7 @@
      even over a black background behind the glass (worst case). */
   --lg-min: .52;
   --lg-alpha: calc(var(--lg-min) + (.95 - var(--lg-min)) * var(--lg-t));
-  --lg-alpha-lite: calc(.58 + .38 * var(--lg-t));
+  --lg-alpha-lite: calc(.52 + .48 * var(--lg-t));
   /* clearer glass = stronger blur, so busy backgrounds stay diffused */
   --lg-blur: calc(16px + 16px * (1 - var(--lg-t)));
   --lg-sat: 1.9;
@@ -51,7 +51,7 @@
 html[data-theme="dark"]{
   --lg-tint: 30,30,34;
   --lg-min: .70;              /* white text ≥ 4.5:1 over a white background */
-  --lg-alpha-lite: calc(.66 + .30 * var(--lg-t));
+  --lg-alpha-lite: calc(.66 + .34 * var(--lg-t));
   --lg-rim-hi: rgba(255,255,255,.42);
   --lg-rim-lo: rgba(255,255,255,.07);
   --lg-lisere: rgba(255,255,255,.28);
@@ -64,13 +64,34 @@ html[data-theme="dark"]{
 }
 @media (prefers-color-scheme: dark){
   html:not([data-theme]){
-    --lg-tint: 30,30,34; --lg-min: .70; --lg-alpha-lite: calc(.66 + .30 * var(--lg-t));
+    --lg-tint: 30,30,34; --lg-min: .70; --lg-alpha-lite: calc(.66 + .34 * var(--lg-t));
     --lg-rim-hi: rgba(255,255,255,.42); --lg-rim-lo: rgba(255,255,255,.07); --lg-lisere: rgba(255,255,255,.28);
     --lg-edge: rgba(0,0,0,.45); --lg-sheen: rgba(255,255,255,.12);
     --lg-fringe-r: rgba(255,90,90,.16); --lg-fringe-b: rgba(90,150,255,.22);
     --lg-shadow: 0 16px 40px -14px rgba(0,0,0,.65), 0 2px 8px -2px rgba(0,0,0,.4); --lg-shadow-lite: 0 6px 20px -10px rgba(0,0,0,.5);
   }
 }
+
+/* The older iOS 27 glass tokens (used by the landing page, login, admin and
+   app chrome) follow the same slider. html:not([data-theme]) matches the
+   specificity of the token file's dark-mode block, which loads earlier. */
+:root, html[data-theme], html:not([data-theme]){
+  --ig27-glass-regular-bg: rgba(var(--lg-tint), var(--lg-alpha));
+}
+
+/* Ambient "wallpaper": glass needs colour behind it to read as glass. A
+   fixed layer rather than background-attachment:fixed, which iOS Safari and
+   Android ignore. Painted once, never animated. */
+body.pp-page, body.in-lang{ background: var(--ig27-bg-grouped-primary) !important; }
+body.pp-page::before, body.in-lang::before{
+  content:""; position:fixed; inset:0; z-index:-1; pointer-events:none;
+  background:
+    radial-gradient(1100px 620px at 8% -12%, color-mix(in srgb, var(--brand, var(--ig27-accent)) 30%, transparent), transparent 62%),
+    radial-gradient(900px 600px at 108% 18%, color-mix(in srgb, var(--ig27-accent) 24%, transparent), transparent 62%),
+    radial-gradient(900px 560px at -8% 105%, color-mix(in srgb, var(--ig27-pink) 18%, transparent), transparent 62%),
+    radial-gradient(800px 520px at 100% 110%, color-mix(in srgb, var(--ig27-orange) 14%, transparent), transparent 60%);
+}
+@media (prefers-contrast: more), (forced-colors: active){ body.pp-page::before, body.in-lang::before{ display:none; } }
 
 /* ------------------------------------------------------------ recipes */
 /* FLOATING glass: bars, tab bar, sheets, menus, popovers, toasts */
@@ -233,4 +254,6 @@ html[data-glass="solid"] *{ -webkit-backdrop-filter:none !important; backdrop-fi
     repeating-linear-gradient(90deg, rgba(255,255,255,.9) 0 6px, transparent 6px 22px),
     conic-gradient(from 210deg at 30% 40%, #ff5f6d, #ffc371, #7bdcb5, #4facfe, #a18cd1, #ff5f6d); }
 .lg-preview::before{ content:"Aa Bb Cc"; position:absolute; left:8%; top:50%; transform:translateY(-50%); font: 800 46px/1 var(--ig27-font-family); color:#111; opacity:.85; }
+.lg-preview .lg-preview-card{ position:absolute; right:6%; bottom:10px; padding:6px 12px; border-radius:14px; font-size:13px; font-weight:600; }
+.lg-slider .lg-value{ margin:0; font-weight:700; font-variant-numeric: tabular-nums; }
 .lg-preview .lg-preview-chip{ position:relative; width:min(78%,340px); min-height:64px; display:grid; place-items:center; border-radius:999px; font-weight:700; }

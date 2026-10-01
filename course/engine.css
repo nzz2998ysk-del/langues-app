@@ -36,7 +36,7 @@ input,select,textarea{font-family:inherit;color:var(--ink)}
 .navmenu{display:none;position:sticky;top:60px;z-index:59;padding:var(--ig27-space-4) var(--ig27-space-6);gap:var(--ig27-space-2);flex-wrap:wrap;border-bottom:1px solid var(--line)}
 .navmenu.on{display:flex;animation:ig27-rise var(--ig27-duration-base) var(--ig27-ease-standard)}
 .navmenu button{min-height:var(--ig27-button-height-medium);padding:0 var(--ig27-space-4);border:1px solid var(--line);background:var(--bg);font:var(--ig27-weight-semibold) var(--ig27-fs-footnote)/var(--ig27-lh-footnote) var(--ig27-font-family)}
-.navmenu button.on{background:var(--ig27-accent);color:var(--ig27-on-accent);border-color:var(--ig27-accent)}
+.navmenu button.on{background:var(--on-fill);color:var(--ig27-on-accent);border-color:var(--on-fill)}
 
 /* ---------- hero ---------- */
 .hero{padding:var(--ig27-space-8) var(--ig27-space-6);text-align:center;position:relative;overflow:hidden;border-radius:var(--ig27-radius-xxxl);margin:var(--ig27-space-3) var(--ig27-space-6) 0;background:linear-gradient(135deg,var(--ig27-accent),var(--ig27-accent-hover));box-shadow:var(--ig27-shadow-lg);color:var(--ig27-on-accent)}
@@ -98,7 +98,7 @@ input,select,textarea{font-family:inherit;color:var(--ink)}
 .filters{display:flex;flex-direction:column;gap:var(--ig27-space-2);margin-bottom:var(--ig27-space-4);position:sticky;top:60px;z-index:20;padding:var(--ig27-space-2) 0;background:var(--bg)}
 .pills{display:flex;gap:var(--ig27-space-2);flex-wrap:wrap}
 .pill{display:inline-flex;align-items:center;gap:var(--ig27-space-1);min-height:var(--ig27-button-height-small);padding:0 var(--ig27-space-3);border:1px solid var(--line);background:var(--surface);font:var(--ig27-weight-semibold) var(--ig27-fs-footnote)/var(--ig27-lh-footnote) var(--ig27-font-family);color:var(--muted)}
-.pill.on{border-color:var(--ig27-accent);background:var(--ig27-accent);color:var(--ig27-on-accent)}
+.pill.on{border-color:var(--on-fill);background:var(--on-fill);color:var(--ig27-on-accent)}
 .pill .n{opacity:1;color:var(--ig27-label-secondary);font-weight:var(--ig27-weight-regular)}
 .field,.sel{min-height:var(--ig27-button-height-medium);padding:0 var(--ig27-space-3);border-radius:var(--ig27-radius-lg);border:1px solid var(--line);background:var(--surface);font-size:var(--ig27-fs-footnote)}
 .field{flex:1;min-width:140px}
@@ -416,7 +416,7 @@ button.recording{background:var(--ig27-red,#ff3b30)!important;color:#fff!importa
   body:not(.quiz-mode) #app>.navmenu{grid-area:nav;display:flex;flex-direction:column;flex-wrap:nowrap;align-self:start;position:sticky;top:72px;gap:4px;padding:var(--ig27-space-4) 0 var(--ig27-space-4) var(--ig27-space-4);border:0;background:transparent;animation:none;max-height:none}
   body:not(.quiz-mode) #app>.navmenu button{text-align:left;border-color:transparent;background:transparent;border-radius:12px;padding:0 12px;min-height:40px}
   body:not(.quiz-mode) #app>.navmenu button:hover{background:var(--ig27-fill-quaternary)}
-  body:not(.quiz-mode) #app>.navmenu button.on{background:var(--ig27-accent);color:var(--ig27-on-accent)}
+  body:not(.quiz-mode) #app>.navmenu button.on{background:var(--on-fill);color:var(--ig27-on-accent)}
   body:not(.quiz-mode) #app>.hero{grid-area:hero;margin-left:0}
   body:not(.quiz-mode) #app>main.con{grid-area:main;max-width:1040px;margin:0;width:100%}
   #navToggle{display:none}
@@ -553,3 +553,8 @@ body.quiz-mode main.qz-compact .quiz-card{padding:10px 12px;gap:8px}
 /* Cards with the mascot: text never pushes the card wider than the screen */
 .with-masc>div,.with-masc>p{min-width:0}
 @media (max-width: 359.98px){ .box.with-masc{flex-wrap:wrap} .box.with-masc .masc-inline{width:48px;height:48px} }
+/* Selected pills: the bright iOS dark-mode blue is too light under white
+   text (3.2:1); dark mode uses a deeper shade (≥ 4.5:1). */
+:root{--on-fill:var(--ig27-accent)}
+html[data-theme="dark"]{--on-fill:color-mix(in srgb,var(--ig27-accent) 68%,#000)}
+@media (prefers-color-scheme:dark){html:not([data-theme]){--on-fill:color-mix(in srgb,var(--ig27-accent) 68%,#000)}}

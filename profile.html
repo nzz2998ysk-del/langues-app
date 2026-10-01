@@ -98,10 +98,11 @@ button.danger{background:var(--ig27-red);margin-top:12px}
     <h2 style="margin:0 0 6px;font-size:var(--ig27-fs-title3);line-height:var(--ig27-lh-title3)" data-i18n="glass_title">Apparence · Liquid Glass</h2>
     <p class="lead" style="margin:0 0 12px" data-i18n="glass_lead"></p>
     <div class="lg-slider">
-      <div class="lg-preview" aria-hidden="true"><span class="lg-preview-chip lg-float" data-i18n="glass_preview">Aperçu du verre</span></div>
+      <div class="lg-preview" aria-hidden="true"><span class="lg-preview-chip lg-float" data-i18n="glass_preview">Aperçu du verre</span><span class="lg-preview-card lg-lite" data-i18n="glass_card">Carte</span></div>
       <label for="glassRange" data-i18n="glass_label">Transparence</label>
       <input type="range" id="glassRange" min="0" max="100" step="5">
       <div class="lg-scale" aria-hidden="true"><span data-i18n="glass_clear">Ultra-clair</span><span data-i18n="glass_tinted">Teinté</span></div>
+      <p class="lg-value" id="glassVal" aria-hidden="true"></p>
       <p class="val" id="glassSys" style="display:none;color:var(--ig27-orange)" data-i18n="glass_system"></p>
     </div>
   </div>
@@ -174,9 +175,11 @@ async function saveReminder(){
 // Liquid Glass transparency (saved on this device, like the iOS 27 setting).
 (function(){
   var r = document.getElementById('glassRange'); if (!r || !window.PapoteGlass) return;
-  var label = function(v){ return v + ' % — ' + (v <= 15 ? tr('glass_clear') : v >= 85 ? tr('glass_tinted') : tr('glass_regular')); };
-  r.value = PapoteGlass.get(); r.setAttribute('aria-valuetext', label(+r.value));
-  r.addEventListener('input', function(){ PapoteGlass.set(+r.value); r.setAttribute('aria-valuetext', label(+r.value)); });
+  var label = function(v){ return v + ' % — ' + (v <= 15 ? tr('glass_clear') : v >= 75 ? tr('glass_tinted') : tr('glass_regular')); };
+  var out = document.getElementById('glassVal');
+  var show = function(){ var t = label(+r.value); r.setAttribute('aria-valuetext', t); if (out) out.textContent = t; };
+  r.value = PapoteGlass.get(); show();
+  r.addEventListener('input', function(){ PapoteGlass.set(+r.value); show(); });
   if (window.matchMedia && (matchMedia('(prefers-reduced-transparency: reduce)').matches || matchMedia('(prefers-contrast: more)').matches)) document.getElementById('glassSys').style.display = 'block';
 })();
 async function loadProfile(){

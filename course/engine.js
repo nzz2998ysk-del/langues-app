@@ -1544,7 +1544,7 @@
       '<button type="button" class="btn2" id="offline">📴 ' + esc(T("feat_offline")) + (locked("premium:offline") ? " 🔒" : "") + "</button>" +
       '<button type="button" class="btn2" id="export">⬇️ ' + esc(T("feat_export")) + (locked("premium:export") ? " 🔒" : "") + "</button>" +
       '</div><p class="muted small" id="offState" style="margin-top:var(--ig27-space-2)"></p></div>' +
-      '<div class="box"><h2>🫧 ' + esc(T("glass_title")) + '</h2><p class="muted small">' + esc(T("glass_lead")) + '</p><div class="lg-slider" style="margin-top:var(--ig27-space-3)"><div class="lg-preview" aria-hidden="true"><span class="lg-preview-chip lg-float">' + esc(T("glass_preview")) + '</span></div><label for="glassRange" class="small">' + esc(T("glass_label")) + '</label><input type="range" id="glassRange" min="0" max="100" step="5"><div class="lg-scale" aria-hidden="true"><span>' + esc(T("glass_clear")) + "</span><span>" + esc(T("glass_tinted")) + "</span></div></div></div>" +
+      '<div class="box"><h2>🫧 ' + esc(T("glass_title")) + '</h2><p class="muted small">' + esc(T("glass_lead")) + '</p><div class="lg-slider" style="margin-top:var(--ig27-space-3)"><div class="lg-preview" aria-hidden="true"><span class="lg-preview-chip lg-float">' + esc(T("glass_preview")) + '</span><span class="lg-preview-card lg-lite">' + esc(T("glass_card")) + '</span></div><label for="glassRange" class="small">' + esc(T("glass_label")) + '</label><input type="range" id="glassRange" min="0" max="100" step="5"><div class="lg-scale" aria-hidden="true"><span>' + esc(T("glass_clear")) + "</span><span>" + esc(T("glass_tinted")) + "</span></div></div></div>" +
       '<div class="box"><h2>🐱 ' + esc(T("outfit_title")) + '</h2><p class="muted small">' + esc(T("outfit_d")) + "</p>" + outfitPicker() + "</div>" +
       '<div class="box"><h2>🧭 ' + esc(T("place_title")) + '</h2><p class="muted small">' + esc(P.placement && !P.placement.skipped ? T("place_result", { level: P.placement.level }) : T("place_d")) + '</p><button type="button" class="btn2" id="placeRedo" style="margin-top:var(--ig27-space-3)">' + esc(T("place_redo")) + "</button></div>" +
       '<div class="box"><h2>🗑️ ' + esc(T("danger")) + '</h2><button type="button" class="btn2 ko" id="reset">' + esc(T("reset_progress")) + "</button></div>";
@@ -1562,9 +1562,11 @@
     document.getElementById("placeRedo").addEventListener("click", placementFlow);
     var gr = document.getElementById("glassRange"), G = window.PapoteGlass;
     if (gr && G) {
-      var glabel = function (v) { return v + " % — " + (v <= 15 ? T("glass_clear") : v >= 85 ? T("glass_tinted") : T("glass_regular")); };
-      gr.value = G.get(); gr.setAttribute("aria-valuetext", glabel(+gr.value));
-      gr.addEventListener("input", function () { G.set(+gr.value); gr.setAttribute("aria-valuetext", glabel(+gr.value)); });
+      var glabel = function (v) { return v + " % — " + (v <= 15 ? T("glass_clear") : v >= 75 ? T("glass_tinted") : T("glass_regular")); };
+      var gout = document.getElementById("glassVal");
+      var gshow = function () { var t = glabel(+gr.value); gr.setAttribute("aria-valuetext", t); if (gout) gout.textContent = t; };
+      gr.value = G.get(); gshow();
+      gr.addEventListener("input", function () { G.set(+gr.value); gshow(); });
     }
     app.querySelectorAll("[data-outfit]").forEach(function (b) { b.addEventListener("click", function () { P.settings.outfit = b.getAttribute("data-outfit"); save(); render(); toast(T("outfit_saved"), "happy"); }); });
     document.getElementById("reset").addEventListener("click", function () { if (confirm(T("reset_confirm"))) { var s = P.settings; P = newProgress(); P.settings = s; save(); render(); } });

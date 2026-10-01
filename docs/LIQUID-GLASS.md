@@ -58,14 +58,24 @@ flotte au-dessus du contenu) ou `class="lg-lite"` (carte dans une liste).
   PapoteGlass.get()        // 0…100
   PapoteGlass.set(30)      // change, enregistre, propage
   ```
-- **Effet** : `--lg-t` (0…1) pilote l'opacité de la teinte (`--lg-alpha`) et
-  la force du flou (`--lg-blur`, plus fort quand le verre est clair pour
-  diffuser les fonds chargés). `html[data-glass]` vaut `clear`, `regular`,
-  `tinted` ou `solid`.
+- **Effet** : `--lg-t` (0…1) pilote l'opacité de la teinte des surfaces
+  flottantes (`--lg-alpha`), celle des cartes (`--lg-alpha-lite`, de 0,52 à 1
+  en clair, de 0,66 à 1 en sombre), les anciens jetons `--ig27-glass-regular-bg`
+  (accueil, connexion, administration) et la force du flou (`--lg-blur`, plus
+  fort quand le verre est clair pour diffuser les fonds chargés).
+  `html[data-glass]` vaut `clear`, `regular`, `tinted` ou `solid`. La valeur
+  choisie s'affiche sous le curseur (« 30 % — Équilibré »).
+- **Fond d'ambiance** : le verre n'a d'intérêt que s'il y a de la couleur
+  derrière. Les pages ont donc un « fond d'écran » discret (dégradés de la
+  couleur de la marque, du bleu, du rose et de l'orange) posé sur un calque
+  fixe `body::before`, et non via `background-attachment: fixed`, que Safari
+  iOS et Android ignorent (le fond disparaissait au défilement). Il est retiré
+  en contraste élevé et en couleurs forcées.
 
 ## 4. Lisibilité d'abord
 
-- **Plancher d'opacité** : `--lg-min` 0,52 en clair, 0,70 en sombre.
+- **Plancher d'opacité** : `--lg-min` 0,52 en clair, 0,70 en sombre (surfaces
+  flottantes) ; 0,52 / 0,66 pour les cartes.
 - **Texte secondaire renforcé** sur le verre clair (gris plus foncé en mode
   clair, plus clair en mode sombre).
 - **Mesure du pire cas** (verre posé sur du noir, du blanc et un fond très
