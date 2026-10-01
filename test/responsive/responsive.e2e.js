@@ -143,7 +143,9 @@ for (const browserName of BROWSERS) {
           if (d.touch) { const st = await smallTargets(lp); if (st.length) problems.push("landing small targets: " + st.join(", ")); }
           // login sheet: covers the whole screen, the submit button is on screen
           await lp.evaluate(() => openAuth("login")); // eslint-disable-line no-undef
-          await lp.waitForTimeout(700);
+          // wait for the opening transition (a cold engine can be slow), then settle
+          await lp.waitForFunction(() => { const cs = getComputedStyle(document.getElementById("authSheet")); return cs.visibility === "visible" && +cs.opacity > 0.95; }, null, { timeout: 4000 }).catch(() => {});
+          await lp.waitForTimeout(300);
           const auth = await lp.evaluate(() => {
             const btn = document.getElementById("authSubmitBtn").getBoundingClientRect(), sheet = document.getElementById("authSheet");
             // What matters is what the user sees: every corner of the visible
@@ -154,7 +156,9 @@ for (const browserName of BROWSERS) {
               const el = document.elementFromPoint(x, y);
               return el && sheet.contains(el) ? null : `${x},${y}→${el ? el.tagName.toLowerCase() + (el.id ? "#" + el.id : "") + (el.className && typeof el.className === "string" ? "." + el.className.split(" ")[0] : "") : "none"}`;
             }).filter(Boolean);
-            return { btnOk: btn.top >= 0 && btn.bottom <= innerHeight + 1, sheetOk: !miss.length, miss: miss.join(" ") };
+            const cs = getComputedStyle(sheet), r = sheet.getBoundingClientRect();
+            const state = `open=${sheet.classList.contains("open")} visibility=${cs.visibility} opacity=${cs.opacity} z=${cs.zIndex} rect=${Math.round(r.left)},${Math.round(r.top)},${Math.round(r.width)}x${Math.round(r.height)} vv=${w}x${h}`;
+            return { btnOk: btn.top >= 0 && btn.bottom <= innerHeight + 1, sheetOk: !miss.length, miss: miss.join(" ") + " | " + state };
           });
           if (!auth.btnOk) problems.push("login button off screen");
           if (!auth.sheetOk) problems.push(`login backdrop does not cover the screen (${auth.miss})`);
