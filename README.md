@@ -138,6 +138,14 @@ Stripe), la personne qui l'a invitée reçoit `REFERRAL_DAYS` jours de Premium
 nœud, fleur, casquette, toque, couronne) se débloquent avec les XP de chaque
 langue ; des tenues dessinées en HD demanderont des illustrations dédiées.
 
+## Adaptation à tous les écrans
+
+Téléphones (dès 280 px, encoches, paysage), tablettes, pliables, ordinateurs,
+grands écrans et TV : détection d'appareil (`design-system/device.js`, mode
+debug `?debug=device`), socle `design-system/responsive.css`, quiz plein écran
+sans défilement. Tout est décrit dans [docs/RESPONSIVE.md](docs/RESPONSIVE.md) ;
+tests : `npm run test:responsive` (Chromium, Firefox, WebKit en CI).
+
 ## Rappels quotidiens
 
 Depuis son profil, chaque compte peut activer un rappel par email (heure au

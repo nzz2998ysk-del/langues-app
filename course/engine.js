@@ -77,7 +77,12 @@
   function hasMood(m) { return BRAND.mascot && BRAND.mascot.indexOf(m) >= 0; }
   function masc(mood, size, cls) {
     if (!hasMood(mood)) return "";
-    return '<img class="masc ' + (cls || "") + '" src="/design-system/brand/mascotte/mascotte-' + mood + '.png" alt="" width="' + size + '" height="' + size + '" decoding="async">';
+    // AVIF/WebP at 128px or full size depending on the displayed size and the
+    // screen density; PNG for old browsers. Small decorative ones load lazily.
+    var base = "/design-system/brand/mascotte/mascotte-" + mood, set = function (ext) { return base + "-128." + ext + " 128w, " + base + "." + ext + " 290w"; };
+    var eager = /masc-hero|masc-big|masc-fb|mt-face/.test(cls || "");
+    return '<picture><source type="image/avif" srcset="' + set("avif") + '" sizes="' + size + 'px"><source type="image/webp" srcset="' + set("webp") + '" sizes="' + size + 'px">' +
+      '<img class="masc ' + (cls || "") + '" src="' + base + '.png" alt="" width="' + size + '" height="' + size + '"' + (eager ? "" : ' loading="lazy"') + ' decoding="async"></picture>';
   }
   // Big illustration for end screens: mascot if available, else the emoji.
   function mascOr(mood, emoji, size) { return masc(mood, size || 132, "masc-big") || emoji; }
@@ -303,14 +308,14 @@
       '<div class="logo">' + esc(C.flag) + "</div>" +
       '<div class="lt"><strong>' + esc(T(titleKey)) + "</strong><small>" + esc(T("learn_lang", { lang: langName(LANG) })) + "</small></div>" +
       '<div class="hdr-actions">' +
-      (ACCESS.premium ? '<span class="premium-chip">★ Premium</span>' : '<button type="button" class="profbadge" data-go="/subscribe">★ ' + esc(T("go_premium")) + "</button>") +
+      (ACCESS.premium ? '<span class="premium-chip">★ Premium</span>' : '<button type="button" class="profbadge" data-go="/subscribe" aria-label="' + esc(T("go_premium")) + '">★<span class="pb-tx"> ' + esc(T("go_premium")) + "</span></button>") +
       '<button type="button" class="navtoggle" id="themeBtn" aria-label="' + esc(T("theme_toggle")) + '">' + (document.documentElement.getAttribute("data-theme") === "dark" ? "☀️" : "🌙") + "</button>" +
-      '<button type="button" class="navtoggle" id="navToggle" aria-expanded="false">☰ ' + esc(T("modules")) + "</button>" +
+      '<button type="button" class="navtoggle" id="navToggle" aria-expanded="false" aria-controls="navMenu" aria-label="' + esc(T("modules")) + '"><span class="nt-ic" aria-hidden="true">☰</span><span class="nt-tx"> ' + esc(T("modules")) + "</span></button>" +
       "</div></header>" +
       '<nav class="navmenu" id="navMenu">' + menu + "</nav>" +
       (opts.hero || "") +
       '<main class="con">' + inner + "</main>" +
-      '<div class="speaking-pill" id="speakPill"><div class="wave"><span></span><span></span><span></span></div>' + esc(T("speaking")) + "</div>";
+      '<div class="speaking-pill" id="speakPill" role="status"><div class="wave" aria-hidden="true"><span></span><span></span><span></span></div><span class="sp-tx">' + esc(T("speaking")) + "</span></div>";
   }
   document.addEventListener("click", function (e) {
     var n = e.target.closest("[data-nav]"); if (n) { e.preventDefault(); nav(n.getAttribute("data-nav")); return; }
@@ -322,7 +327,12 @@
       e.target.closest("#themeBtn").textContent = next === "dark" ? "☀️" : "🌙";
       return;
     }
-    if (e.target.closest("#navToggle")) { var m = document.getElementById("navMenu"); m.classList.toggle("on"); e.target.closest("#navToggle").setAttribute("aria-expanded", m.classList.contains("on")); }
+    if (e.target.closest("#navToggle")) {
+      var m = document.getElementById("navMenu"), tg = e.target.closest("#navToggle");
+      m.classList.toggle("on"); tg.setAttribute("aria-expanded", m.classList.contains("on"));
+      tg.querySelector(".nt-ic").textContent = m.classList.contains("on") ? "✕" : "☰";
+      if (m.classList.contains("on")) { var first = m.querySelector("button.on") || m.querySelector("button"); if (first) first.focus({ preventScroll: true }); }
+    }
   });
   function gate(featureKey, icon) {
     return '<div class="gate"><div class="big">' + (icon || "🔒") + "</div><h2>" + esc(T("premium_only")) + "</h2><p>" + esc(T("feat_" + featureKey.replace(/^.*:/, ""))) + " — " + esc(T("premium_unlock")) +
@@ -740,24 +750,43 @@
     QUIZ = { qs: shuffle(qs), i: 0, ok: 0, ko: 0, xp: 0, hearts: opts.hearts || 0, opts: opts, errors: [] };
     paintQuiz();
   }
+  // Adaptive progress bar (quizzes, lessons, placement, daily lesson): shows
+  // step / total and percentage, exposes role=progressbar, and animates from
+  // the previous value (see animateBars) instead of jumping.
+  var LASTPCT = 0;
+  function progressBar(step, total, pct, kindKey) {
+    pct = Math.max(0, Math.min(100, Math.round(pct)));
+    var from = LASTPCT; LASTPCT = pct;
+    var text = T("progress_text", { i: step, n: total, pct: pct, kind: T(kindKey || "progress_question") });
+    return '<div class="pbar" role="progressbar" aria-label="' + esc(T("progress")) + '" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + pct + '" aria-valuetext="' + esc(text) + '">' +
+      '<div class="pbar-track duo-progress-track"><div class="pbar-fill duo-progress-fill" style="width:' + from + '%" data-to="' + pct + '"></div></div>' +
+      '<span class="pbar-label" aria-hidden="true"><b>' + step + "</b>/" + total + ' <span class="pbar-pct">· ' + pct + "%</span></span></div>";
+  }
+  function animateBars() {
+    var bars = app.querySelectorAll("[data-to]");
+    if (!bars.length) return;
+    requestAnimationFrame(function () { requestAnimationFrame(function () { bars.forEach(function (b) { b.style.width = b.getAttribute("data-to") + "%"; b.removeAttribute("data-to"); }); }); });
+  }
   function quizShell(inner) {
-    var pct = QUIZ ? Math.round(100 * QUIZ.i / QUIZ.qs.length) : 0;
-    return '<header class="duo-bar"><button type="button" class="btn2" id="quitQuiz" aria-label="' + esc(T("quit")) + '">✕</button><div class="duo-progress-track"><div class="duo-progress-fill" style="width:' + pct + '%"></div></div>' +
+    var n = QUIZ ? QUIZ.qs.length : 0, i = QUIZ ? QUIZ.i : 0, pct = n ? 100 * i / n : 0;
+    if (QUIZ && i === 0 && !QUIZ.ok && !QUIZ.ko) LASTPCT = 0;
+    return '<header class="duo-bar"><button type="button" class="btn2 qz-quit" id="quitQuiz" aria-label="' + esc(T("quit")) + '">✕</button>' + progressBar(Math.min(i + 1, n), n, pct) +
       (QUIZ.hearts ? '<div class="duo-hearts">' + "❤️".repeat(Math.max(0, QUIZ.hearts)) + "</div>" : "") + '<div class="duo-xp">+' + QUIZ.xp + " XP</div></header>" +
-      '<main class="con"><h1 class="sr-only">' + esc(T("mod_exercices")) + "</h1>" + inner + "</main>" + '<div class="speaking-pill" id="speakPill"><div class="wave"><span></span><span></span><span></span></div>' + esc(T("speaking")) + "</div>";
+      '<main class="con"><h1 class="sr-only">' + esc(T("mod_exercices")) + "</h1>" + inner + "</main>" + '<div class="speaking-pill" id="speakPill" role="status"><div class="wave" aria-hidden="true"><span></span><span></span><span></span></div><span class="sp-tx">' + esc(T("speaking")) + "</span></div>";
   }
   function paintQuiz() {
     if (QUIZ.i >= QUIZ.qs.length || (QUIZ.opts.hearts && QUIZ.hearts <= 0)) return finishQuiz();
-    var q = QUIZ.qs[QUIZ.i], h = '<div class="quiz-card"><div class="quiz-kind">' + esc(T("mode_" + q.mode)) + " · " + (QUIZ.i + 1) + "/" + QUIZ.qs.length + "</div>";
+    var q = QUIZ.qs[QUIZ.i], h = '<div class="quiz-card"><div class="qz-prompt"><div class="quiz-kind">' + esc(T("mode_" + q.mode)) + " · " + (QUIZ.i + 1) + "/" + QUIZ.qs.length + "</div>";
     if (q.mode === "listen" || q.mode === "dictation") h += '<div class="quiz-q"><button type="button" class="bpr" data-say="' + esc(q.audio) + '">🔊 ' + esc(T("listen")) + "</button></div>";
     else if (q.cloze) h += '<div class="quiz-q">' + tgt(q.prompt) + snd(q.audio) + "</div>";
     else if (q.mode === "mcq") h += '<div class="quiz-q">' + tgt(q.prompt) + snd(q.audio) + "</div>" + (q.rom && P.settings.rom !== false ? '<div class="quiz-sub">' + esc(q.rom) + "</div>" : "");
     else h += '<div class="quiz-q">' + esc(q.prompt) + "</div>";
     if (q.sub) h += '<div class="quiz-sub">' + esc(q.sub) + "</div>"; else h += '<div class="quiz-sub"></div>';
-    if (q.opts) h += '<div class="quiz-opts">' + q.opts.map(function (o, i) { return '<button type="button" class="quiz-opt' + (q.optsT ? " t" : "") + '" data-opt="' + i + '">' + esc(o) + "</button>"; }).join("") + "</div>";
+    h += '</div><div class="qz-answer">';
+    if (q.opts) h += '<div class="quiz-opts">' + q.opts.map(function (o, i) { return '<button type="button" class="quiz-opt' + (q.optsT ? " t" : "") + '" data-opt="' + i + '"><kbd class="qz-key" aria-hidden="true">' + (i + 1) + "</kbd>" + esc(o) + "</button>"; }).join("") + "</div>";
     else if (q.typed) h += '<input class="answer-input" id="ans" autocomplete="off" autocapitalize="off" spellcheck="false"' + (C.dir === "rtl" ? ' dir="rtl"' : "") + ">" + keyboard() + '<button type="button" class="bpr wide" id="check">' + esc(T("check")) + "</button>";
     else if (q.order) h += '<div class="order-answer" id="oans"></div><div class="order-bank">' + shuffle(q.order.map(function (w, i) { return { w: w, i: i }; })).map(function (o) { return '<button type="button" class="order-chip" data-oi="' + o.i + '">' + esc(o.w) + "</button>"; }).join("") + '</div><div class="row" style="justify-content:center;margin-top:var(--ig27-space-4)"><button type="button" class="btn2" id="oreset">↺ ' + esc(T("reset")) + '</button><button type="button" class="bpr" id="check">' + esc(T("check")) + "</button></div>";
-    h += '<div id="fb"></div></div>';
+    h += '<div id="fb" aria-live="polite"></div></div></div>';
     app.innerHTML = quizShell(h);
     if (P.settings.autoplay && (q.mode === "listen" || q.mode === "dictation" || q.mode === "mcq")) setTimeout(function () { TTS.speak(q.audio); }, 250);
     bindQuiz(q);
@@ -1196,7 +1225,7 @@
     var gram = (C.grammar || []).filter(function (g) { return g.level === L; });
     var reads = (C.readings || []).filter(function (r) { return r.level === L; });
     var exam = P.exams[L];
-    var html = '<h1 class="sr-only">' + esc(T("level_" + L)) + " (" + L + ")</h1>" + '<div style="text-align:center;margin-bottom:var(--ig27-space-5)"><div class="lvlcard" style="display:inline-flex;align-items:center;width:auto;padding:var(--ig27-space-4) var(--ig27-space-6)"><div class="badge bg-' + L + '" style="width:56px;height:56px;font-size:var(--ig27-fs-title2)">' + L + "</div><b>" + esc(T("level_" + L)) + "</b><span>" + esc(T("n_known", { n: k })) + " / " + lw.length + '</span><div class="meter" style="width:220px"><i style="width:' + (lw.length ? Math.round(100 * k / lw.length) : 0) + '%"></i></div></div></div>' +
+    var html = '<h1 class="sr-only">' + esc(T("level_" + L)) + " (" + L + ")</h1>" + '<div style="text-align:center;margin-bottom:var(--ig27-space-5)"><div class="lvlcard" style="display:inline-flex;align-items:center;width:auto;padding:var(--ig27-space-4) var(--ig27-space-6)"><div class="badge bg-' + L + '" style="width:56px;height:56px;font-size:var(--ig27-fs-title2)">' + L + "</div><b>" + esc(T("level_" + L)) + "</b><span>" + esc(T("n_known", { n: k })) + " / " + lw.length + '</span><div class="meter" style="width:min(220px,60vw)"><i style="width:' + (lw.length ? Math.round(100 * k / lw.length) : 0) + '%"></i></div></div></div>' +
       (advLocked ? gate(LANG + ":lecons-avancees", "📘") :
         '<div class="grid cols-2">' +
         '<div class="box"><h2>📘 ' + esc(T("lesson")) + '</h2><p class="muted small">' + esc(T("lesson_d")) + "</p>" +
@@ -1242,8 +1271,9 @@
     paint();
   }
   function quizShellLesson(i, n, inner) {
-    return '<header class="duo-bar"><button type="button" class="btn2" id="quitL" aria-label="' + esc(T("quit")) + '">✕</button><div class="duo-progress-track"><div class="duo-progress-fill" style="width:' + Math.round(50 * i / n) + '%"></div></div></header><main class="con"><h1 class="sr-only">' + esc(T("lesson")) + "</h1>" + inner + "</main>" +
-      '<div class="speaking-pill" id="speakPill"><div class="wave"><span></span><span></span><span></span></div>' + esc(T("speaking")) + "</div>";
+    if (i === 0) LASTPCT = 0;
+    return '<header class="duo-bar"><button type="button" class="btn2 qz-quit" id="quitL" aria-label="' + esc(T("quit")) + '">✕</button>' + progressBar(Math.min(i + 1, n), n, 100 * i / n, "progress_step") + '</header><main class="con"><h1 class="sr-only">' + esc(T("lesson")) + "</h1>" + inner + "</main>" +
+      '<div class="speaking-pill" id="speakPill" role="status"><div class="wave" aria-hidden="true"><span></span><span></span><span></span></div><span class="sp-tx">' + esc(T("speaking")) + "</span></div>";
   }
   // ------------------------------------------------------------------ guided path
   // Placement test (adaptive, ~2 min) + "today's lesson" that mixes due reviews,
@@ -1554,6 +1584,71 @@
       }).catch(function () { offState.textContent = T("offline_unsupported"); });
     });
   }
+
+
+  // ------------------------------------------------------------------ immersive quiz
+  // While a quiz/lesson screen (with .duo-bar) is shown, the page switches to
+  // "quiz mode": the app frame hides its own bars and gives the whole visible
+  // height to this page, and fitQuiz() scales the content (--qz) so that the
+  // question, the answers and the action buttons fit without scrolling.
+  var QMODE = false;
+  function setQuizMode(on) {
+    document.body.classList.toggle("quiz-mode", on);
+    document.documentElement.classList.toggle("quiz-mode", on);
+    if (on !== QMODE) {
+      QMODE = on;
+      if (window.parent && window.parent !== window) {
+        // srcdoc pages have an opaque location: target the parent's own origin.
+        var origin = "*"; try { origin = window.parent.location.origin; } catch (e) {}
+        try { window.parent.postMessage({ immersive: on }, origin); } catch (e) {}
+      }
+    }
+  }
+  function fitQuiz() {
+    if (!QMODE) return;
+    var main = app.querySelector("main.con"); if (!main) return;
+    var root = document.documentElement;
+    main.classList.remove("qz-scroll", "qz-compact");
+    var shrink = function () {
+      var qz = 1, guard = 0;
+      root.style.setProperty("--qz", "1");
+      while (main.scrollHeight > main.clientHeight + 1 && qz > 0.6 && guard++ < 14) {
+        qz = Math.round((qz - 0.05) * 100) / 100;
+        root.style.setProperty("--qz", String(qz));
+      }
+      return main.scrollHeight <= main.clientHeight + 1;
+    };
+    // 1) scale text and spacing; 2) drop secondary elements (label, answers
+    // that were not picked, notes) and scale again; 3) last resort on tiny
+    // screens: only the content area scrolls, never the page.
+    if (shrink()) return;
+    main.classList.add("qz-compact");
+    if (shrink()) return;
+    main.classList.add("qz-scroll");
+  }
+  var qmPending = 0;
+  function checkQuizMode() {
+    qmPending = 0;
+    setQuizMode(!!app.querySelector(".duo-bar"));
+    animateBars();
+    fitQuiz();
+  }
+  new MutationObserver(function () { if (!qmPending) qmPending = requestAnimationFrame(checkQuizMode); }).observe(document.body, { childList: true, subtree: true });
+  window.addEventListener("resize", function () { if (QMODE) requestAnimationFrame(fitQuiz); });
+  if (window.PapoteDevice) window.PapoteDevice.on(function () { if (QMODE) requestAnimationFrame(fitQuiz); });
+  document.addEventListener("keydown", function (e) {
+    if (e.key !== "Escape") return;
+    var m = document.getElementById("navMenu");
+    if (m && m.classList.contains("on")) { var tg = document.getElementById("navToggle"); tg.click(); tg.focus(); }
+  });
+  // Keyboard: 1-4 pick an answer, Enter continues, Escape leaves.
+  document.addEventListener("keydown", function (e) {
+    if (!QMODE || e.ctrlKey || e.metaKey || e.altKey) return;
+    var tag = (e.target && e.target.tagName) || "";
+    if (e.key === "Escape") { var qb = document.getElementById("quitQuiz") || document.getElementById("quitL"); if (qb) { e.preventDefault(); qb.click(); } return; }
+    if (tag === "INPUT" || tag === "TEXTAREA") return;
+    if (/^[1-9]$/.test(e.key)) { var o = app.querySelector('[data-opt="' + (+e.key - 1) + '"]:not(:disabled)'); if (o) { e.preventDefault(); o.click(); } }
+  });
 
   // ------------------------------------------------------------------ render
   var BINDERS = {

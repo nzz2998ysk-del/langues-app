@@ -175,12 +175,13 @@ function stub(code, page) {
   var t = localStorage.getItem('lang_theme');
   ${THEME_INIT}
 }catch(e){}})();</script>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><script src="/design-system/device.js"></script>
 <title>${code === "@@CODE@@" ? "@@TITLE@@" : META[code].name}</title>
 <link rel="stylesheet" href="/design-system/ios27-liquid-glass.css">
 <link rel="stylesheet" href="/course/engine.css">
 <link rel="stylesheet" href="/design-system/ios27-app.css">
 <link rel="stylesheet" href="/design-system/papote.css">
+<link rel="stylesheet" href="/design-system/responsive.css">
 </head><body data-lang="${code}" data-page="${page}"><div id="app"></div>
 <script src="/course/i18n.js"></script><script src="/course/engine.js"></script>
 </body></html>`;

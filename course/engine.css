@@ -366,4 +366,190 @@ button.recording{background:var(--ig27-red,#ff3b30)!important;color:#fff!importa
 .lb-row.me{background:var(--ig27-accent-soft);font-weight:600}
 .lb-rank{width:28px;text-align:center;font-size:18px}
 .lb-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.friend-code{font:800 28px/1.2 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.12em;margin:var(--ig27-space-2) 0 var(--ig27-space-3)}
+.friend-code{font:800 clamp(20px,7vw,28px)/1.2 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.12em;margin:var(--ig27-space-2) 0 var(--ig27-space-3)}
+
+/* =====================================================================
+   Responsive layer of the course pages (see docs/RESPONSIVE.md)
+   ===================================================================== */
+
+/* ---------- adaptive progress bar (quiz, lesson, placement, daily) ---------- */
+.duo-bar{container-type:inline-size;container-name:qzbar}
+.pbar{flex:1;min-width:0;display:flex;align-items:center;gap:var(--ig27-space-3)}
+.pbar-track{flex:1;min-width:40px;height:clamp(6px,1.1vh,12px);background:var(--ig27-fill-tertiary);border-radius:var(--ig27-radius-full);overflow:hidden}
+.pbar-fill{height:100%;background:linear-gradient(90deg,var(--ig27-accent),var(--ig27-green));border-radius:inherit;transition:width .55s cubic-bezier(.22,1,.36,1)}
+.pbar-label{flex:none;font:var(--ig27-weight-semibold) var(--ig27-fs-footnote)/1 var(--ig27-font-family);color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.pbar-label b{color:var(--ink);font-weight:800}
+.qz-quit{flex:none;min-width:var(--pp-tap,44px);min-height:var(--pp-tap,44px);display:inline-flex;align-items:center;justify-content:center;padding:0}
+/* Narrow bar (phones): thin full-width line along the bottom edge of the bar */
+@container qzbar (max-width: 560px){
+  .duo-bar .pbar{position:static}
+  .duo-bar .pbar-track{position:absolute;left:0;right:0;bottom:-1px;height:4px;border-radius:0}
+  .duo-bar .pbar-label{margin:0 auto}
+}
+@container qzbar (max-width: 300px){ .pbar-pct{display:none} }
+
+/* ---------- header: burger on small screens, sidebar on desktop ---------- */
+.navtoggle .nt-ic{font-size:1.15em;line-height:1}
+@media (max-width: 599.98px){
+  .hdr{padding:0 max(var(--ig27-space-3), env(safe-area-inset-left));min-height:56px;flex-wrap:nowrap;gap:var(--ig27-space-2)}
+  .lt{min-width:0;flex:1}
+  .lt strong,.lt small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .hdr-actions{gap:6px;flex:none}
+  .navtoggle .nt-tx,.profbadge .pb-tx{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+  .profbadge,.navtoggle{padding:0 10px;min-width:var(--pp-tap,44px);justify-content:center}
+  .profbadge::before{display:none}
+  .navmenu{top:56px}
+}
+@media (max-width: 359.98px){ .logo{display:none} .lt small{display:none} }
+/* Menu opens with a smooth slide (mobile/tablet) */
+.navmenu.on{animation:navIn .28s cubic-bezier(.22,1,.36,1) both}
+@keyframes navIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+@media (max-width: 1199.98px){
+  .navmenu{max-height:min(70vh,520px);overflow-y:auto;overscroll-behavior:contain;box-shadow:0 18px 30px -20px rgba(0,0,0,.35)}
+  .navmenu button{min-height:var(--pp-tap,44px)}
+}
+@media (max-width: 599.98px){ .navmenu{display:none;grid-template-columns:1fr 1fr;gap:6px;padding:var(--ig27-space-3)} .navmenu.on{display:grid} .navmenu button{text-align:left;padding:0 12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis} }
+/* Desktop: permanent sidebar, the toggle disappears */
+@media (min-width: 1200px){
+  body:not(.quiz-mode) #app{display:grid;grid-template-columns:clamp(220px,17vw,280px) minmax(0,1fr);grid-template-areas:"hdr hdr" "nav hero" "nav main";grid-template-rows:auto auto 1fr;column-gap:var(--ig27-space-4)}
+  body:not(.quiz-mode) #app>.hdr{grid-area:hdr}
+  body:not(.quiz-mode) #app>.navmenu{grid-area:nav;display:flex;flex-direction:column;flex-wrap:nowrap;align-self:start;position:sticky;top:72px;gap:4px;padding:var(--ig27-space-4) 0 var(--ig27-space-4) var(--ig27-space-4);border:0;background:transparent;animation:none;max-height:none}
+  body:not(.quiz-mode) #app>.navmenu button{text-align:left;border-color:transparent;background:transparent;border-radius:12px;padding:0 12px;min-height:40px}
+  body:not(.quiz-mode) #app>.navmenu button:hover{background:var(--ig27-fill-quaternary)}
+  body:not(.quiz-mode) #app>.navmenu button.on{background:var(--ig27-accent);color:var(--ig27-on-accent)}
+  body:not(.quiz-mode) #app>.hero{grid-area:hero;margin-left:0}
+  body:not(.quiz-mode) #app>main.con{grid-area:main;max-width:1040px;margin:0;width:100%}
+  #navToggle{display:none}
+}
+
+/* ---------- vocabulary rows: audio always next to the word ---------- */
+.vrow{grid-template-columns:auto minmax(0,1fr) auto}
+@media (max-width: 359.98px){ .filters .row{flex-wrap:wrap} .filters .sel{flex:1 1 100%;min-width:0} }
+.filters .sel{max-width:100%;min-width:0}
+
+/* =====================================================================
+   Quiz mode: everything on one screen, no scrolling to answer
+   --qz is a scale (1 → 0.6) tuned by fitQuiz() so the content fits.
+   ===================================================================== */
+html.quiz-mode,body.quiz-mode{height:100%;overflow:hidden}
+body.quiz-mode{--qz:1}
+body.quiz-mode #app{height:100vh;height:100dvh;display:flex;flex-direction:column}
+body.quiz-mode .duo-bar{position:relative;top:0;flex:none;gap:var(--ig27-space-3);padding:clamp(6px,1.4vh,14px) max(var(--pp-gutter,16px),env(safe-area-inset-right)) clamp(6px,1.4vh,14px) max(var(--pp-gutter,16px),env(safe-area-inset-left))}
+body.quiz-mode main.con{flex:1;min-height:0;width:100%;max-width:min(1100px,100%);margin:0 auto;display:flex;flex-direction:column;justify-content:center;overflow:hidden;
+  padding:calc(var(--qz) * clamp(8px,2.4vh,28px)) max(var(--pp-gutter,16px),env(safe-area-inset-right)) max(calc(var(--qz) * clamp(8px,2.4vh,28px)),env(safe-area-inset-bottom)) max(var(--pp-gutter,16px),env(safe-area-inset-left))}
+body.quiz-mode main.con.qz-scroll{overflow-y:auto;justify-content:flex-start;overscroll-behavior:contain}
+body.quiz-mode .quiz-card{container-type:inline-size;display:flex;flex-direction:column;gap:calc(var(--qz) * clamp(6px,1.6vh,18px));margin:0;flex:none;
+  padding:calc(var(--qz) * clamp(12px,3.2vh,40px)) calc(var(--qz) * clamp(12px,3vw,44px));border-radius:clamp(20px,3vw,32px)}
+body.quiz-mode .qz-prompt,body.quiz-mode .qz-answer{display:flex;flex-direction:column;gap:calc(var(--qz) * clamp(6px,1.4vh,16px));min-width:0}
+body.quiz-mode .quiz-kind{margin:0}
+body.quiz-mode .quiz-q{margin:0;font-size:calc(var(--qz) * clamp(22px,2.6vh + 1.6vw,60px));line-height:1.2;flex-wrap:wrap}
+body.quiz-mode .quiz-sub{margin:0;font-size:calc(var(--qz) * clamp(13px,.6vh + .8vw,18px))}
+body.quiz-mode .quiz-sub:empty{display:none}
+body.quiz-mode .quiz-opts{grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr));gap:calc(var(--qz) * clamp(8px,1.4vh,16px))}
+body.quiz-mode .quiz-opt{position:relative;min-height:max(var(--pp-tap,44px),calc(var(--qz) * clamp(46px,8vh,96px)));padding:calc(var(--qz) * 8px) calc(var(--qz) * 16px) calc(var(--qz) * 8px) calc(var(--qz) * 16px + 22px);
+  font-size:calc(var(--qz) * clamp(15px,1.2vh + .7vw,28px));line-height:1.25}
+.qz-key{position:absolute;left:10px;top:50%;transform:translateY(-50%);font:600 11px/1 var(--ig27-font-family);color:var(--muted);border:1px solid var(--line);border-radius:5px;padding:2px 5px;background:var(--bg)}
+.quiz-opt{position:relative;padding-left:calc(var(--ig27-space-4) + 22px)}
+@media (pointer: coarse){ .qz-key{display:none} .quiz-opt,body.quiz-mode .quiz-opt{padding-left:calc(var(--qz,1) * 16px)} }
+body.quiz-mode .answer-input{min-height:max(var(--pp-tap,44px),calc(var(--qz) * 56px));font-size:max(16px,calc(var(--qz) * 20px))}
+body.quiz-mode .keyboard{margin:0;gap:calc(var(--qz) * 8px)}
+body.quiz-mode .kbtn{min-width:max(40px,calc(var(--qz) * 44px));min-height:max(40px,calc(var(--qz) * 44px))}
+body.quiz-mode .order-answer{min-height:calc(var(--qz) * 58px);margin:0}
+body.quiz-mode .order-chip{min-height:var(--pp-tap,44px)}
+body.quiz-mode #check,body.quiz-mode #next,body.quiz-mode #nextW,body.quiz-mode #reveal{min-height:max(var(--pp-tap,44px),calc(var(--qz) * 52px))}
+body.quiz-mode .feedback{margin-top:0;padding:calc(var(--qz) * 10px) calc(var(--qz) * 14px);font-size:calc(var(--qz) * clamp(14px,.6vh + .8vw,18px))}
+body.quiz-mode .feedback .masc-fb{width:calc(var(--qz) * clamp(40px,7vh,64px));height:auto}
+body.quiz-mode #fb:empty{display:none}
+body.quiz-mode #fb .bpr.wide{margin-top:calc(var(--qz) * 10px) !important}
+body.quiz-mode .flash{padding:calc(var(--qz) * clamp(8px,2vh,24px)) 0}
+body.quiz-mode .flash .big{font-size:calc(var(--qz) * clamp(28px,2.5vh + 2.5vw,56px))}
+body.quiz-mode .flash .gl{margin-top:calc(var(--qz) * 12px);font-size:calc(var(--qz) * clamp(17px,1vh + 1vw,24px))}
+body.quiz-mode .flash .exs{margin-top:calc(var(--qz) * 12px)}
+body.quiz-mode .complete{padding:calc(var(--qz) * clamp(12px,3vh,40px)) 0}
+body.quiz-mode .complete .masc-big{width:calc(var(--qz) * clamp(80px,16vh,132px));height:auto}
+/* Two columns of answers once the card is wide enough (tablet/desktop) */
+@container (min-width: 620px){ body.quiz-mode .quiz-opts{grid-template-columns:repeat(2,minmax(0,1fr))} }
+@container (min-width: 1000px){ body.quiz-mode .quiz-opts:has(> .quiz-opt:nth-child(4):last-child){grid-template-columns:repeat(4,minmax(0,1fr))} }
+/* Short screens (phone in landscape, small laptops with big zoom):
+   question on the left, answers on the right. */
+@media (orientation: landscape) and (max-height: 540px){
+  body.quiz-mode .quiz-card:has(> .qz-prompt){flex-direction:row;align-items:center;gap:calc(var(--qz) * clamp(12px,3vw,32px));padding:calc(var(--qz) * 12px) calc(var(--qz) * 18px)}
+  body.quiz-mode .qz-prompt{flex:1 1 40%;justify-content:center}
+  body.quiz-mode .qz-answer{flex:1 1 60%;justify-content:center}
+  body.quiz-mode .quiz-q{font-size:calc(var(--qz) * clamp(20px,4.5vh + 1vw,34px))}
+  body.quiz-mode .quiz-opts{grid-template-columns:repeat(2,minmax(0,1fr))}
+  body.quiz-mode .quiz-opt{min-height:max(var(--pp-tap,44px),calc(var(--qz) * 12vh))}
+  body.quiz-mode .duo-bar{padding-top:4px;padding-bottom:4px}
+  body.quiz-mode .feedback .masc-fb{display:none}
+  body.quiz-mode #fb:not(:empty){display:flex;gap:calc(var(--qz) * 10px);align-items:stretch}
+  body.quiz-mode #fb .feedback{flex:1;min-width:0}
+  body.quiz-mode #fb .bpr.wide{width:auto;flex:none;margin-top:0 !important;padding:0 calc(var(--qz) * 20px)}
+  body.quiz-mode .feedback .expl.muted{display:none}
+}
+/* Very small phones */
+@media (max-width: 359.98px){
+  body.quiz-mode .quiz-card{border-radius:18px}
+  body.quiz-mode .feedback .masc-fb{display:none}
+  body.quiz-mode .duo-hearts{font-size:12px}
+}
+html[data-short] body.quiz-mode .feedback .masc-fb{display:none}
+/* Foldables open flat with a hinge: one half each, nothing under the hinge */
+@media (horizontal-viewport-segments: 2){
+  body.quiz-mode .quiz-card{flex-direction:row;gap:var(--pp-hinge,24px)}
+  body.quiz-mode .qz-prompt,body.quiz-mode .qz-answer{flex:1 1 50%}
+}
+@media (vertical-viewport-segments: 2){
+  body.quiz-mode main.con{justify-content:space-between}
+}
+/* Big screens: the card does not stretch endlessly */
+@media (min-width: 1600px){ body.quiz-mode main.con{max-width:1280px} }
+@media (min-width: 1100px) and (min-height: 700px){ body.quiz-mode .pbar-label{font-size:var(--ig27-fs-callout)} body.quiz-mode .quiz-kind{font-size:var(--ig27-fs-footnote)} }
+/* "Speaking…" badge: in a quiz it sits in the top bar, never over the answers */
+body.quiz-mode .speaking-pill{top:calc(clamp(6px,1.4vh,14px) + 50px);bottom:auto;left:auto;right:max(12px,env(safe-area-inset-right));transform:scale(.9);transform-origin:top right;padding:8px 10px;z-index:70;pointer-events:none;gap:0}
+body.quiz-mode .speaking-pill .sp-tx{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+body.quiz-mode .speaking-pill.on{transform:none}
+/* Short portrait screens: once answered, keep only the chosen and the right
+   answer so the feedback and "Continue" fit without scrolling. */
+@media (max-height: 700px) and (orientation: portrait){
+  body.quiz-mode .qz-answer:has(#fb:not(:empty)) .quiz-opt:not(.correct):not(.wrong){display:none}
+  body.quiz-mode .feedback .expl.muted{display:none}
+}
+/* Wide grammar / conjugation tables scroll inside their card on phones */
+.rule-body,.conj-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.rule-body table{min-width:min(100%,420px)}
+/* Rows of controls wrap instead of overflowing on narrow screens */
+.con .row{flex-wrap:wrap}
+.con .sel,.con .field{max-width:100%;min-width:0}
+.lvlcard{max-width:100%}
+@media (pointer: coarse){ .rule-card summary{min-height:var(--pp-tap,44px);display:flex;align-items:center;flex-wrap:wrap;gap:6px} .soundbtn-sm{width:var(--pp-tap);height:var(--pp-tap)} }
+.grid>*{min-width:0}
+/* Once answered: hide what is no longer needed (special-character keyboard,
+   "Check", word bank) and keep the feedback compact; "Continue" stays visible. */
+body.quiz-mode .qz-answer:has(#fb:not(:empty)) .keyboard,
+body.quiz-mode .qz-answer:has(#fb:not(:empty)) #check,
+body.quiz-mode .qz-answer:has(#fb:not(:empty)) .order-bank,
+body.quiz-mode .qz-answer:has(#fb:not(:empty)) .row:has(#oreset){display:none}
+body.quiz-mode #fb .feedback{max-height:max(76px,24vh);overflow-y:auto;overscroll-behavior:contain}
+@media (max-height: 540px){
+  body.quiz-mode .keyboard{flex-wrap:nowrap;overflow-x:auto;justify-content:flex-start;padding-bottom:2px;scrollbar-width:thin}
+  body.quiz-mode .kbtn{flex:none}
+  body.quiz-mode #fb .feedback{max-height:max(64px,30vh)}
+}
+/* Lesson / review flash cards in landscape: word on the left, meaning on the right */
+@media (orientation: landscape) and (max-height: 540px){
+  body.quiz-mode .flash{display:grid;grid-template-columns:1fr 1fr;column-gap:calc(var(--qz) * 24px);align-items:center;text-align:left}
+  body.quiz-mode .flash > .big, body.quiz-mode .flash > .rom, body.quiz-mode .flash > .row{grid-column:1}
+  body.quiz-mode .flash > .gl, body.quiz-mode .flash > .exs, body.quiz-mode .flash > #back{grid-column:2;grid-row:1 / span 3;margin-top:0}
+  body.quiz-mode .flash > .row{justify-content:flex-start !important}
+  body.quiz-mode .quiz-card:not(:has(> .qz-prompt)) .quiz-opts{grid-template-columns:repeat(4,minmax(0,1fr))}
+}
+/* Compact step of fitQuiz() (only when scaling alone is not enough) */
+body.quiz-mode main.qz-compact .quiz-kind{display:none}
+body.quiz-mode main.qz-compact .qz-answer:has(#fb:not(:empty)) .quiz-opt:not(.correct):not(.wrong){display:none}
+body.quiz-mode main.qz-compact .feedback .expl.muted,body.quiz-mode main.qz-compact .feedback .masc-fb{display:none}
+body.quiz-mode main.qz-compact .order-chip{min-height:36px;padding:0 10px}
+body.quiz-mode main.qz-compact .order-bank,body.quiz-mode main.qz-compact .order-answer{gap:6px}
+body.quiz-mode main.qz-compact .quiz-card{padding:10px 12px;gap:8px}
+/* Cards with the mascot: text never pushes the card wider than the screen */
+.with-masc>div,.with-masc>p{min-width:0}
+@media (max-width: 359.98px){ .box.with-masc{flex-wrap:wrap} .box.with-masc .masc-inline{width:48px;height:48px} }

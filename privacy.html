@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script src="/design-system/device.js"></script>
 <title>Papote — Politique de confidentialité</title><!--BRAND_HEAD-->
 <script>(function(){try{
   var t = localStorage.getItem('lang_theme');
@@ -51,6 +52,7 @@ button:disabled{opacity:.5;cursor:default;box-shadow:var(--ig27-shadow-sm)}
 </style>
 <link rel="stylesheet" href="/design-system/ios27-app.css">
 <link rel="stylesheet" href="/design-system/papote.css">
+<link rel="stylesheet" href="/design-system/responsive.css">
 </head>
 <body class="pp-page">
 <div class="wrap doc" role="main">
@@ -61,7 +63,7 @@ button:disabled{opacity:.5;cursor:default;box-shadow:var(--ig27-shadow-sm)}
 <h2>Responsable du traitement</h2>
 <p>{{LEGAL_PUBLISHER}}, {{LEGAL_ADDRESS}} — contact : {{LEGAL_CONTACT_EMAIL}}.</p>
 <h2>Données collectées et finalités</h2>
-<table>
+<div class="table-scroll" tabindex="0" role="region" aria-label="Données collectées"><table>
 <tr><th>Données</th><th>Pourquoi</th><th>Base légale</th><th>Durée</th></tr>
 <tr><td>Email, mot de passe (haché, jamais lisible), prénom affiché, langue de base, ordre des langues</td><td>Créer et faire fonctionner ton compte</td><td>Exécution du contrat</td><td>Jusqu'à la suppression du compte</td></tr>
 <tr><td>Progression d'apprentissage (réponses, révisions, badges, mots personnels)</td><td>Suivre ta progression et la synchroniser entre appareils</td><td>Exécution du contrat</td><td>Jusqu'à la suppression du compte</td></tr>
@@ -72,7 +74,7 @@ button:disabled{opacity:.5;cursor:default;box-shadow:var(--ig27-shadow-sm)}
 <tr><td>Code ami, liste d'amis, parrain éventuel</td><td>Défis entre amis (classement de la semaine : seuls ton prénom affiché et tes XP de la semaine sont visibles par tes amis, jamais ton email), récompense de parrainage</td><td>Exécution du contrat</td><td>Jusqu'à la suppression du compte (ou du lien d'amitié)</td></tr>
 <tr><td>Préférences de rappel (activé, heure, fuseau horaire)</td><td>T'envoyer le rappel quotidien que tu as demandé</td><td>Consentement (désactivable à tout moment)</td><td>Jusqu'à la désactivation ou la suppression du compte</td></tr>
 <tr><td>Jetons de réinitialisation et de confirmation d'email</td><td>Sécuriser ton compte</td><td>Exécution du contrat</td><td>1 heure / 7 jours</td></tr>
-</table>
+</table></div>
 <p>Aucune publicité, aucun traceur, aucune revente de données.</p>
 <h2>Audio et reconnaissance vocale</h2>
 <p>La lecture audio et la reconnaissance vocale (exercices de prononciation) utilisent les fonctions intégrées à ton navigateur. Papote ne stocke pas ta voix : en mode « Enregistrer et comparer », l'enregistrement reste dans ton navigateur (jamais envoyé au serveur) et disparaît quand tu quittes la page. Selon le navigateur, l'audio peut être traité par son éditeur (par exemple Google pour Chrome, Apple pour Safari) : consulte leur politique de confidentialité. Le micro n'est utilisé que lorsque tu appuies sur « Parler ».</p>

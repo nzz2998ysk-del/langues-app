@@ -649,24 +649,32 @@ function brandInfo() {
 function mascotSrc(mood) {
   return `/design-system/brand/mascotte/mascotte-${mood}.png`;
 }
+// <picture> with AVIF + WebP at two resolutions and the PNG as fallback: the
+// browser picks the lightest format it supports at the right pixel density.
+function pictureTag(base, small, full, size, attrs) {
+  const set = (ext) => `${base}-${small}.${ext} ${small}w, ${base}${full ? "-" + full : ""}.${ext} ${full || 290}w`;
+  return `<picture><source type="image/avif" srcset="${set("avif")}" sizes="${size}px"><source type="image/webp" srcset="${set("webp")}" sizes="${size}px"><img ${attrs}></picture>`;
+}
 function brandMarkup() {
   const b = brandInfo();
   const has = (m) => b.mascot.includes(m);
-  const img = (m, size, cls, loading) =>
-    `<img${cls ? ` class="${cls}"` : ""} src="${mascotSrc(m)}" alt="" width="${size}" height="${size}"${loading ? ` loading="${loading}"` : ""} decoding="async">`;
+  const img = (m, size, cls, loading) => pictureTag(`/design-system/brand/mascotte/mascotte-${m}`, 128, 0, size,
+    `${cls ? `class="${cls}" ` : ""}src="${mascotSrc(m)}" alt="" width="${size}" height="${size}"${loading ? ` loading="${loading}"` : ""} decoding="async"`);
+  const logo = (cls, alt, size, extra) => pictureTag("/design-system/brand/logo", 128, 512, size,
+    `class="${cls}" src="/design-system/brand/logo-512.png" alt="${alt}" width="512" height="512"${extra || ""}`);
   return {
     "<!--BRAND_HEAD-->": b.icons
       ? '<link rel="icon" type="image/png" href="/design-system/brand/favicon-32.png"><link rel="apple-touch-icon" href="/design-system/brand/apple-touch-icon.png"><link rel="manifest" href="/manifest.webmanifest">'
       : "",
-    "<!--BRAND_LOGO-->": b.logo ? '<img class="brand-logo" src="/design-system/brand/logo-512.png" alt="Papote">' : "",
+    "<!--BRAND_LOGO-->": b.logo ? logo("brand-logo", "Papote", 48) : "",
     // Opening animation: Papote asleep, then wakes up amazed.
     "<!--BRAND_SPLASH-->": has("sleeping") && has("amazed")
       ? `<div class="intro-masc">${img("sleeping", 200, "im-sleep")}${img("amazed", 200, "im-awake")}</div>`
-      : b.logo ? '<img class="intro-logo" src="/design-system/brand/logo-512.png" alt="">' : "",
+      : b.logo ? logo("intro-logo", "", 200) : "",
     "<!--BRAND_LOADING-->": has("sleeping") ? img("sleeping", 120, "load-masc") : "",
     "<!--BRAND_WAVE-->": has("wave") ? img("wave", 96, "auth-masc") : "",
     "<!--BRAND_PREMIUM-->": ["cool", "heart"].filter(has).map((m) => img(m, 120, "prem-masc prem-" + m)).join(""),
-    "<!--BRAND_HERO-->": b.logo ? '<img class="hero-logo" src="/design-system/brand/logo-512.png" alt="Papote" fetchpriority="high">' : "",
+    "<!--BRAND_HERO-->": b.logo ? logo("hero-logo", "Papote", 240, ' fetchpriority="high"') : "",
     "<!--BRAND_MASCOTS-->": ["wave", "happy", "thinking", "heart", "cool", "sleeping"]
       .filter(has).map((m) => img(m, 128, "", "lazy")).join(""),
   };

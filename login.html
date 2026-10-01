@@ -7,6 +7,7 @@
 }catch(e){}})();</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script src="/design-system/device.js"></script>
 <title>Papote — Apprends 39 langues en papotant</title><!--BRAND_HEAD-->
 <meta name="description" content="Papote : 39 langues du niveau A1 au C2, avec de l'audio sur chaque mot, des exercices variés, la révision intelligente et une mascotte qui t'encourage.">
 <link rel="stylesheet" href="/design-system/ios27-liquid-glass.css">
@@ -117,14 +118,16 @@ section{padding:56px 0}
 .grid{display:grid;gap:16px;margin-top:34px;grid-template-columns:1fr}
 @media(min-width:640px){.grid{grid-template-columns:repeat(2,1fr)}}
 @media(min-width:980px){.grid{grid-template-columns:repeat(3,1fr)}}
-.card{padding:24px;border-radius:28px;background:var(--ig27-glass-regular-bg);border:1px solid var(--ig27-glass-rim-color);
+.grid>*,.steps>*,.stats>*,.hero .wrap>*{min-width:0}
+@media (pointer:coarse){.nav .brand,.nav>a:first-child{min-height:44px;min-width:44px;display:inline-flex;align-items:center}}
+.card{padding:clamp(16px,5vw,24px);border-radius:28px;background:var(--ig27-glass-regular-bg);border:1px solid var(--ig27-glass-rim-color);
   -webkit-backdrop-filter:blur(var(--ig27-glass-regular-blur));backdrop-filter:blur(var(--ig27-glass-regular-blur));
   box-shadow:0 20px 40px -28px color-mix(in srgb,var(--ig27-black) 40%,transparent);transition:transform .3s var(--ig27-ease-standard),box-shadow .3s,opacity .7s var(--ig27-ease-standard)}
 .card:hover{transform:translateY(-4px);box-shadow:0 26px 50px -26px color-mix(in srgb,var(--brand) 45%,transparent)}
 .card .ic{width:48px;height:48px;border-radius:16px;display:grid;place-items:center;font-size:24px;margin-bottom:14px;background:color-mix(in srgb,var(--c,var(--brand)) 16%,transparent)}
 .card h3{font-size:var(--ig27-fs-title3);letter-spacing:-.01em;margin-bottom:6px}
 .card p{color:var(--ig27-label-secondary);line-height:1.55;font-size:var(--ig27-fs-subheadline)}
-.demo-word{display:flex;align-items:center;gap:10px;margin-top:14px;padding:10px 12px;border-radius:16px;background:var(--ig27-fill-quaternary)}
+.demo-word{display:flex;align-items:center;gap:10px;margin-top:14px;padding:10px 12px;border-radius:16px;background:var(--ig27-fill-quaternary);flex-wrap:wrap;min-width:0}
 .demo-word button{width:32px;height:32px;border-radius:50%;border:none;cursor:pointer;background:var(--ig27-accent-soft);font-size:14px}
 .demo-word b{font-size:17px;white-space:nowrap}.demo-word span{color:var(--ig27-label-secondary);font-size:var(--ig27-fs-footnote)}
 .demo-word em{margin-inline-start:auto;font-style:normal;font-size:11px;font-weight:700;color:#1a6b2c;background:var(--ig27-green-soft);padding:2px 7px;border-radius:999px}
@@ -136,9 +139,9 @@ section{padding:56px 0}
 .auth-masc{display:block;width:88px;height:88px;object-fit:contain;margin:-6px auto 6px;transform-origin:60% 90%;
   animation:waveHi 1.6s ease-in-out .3s 2}
 @keyframes waveHi{0%,100%{transform:none}20%{transform:rotate(-6deg)}40%{transform:rotate(5deg)}60%{transform:rotate(-4deg)}80%{transform:rotate(2deg)}}
-.premium .prem-mascs{display:flex;gap:4px;margin-bottom:8px}
+.premium .prem-mascs{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px;max-width:100%}
 .premium .prem-mascs:empty{display:none}
-.premium .prem-masc{width:120px;height:120px;object-fit:contain;animation:float 5s ease-in-out infinite;filter:drop-shadow(0 12px 20px rgba(0,0,0,.25))}
+.premium .prem-masc{width:clamp(72px,28vw,120px);height:clamp(72px,28vw,120px);object-fit:contain;animation:float 5s ease-in-out infinite;filter:drop-shadow(0 12px 20px rgba(0,0,0,.25))}
 .premium .prem-heart{animation-delay:-2.5s}
 @media (prefers-reduced-motion: reduce){.auth-masc,.premium .prem-masc{animation:none}}
 
@@ -205,6 +208,7 @@ footer a{text-decoration:none}footer a:hover{color:var(--ig27-label-primary)}
 }
 </style>
 <link rel="stylesheet" href="/design-system/ios27-app.css">
+<link rel="stylesheet" href="/design-system/responsive.css">
 </head>
 <body>
 

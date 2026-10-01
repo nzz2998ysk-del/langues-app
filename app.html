@@ -2,7 +2,8 @@
   var t = localStorage.getItem('lang_theme');
   if(t!=='dark'&&t!=='light'){t=((window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light');} document.documentElement.setAttribute('data-theme',t);
 }catch(e){}})();</script>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script src="/design-system/device.js"></script>
 <title>Papote</title><!--BRAND_HEAD-->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -266,9 +267,28 @@ body.has-tabbar.in-lang{padding-bottom:calc(var(--ig27-tabbar-total-height) + en
 /* ===== Theme switch (floating glass button, hub only; languages have their own) ===== */
 body.in-lang > .themeToggle{display:none !important}
 .themeToggle{position:fixed;right:var(--ig27-content-margin);bottom:calc(var(--ig27-space-4) + env(safe-area-inset-bottom));z-index:9998}
+/* ===== Narrow phones: compact language bar ===== */
+#appTopName,#backHomeBtn span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#appTopLabel{min-width:0}
+@media (max-width:399.98px){
+  #backHomeBtn span[data-i18n="all_languages"]{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+  #backHomeBtn{padding:0 var(--ig27-space-3)}
+}
+/* ===== Immersive quiz: the course page takes the whole visible screen ===== */
+body.immersive{overflow:hidden;padding-bottom:0 !important}
+body.immersive #appTop,body.immersive #tabbar{display:none !important}
+body.immersive #frames iframe.on{position:fixed;z-index:200;animation:none;
+  top:env(safe-area-inset-top);left:env(safe-area-inset-left);width:calc(100% - env(safe-area-inset-left) - env(safe-area-inset-right));
+  height:calc(var(--app-hz, 100dvh) - env(safe-area-inset-top) - env(safe-area-inset-bottom));background:var(--ig27-bg-grouped-primary)}
+/* Desktop: the course pages show a sidebar menu, the floating tab bar would repeat it */
+@media (min-width:1200px) and (hover:hover) and (pointer:fine){
+  body.in-lang #tabbar{display:none !important}
+  body.has-tabbar.in-lang{padding-bottom:0}
+}
 </style>
 <link rel="stylesheet" href="/design-system/ios27-app.css">
 <link rel="stylesheet" href="/design-system/papote.css">
+<link rel="stylesheet" href="/design-system/responsive.css">
 <script>(function(){var n=0;function rep(m,st){if(n++>5)return;try{fetch("/api/client-error",{method:"POST",credentials:"same-origin",keepalive:true,headers:{"Content-Type":"application/json"},body:JSON.stringify({message:String(m||"").slice(0,300),stack:String(st||"").slice(0,2000),url:location.pathname})}).catch(function(){});}catch(e){}}
 window.addEventListener("error",function(e){if(e&&e.message)rep(e.message,e.error&&e.error.stack);});window.addEventListener("unhandledrejection",function(e){var r=e&&e.reason;rep("unhandledrejection: "+(r&&r.message||r),r&&r.stack);});})();</script>
 <script>(function(){function go(){document.body.classList.add("has-tabbar");} if(document.body){go();} else {document.addEventListener("DOMContentLoaded",go);}})();</script>
@@ -367,7 +387,7 @@ window.addEventListener("error",function(e){if(e&&e.message)rep(e.message,e.erro
 <button class="tabbtn" data-page="profil.html" data-click="showModule" data-arg="profil.html"><span class="ti">&#128100;</span><span data-i18n="mod_profil">Profil</span></button>
 </div>
 <script>
-var ALL_PAGES = (function(){var T="<!DOCTYPE html>\n<html lang=\"fr\"><head><script>(function(){try{\n  var t = localStorage.getItem('lang_theme');\n  if(t!=='dark'&&t!=='light'){t=((window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light');} document.documentElement.setAttribute('data-theme',t);\n}catch(e){}})();<\/script>\n<meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n<title>@@TITLE@@<\/title>\n<link rel=\"stylesheet\" href=\"/design-system/ios27-liquid-glass.css\">\n<link rel=\"stylesheet\" href=\"/course/engine.css\">\n<link rel=\"stylesheet\" href=\"/design-system/ios27-app.css\">\n<link rel=\"stylesheet\" href=\"/design-system/papote.css\">\n<\/head><body data-lang=\"@@CODE@@\" data-page=\"@@PAGE@@\"><div id=\"app\"><\/div>\n<script src=\"/course/i18n.js\"><\/script><script src=\"/course/engine.js\"><\/script>\n<\/body><\/html>",N={"en":"English","es":"Español","it":"Italiano","he":"עברית","zh":"中文","pt":"Português","ru":"Русский","de":"Deutsch","ja":"日本語","fr":"Français","hi":"हिन्दी","ko":"한국어","ar":"العربية","tr":"Türkçe","nl":"Nederlands","el":"Ελληνικά","pl":"Polski","sv":"Svenska","vi":"Tiếng Việt","la":"Latina","nb":"Norsk bokmål","ga":"Gaeilge","id":"Bahasa Indonesia","val":"High Valyrian","uk":"Українська","fi":"Suomi","da":"Dansk","ro":"Română","cs":"Čeština","zu":"isiZulu","haw":"ʻŌlelo Hawaiʻi","sw":"Kiswahili","cy":"Cymraeg","hu":"Magyar","gd":"Gàidhlig","ht":"Kreyòl ayisyen","eo":"Esperanto","tlh":"tlhIngan Hol","nv":"Diné bizaad"},P=["hub","vocabulaire","phrases","grammaire","conjugaison","alphabet","lecture","ecoute","exercices","revision","prononciation","conversation","culture","examen","amis","stats","badges","certificat","dictionnaire","profil","level_a1","level_a2","level_b1","level_b2","level_c1","level_c2"],o={};Object.keys(N).forEach(function(c){P.forEach(function(p){o[c+"__"+p+".html"]=T.split("@@CODE@@").join(c).split("@@PAGE@@").join(p).split("@@TITLE@@").join(N[c]);});});return o;})();
+var ALL_PAGES = (function(){var T="<!DOCTYPE html>\n<html lang=\"fr\"><head><script>(function(){try{\n  var t = localStorage.getItem('lang_theme');\n  if(t!=='dark'&&t!=='light'){t=((window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light');} document.documentElement.setAttribute('data-theme',t);\n}catch(e){}})();<\/script>\n<meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1, viewport-fit=cover\"><script src=\"/design-system/device.js\"><\/script>\n<title>@@TITLE@@<\/title>\n<link rel=\"stylesheet\" href=\"/design-system/ios27-liquid-glass.css\">\n<link rel=\"stylesheet\" href=\"/course/engine.css\">\n<link rel=\"stylesheet\" href=\"/design-system/ios27-app.css\">\n<link rel=\"stylesheet\" href=\"/design-system/papote.css\">\n<link rel=\"stylesheet\" href=\"/design-system/responsive.css\">\n<\/head><body data-lang=\"@@CODE@@\" data-page=\"@@PAGE@@\"><div id=\"app\"><\/div>\n<script src=\"/course/i18n.js\"><\/script><script src=\"/course/engine.js\"><\/script>\n<\/body><\/html>",N={"en":"English","es":"Español","it":"Italiano","he":"עברית","zh":"中文","pt":"Português","ru":"Русский","de":"Deutsch","ja":"日本語","fr":"Français","hi":"हिन्दी","ko":"한국어","ar":"العربية","tr":"Türkçe","nl":"Nederlands","el":"Ελληνικά","pl":"Polski","sv":"Svenska","vi":"Tiếng Việt","la":"Latina","nb":"Norsk bokmål","ga":"Gaeilge","id":"Bahasa Indonesia","val":"High Valyrian","uk":"Українська","fi":"Suomi","da":"Dansk","ro":"Română","cs":"Čeština","zu":"isiZulu","haw":"ʻŌlelo Hawaiʻi","sw":"Kiswahili","cy":"Cymraeg","hu":"Magyar","gd":"Gàidhlig","ht":"Kreyòl ayisyen","eo":"Esperanto","tlh":"tlhIngan Hol","nv":"Diné bizaad"},P=["hub","vocabulaire","phrases","grammaire","conjugaison","alphabet","lecture","ecoute","exercices","revision","prononciation","conversation","culture","examen","amis","stats","badges","certificat","dictionnaire","profil","level_a1","level_a2","level_b1","level_b2","level_c1","level_c2"],o={};Object.keys(N).forEach(function(c){P.forEach(function(p){o[c+"__"+p+".html"]=T.split("@@CODE@@").join(c).split("@@PAGE@@").join(p).split("@@TITLE@@").join(N[c]);});});return o;})();
 
 
 var container = document.getElementById("frames");
@@ -387,6 +407,7 @@ function resizeFrame(key){
   try{
     var doc = f.contentDocument;
     if (!doc || !doc.documentElement) return;
+    if (document.body.classList.contains("immersive") && f.classList.contains("on")) { f.style.height = ""; return; }
     var h = Math.max(doc.documentElement.scrollHeight, doc.body ? doc.body.scrollHeight : 0);
     if (h > 0) f.style.height = h + "px";
   }catch(e){}
@@ -668,6 +689,13 @@ function showModule(page){
 
 window.addEventListener("message", function(e){
   if (e.origin !== window.location.origin) return;
+  // A course page entered/left a quiz: give it the whole screen (no scroll).
+  if (e.data && typeof e.data.immersive === "boolean"){
+    document.body.classList.toggle("immersive", e.data.immersive);
+    if (e.data.immersive) window.scrollTo(0, 0);
+    for (var fk in frames){ try{ if (frames[fk].contentWindow === e.source){ if (e.data.immersive) frames[fk].style.height = ""; else resizeFrame(fk); } }catch(err){} }
+    return;
+  }
   var navPage = e.data && (e.data.modNav || e.data.ivritNav);
   if (!navPage) return;
   var lang = null;
