@@ -27,14 +27,14 @@
   color-scheme: light;
 
   /* ===== Accents (12 semantic colors) ===== */
-  --ig27-red:#ff383c; --ig27-orange:#ff8d28; --ig27-yellow:#ffcc00;
+  --ig27-red:#d70015; --ig27-orange:#ff8d28; --ig27-yellow:#ffcc00;
   --ig27-green:#34c759; --ig27-mint:#00c8b3; --ig27-teal:#00c3d0;
-  --ig27-cyan:#00c0e8; --ig27-blue:#0088ff; --ig27-indigo:#6155f5;
+  --ig27-cyan:#00c0e8; --ig27-blue:#0060c0; --ig27-indigo:#6155f5;
   --ig27-purple:#cb30e0; --ig27-pink:#ff2d55; --ig27-brown:#ac7f5e;
 
   /* ===== Labels (text) ===== */
   --ig27-label-primary: rgba(0,0,0,1);
-  --ig27-label-secondary: rgba(60,60,67,.6);
+  --ig27-label-secondary: rgba(60,60,67,.76); /* .6 in iOS; darkened for WCAG AA (4.5:1) */
   --ig27-label-tertiary: rgba(60,60,67,.3);
   --ig27-label-quaternary: rgba(60,60,67,.18);
 

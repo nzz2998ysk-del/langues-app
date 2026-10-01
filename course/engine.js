@@ -394,7 +394,7 @@
   function stat(n, l) { return '<div class="stat-box"><div class="stat-num">' + esc(n) + '</div><div class="stat-lbl">' + esc(l) + "</div></div>"; }
   function premiumCard() {
     var feats = ["levels-c", "lessons-unlimited", "srs-advanced", "pronunciation-ai", "stats-advanced", "progress-detailed", "certificates", "badges", "offline", "exam", "custom-words", "export"];
-    return '<div class="premium-card"><h3>★ ' + esc(T("premium_title")) + "</h3><p class=\"muted\">" + esc(T("premium_sub")) + '</p><ul class="premium-list">' +
+    return '<div class="premium-card"><h2>★ ' + esc(T("premium_title")) + "</h2><p class=\"muted\">" + esc(T("premium_sub")) + '</p><ul class="premium-list">' +
       feats.map(function (f) { return "<li>✓ <span>" + esc(T("feat_" + f)) + "</span></li>"; }).join("") +
       '</ul><button type="button" class="bpr" data-go="/subscribe">★ ' + esc(T("go_premium")) + "</button></div>";
   }
@@ -543,7 +543,7 @@
     var cj = C.conj;
     var verbs = cj.verbs.map(function (v, i) { return '<option value="' + i + '"' + (i === CS.verb ? " selected" : "") + ">" + esc(v.t) + (v.r ? " (" + esc(v.r) + ")" : "") + " — " + esc(gl(v.g)) + " · " + v.level + "</option>"; }).join("");
     var html = '<h1 class="ttl">' + esc(T("mod_conjugaison")) + '</h1><p class="sub">' + esc(gl(cj.note) || T("conj_sub")) + "</p>" +
-      '<div class="row" style="margin-bottom:var(--ig27-space-4)"><select class="sel" id="cverb">' + verbs + '</select><button type="button" class="btn2" id="conjPractice">✏️ ' + esc(T("practice")) + "</button></div>" +
+      '<div class="row" style="margin-bottom:var(--ig27-space-4)"><select class="sel" id="cverb" aria-label="' + esc(T("mod_conjugaison")) + '">' + verbs + '</select><button type="button" class="btn2" id="conjPractice">✏️ ' + esc(T("practice")) + "</button></div>" +
       '<div id="ctable"></div>';
     return shell("mod_conjugaison", html);
   };
@@ -659,8 +659,8 @@
     var modes = MODES.filter(function (m) { return !m.need || m.need(); }).map(function (m) { return modeCard(m.id, m.ic); }).join("");
     var themes = {}; C.words.forEach(function (w) { themes[w.theme] = 1; });
     var html = '<h1 class="ttl">' + esc(T("mod_exercices")) + '</h1><p class="sub">' + esc(T("exercises_sub")) + "</p>" +
-      '<div class="filters">' + levelPills(XS.levels, null, true) + '<div class="row"><select class="sel" id="xtheme"><option value="">' + esc(T("all_themes")) + "</option>" +
-      Object.keys(themes).map(function (t) { return '<option value="' + esc(t) + '">' + esc(themeLabel(t)) + "</option>"; }).join("") + '</select><select class="sel" id="xn">' +
+      '<div class="filters">' + levelPills(XS.levels, null, true) + '<div class="row"><select class="sel" id="xtheme" aria-label="' + esc(T("theme")) + '"><option value="">' + esc(T("all_themes")) + "</option>" +
+      Object.keys(themes).map(function (t) { return '<option value="' + esc(t) + '">' + esc(themeLabel(t)) + "</option>"; }).join("") + '</select><select class="sel" id="xn" aria-label="' + esc(T("n_questions", { n: "" }).trim()) + '">' +
       [5, 10, 20, 30].map(function (n) { return '<option value="' + n + '"' + (n === XS.n ? " selected" : "") + ">" + esc(T("n_questions", { n: n })) + "</option>"; }).join("") + "</select></div></div>" +
       '<div class="modes">' + modes + "</div>";
     return shell("mod_exercices", html);
@@ -743,7 +743,7 @@
     var pct = QUIZ ? Math.round(100 * QUIZ.i / QUIZ.qs.length) : 0;
     return '<header class="duo-bar"><button type="button" class="btn2" id="quitQuiz" aria-label="' + esc(T("quit")) + '">✕</button><div class="duo-progress-track"><div class="duo-progress-fill" style="width:' + pct + '%"></div></div>' +
       (QUIZ.hearts ? '<div class="duo-hearts">' + "❤️".repeat(Math.max(0, QUIZ.hearts)) + "</div>" : "") + '<div class="duo-xp">+' + QUIZ.xp + " XP</div></header>" +
-      '<main class="con">' + inner + "</main>" + '<div class="speaking-pill" id="speakPill"><div class="wave"><span></span><span></span><span></span></div>' + esc(T("speaking")) + "</div>";
+      '<main class="con"><h1 class="sr-only">' + esc(T("mod_exercices")) + "</h1>" + inner + "</main>" + '<div class="speaking-pill" id="speakPill"><div class="wave"><span></span><span></span><span></span></div>' + esc(T("speaking")) + "</div>";
   }
   function paintQuiz() {
     if (QUIZ.i >= QUIZ.qs.length || (QUIZ.opts.hearts && QUIZ.hearts <= 0)) return finishQuiz();
@@ -821,7 +821,7 @@
     save();
     var res = Q.opts.onDone ? Q.opts.onDone(Q, pct) : null;
     if (!Q.opts.onDone) track("quiz_done");
-    var errs = Q.errors.length && !modLocked("feedback-avance") ? '<div class="box" style="text-align:left;margin-top:var(--ig27-space-5)"><h3>' + esc(T("review_errors")) + "</h3>" + Q.errors.map(function (e) {
+    var errs = Q.errors.length && !modLocked("feedback-avance") ? '<div class="box" style="text-align:left;margin-top:var(--ig27-space-5)"><h2>' + esc(T("review_errors")) + "</h2>" + Q.errors.map(function (e) {
       return '<div class="exline" style="margin-top:var(--ig27-space-2)">' + snd(e.q.audio || e.q.answer, true) + "<div><b>" + esc(e.q.prompt || e.q.audio) + "</b> → " + tgt(e.q.answer) + (e.given ? ' <span class="muted">(' + esc(T("you_said")) + " : " + esc(e.given) + ")</span>" : "") + "</div></div>";
     }).join("") + "</div>" : "";
     var endMood = pct === 100 ? "heart" : pct >= 80 ? "excited" : pct >= 50 ? "happy" : "thinking";
@@ -864,12 +864,12 @@
       var days = [0, 0, 0, 0, 0, 0, 0], now = Date.now();
       Object.keys(P.srs).forEach(function (id) { var d = Math.floor((P.srs[id].due - now) / DAY) + 1; if (d >= 0 && d < 7) days[d]++; });
       var mx = Math.max.apply(null, days.concat([1]));
-      forecast = '<div class="box"><h3>📅 ' + esc(T("forecast")) + '</h3><div class="bars">' + days.map(function (n, i) { return '<div style="height:' + Math.round(100 * n / mx) + '%" data-tip="' + esc((i === 0 ? T("today") : "J+" + i) + " : " + n) + '"></div>'; }).join("") + "</div></div>";
+      forecast = '<div class="box"><h2>📅 ' + esc(T("forecast")) + '</h2><div class="bars">' + days.map(function (n, i) { return '<div style="height:' + Math.round(100 * n / mx) + '%" data-tip="' + esc((i === 0 ? T("today") : "J+" + i) + " : " + n) + '"></div>'; }).join("") + "</div></div>";
     }
     var html = '<h1 class="ttl">' + esc(T("mod_revision")) + '</h1><p class="sub">' + esc(adv ? T("srs_adv_sub") : T("srs_free_sub", { n: 20 })) + "</p>" +
       '<div class="stat-grid">' + stat(due.length, T("due_now")) + stat(total, T("in_srs")) + stat(adv ? "∞" : left, T("left_today")) + "</div>" +
       (due.length && left ? '<button type="button" class="bpr wide" id="startRev">🧠 ' + esc(T("review_now")) + " (" + Math.min(due.length, left) + ")</button>" : '<div class="box with-masc">' + masc(!left ? "stretching" : "sleeping", 72, "masc-inline") + "<div>" + esc(!left ? T("srs_cap_reached") : T("nothing_due")) + "</div></div>") +
-      '<div class="box row" style="margin-top:var(--ig27-space-4)"><span>' + esc(T("learn_new")) + '</span><span class="spacer"></span><select class="sel" id="newLv">' + LEVELS.filter(function (l) { return !(C.locked && C.locked.levels.indexOf(l) >= 0); }).map(function (l) { return "<option>" + l + "</option>"; }).join("") + '</select><button type="button" class="btn2" id="addNew">+ 10</button></div>' +
+      '<div class="box row" style="margin-top:var(--ig27-space-4)"><span>' + esc(T("learn_new")) + '</span><span class="spacer"></span><select class="sel" id="newLv" aria-label="' + esc(T("learn_new")) + '">' + LEVELS.filter(function (l) { return !(C.locked && C.locked.levels.indexOf(l) >= 0); }).map(function (l) { return "<option>" + l + "</option>"; }).join("") + '</select><button type="button" class="btn2" id="addNew">+ 10</button></div>' +
       forecast + (!adv ? '<div class="sect">' + gate("premium:srs-advanced", "🧠") + "</div>" : "");
     return shell("mod_revision", html);
   };
@@ -1123,13 +1123,13 @@
     var gram = (C.grammar || []).filter(function (g) { return g.level === L; });
     var reads = (C.readings || []).filter(function (r) { return r.level === L; });
     var exam = P.exams[L];
-    var html = '<div style="text-align:center;margin-bottom:var(--ig27-space-5)"><div class="lvlcard" style="display:inline-flex;align-items:center;width:auto;padding:var(--ig27-space-4) var(--ig27-space-6)"><div class="badge bg-' + L + '" style="width:56px;height:56px;font-size:var(--ig27-fs-title2)">' + L + "</div><b>" + esc(T("level_" + L)) + "</b><span>" + esc(T("n_known", { n: k })) + " / " + lw.length + '</span><div class="meter" style="width:220px"><i style="width:' + (lw.length ? Math.round(100 * k / lw.length) : 0) + '%"></i></div></div></div>' +
+    var html = '<h1 class="sr-only">' + esc(T("level_" + L)) + " (" + L + ")</h1>" + '<div style="text-align:center;margin-bottom:var(--ig27-space-5)"><div class="lvlcard" style="display:inline-flex;align-items:center;width:auto;padding:var(--ig27-space-4) var(--ig27-space-6)"><div class="badge bg-' + L + '" style="width:56px;height:56px;font-size:var(--ig27-fs-title2)">' + L + "</div><b>" + esc(T("level_" + L)) + "</b><span>" + esc(T("n_known", { n: k })) + " / " + lw.length + '</span><div class="meter" style="width:220px"><i style="width:' + (lw.length ? Math.round(100 * k / lw.length) : 0) + '%"></i></div></div></div>' +
       (advLocked ? gate(LANG + ":lecons-avancees", "📘") :
         '<div class="grid cols-2">' +
-        '<div class="box"><h3>📘 ' + esc(T("lesson")) + '</h3><p class="muted small">' + esc(T("lesson_d")) + "</p>" +
+        '<div class="box"><h2>📘 ' + esc(T("lesson")) + '</h2><p class="muted small">' + esc(T("lesson_d")) + "</p>" +
         (left > 0 ? '<button type="button" class="bpr wide" id="startLesson" style="margin-top:var(--ig27-space-3)">' + esc(T("start_lesson")) + "</button>" + (unlimited ? "" : '<p class="muted small" style="margin-top:var(--ig27-space-2)">' + esc(T("lessons_left", { n: left })) + "</p>") :
           masc(pickMood(["cool", "heart"]), 72, "masc-inline") + '<p class="small" style="margin-top:var(--ig27-space-3)">🔒 ' + esc(T("lessons_cap")) + '</p><button type="button" class="bpr" data-go="/subscribe">★ ' + esc(T("go_premium")) + "</button>") + "</div>" +
-        '<div class="box"><h3>🎓 ' + esc(T("mod_examen")) + '</h3><p class="muted small">' + esc(exam ? T("exam_best", { n: exam.best }) : T("exam_d")) + '</p><button type="button" class="btn2" data-exam="' + L + '" style="margin-top:var(--ig27-space-3)">' + esc(T("take_exam")) + (locked("premium:exam") ? " 🔒" : "") + "</button></div></div>") +
+        '<div class="box"><h2>🎓 ' + esc(T("mod_examen")) + '</h2><p class="muted small">' + esc(exam ? T("exam_best", { n: exam.best }) : T("exam_d")) + '</p><button type="button" class="btn2" data-exam="' + L + '" style="margin-top:var(--ig27-space-3)">' + esc(T("take_exam")) + (locked("premium:exam") ? " 🔒" : "") + "</button></div></div>") +
       (gram.length ? '<div class="sect"><div class="secttit">📑 ' + esc(T("mod_grammaire")) + "</div>" + gram.map(function (g) { return grammarCard(g); }).join("") + "</div>" : "") +
       (reads.length ? '<div class="sect"><div class="secttit">📖 ' + esc(T("mod_lecture")) + '</div><button type="button" class="btn2" data-nav="lecture">' + esc(T("n_texts", { n: reads.length })) + " ›</button></div>" : "") +
       '<div class="sect"><div class="secttit">📚 ' + esc(T("words_of_level", { level: L })) + '</div><div class="vlist">' + lw.slice(0, 300).map(vrow).join("") + "</div></div>";
@@ -1169,7 +1169,7 @@
     paint();
   }
   function quizShellLesson(i, n, inner) {
-    return '<header class="duo-bar"><button type="button" class="btn2" id="quitL" aria-label="' + esc(T("quit")) + '">✕</button><div class="duo-progress-track"><div class="duo-progress-fill" style="width:' + Math.round(50 * i / n) + '%"></div></div></header><main class="con">' + inner + "</main>" +
+    return '<header class="duo-bar"><button type="button" class="btn2" id="quitL" aria-label="' + esc(T("quit")) + '">✕</button><div class="duo-progress-track"><div class="duo-progress-fill" style="width:' + Math.round(50 * i / n) + '%"></div></div></header><main class="con"><h1 class="sr-only">' + esc(T("lesson")) + "</h1>" + inner + "</main>" +
       '<div class="speaking-pill" id="speakPill"><div class="wave"><span></span><span></span><span></span></div>' + esc(T("speaking")) + "</div>";
   }
   // ------------------------------------------------------------------ guided path
@@ -1196,10 +1196,10 @@
   function guidedCards() {
     var h = "";
     if (!P.placement && openLevels().length > 1) {
-      h += '<div class="box with-masc">' + masc("curious", 72, "masc-inline") + '<div style="flex:1"><h3>🧭 ' + esc(T("place_title")) + '</h3><p class="muted small">' + esc(T("place_d")) + '</p><div class="row" style="margin-top:var(--ig27-space-3)"><button type="button" class="bpr" id="placeStart">' + esc(T("place_start")) + '</button><button type="button" class="btn2" id="placeSkip">' + esc(T("place_skip")) + "</button></div></div></div>";
+      h += '<div class="box with-masc">' + masc("curious", 72, "masc-inline") + '<div style="flex:1"><h2>🧭 ' + esc(T("place_title")) + '</h2><p class="muted small">' + esc(T("place_d")) + '</p><div class="row" style="margin-top:var(--ig27-space-3)"><button type="button" class="bpr" id="placeStart">' + esc(T("place_start")) + '</button><button type="button" class="btn2" id="placeSkip">' + esc(T("place_skip")) + "</button></div></div></div>";
     }
     var plan = dailyPlan(), done = dayRec().daily;
-    h += '<div class="box with-masc daily-card">' + masc(done ? "heart" : "excited", 72, "masc-inline") + '<div style="flex:1"><h3>☀️ ' + esc(T("daily_title")) + ' <span class="badge bg-' + plan.level + '" style="vertical-align:middle">' + plan.level + "</span></h3>" +
+    h += '<div class="box with-masc daily-card">' + masc(done ? "heart" : "excited", 72, "masc-inline") + '<div style="flex:1"><h2>☀️ ' + esc(T("daily_title")) + ' <span class="badge bg-' + plan.level + '" style="vertical-align:middle">' + plan.level + "</span></h2>" +
       '<p class="muted small">' + esc(done ? T("daily_done") : plan.reviews.length ? T("daily_d", { r: plan.reviews.length, n: plan.fresh.length }) : T("daily_d_new", { n: plan.fresh.length })) + "</p>" +
       '<button type="button" class="' + (done ? "btn2" : "bpr") + '" id="dailyStart" style="margin-top:var(--ig27-space-3)">' + esc(done ? T("daily_again") : T("daily_start")) + "</button></div></div>";
     return '<div class="sect">' + h + "</div>";
@@ -1331,16 +1331,16 @@
     if (locked("premium:stats-advanced")) return shell("mod_stats", html + gate("premium:stats-advanced", "📊"));
     var days = []; for (var i = 29; i >= 0; i--) { var d = dayOffset(-i); days.push({ d: d, xp: (P.days[d] || {}).xp || 0 }); }
     var mx = Math.max.apply(null, days.map(function (x) { return x.xp; }).concat([1]));
-    html += '<div class="box"><h3>📈 ' + esc(T("activity_30")) + '</h3><div class="bars">' + days.map(function (x) { return '<div style="height:' + Math.round(100 * x.xp / mx) + '%" data-tip="' + esc(x.d + " : " + x.xp + " XP") + '"></div>'; }).join("") + "</div></div>";
-    html += '<div class="box"><h3>🎯 ' + esc(T("by_level")) + "</h3>" + LEVELS.map(function (L) {
+    html += '<div class="box"><h2>📈 ' + esc(T("activity_30")) + '</h2><div class="bars">' + days.map(function (x) { return '<div style="height:' + Math.round(100 * x.xp / mx) + '%" data-tip="' + esc(x.d + " : " + x.xp + " XP") + '"></div>'; }).join("") + "</div></div>";
+    html += '<div class="box"><h2>🎯 ' + esc(T("by_level")) + "</h2>" + LEVELS.map(function (L) {
       var lw = words.filter(function (w) { return w.level === L; }), k = lw.filter(known).length, b = P.byLevel[L] || { ok: 0, ko: 0 }, t = b.ok + b.ko;
       return '<div class="hbar"><span>' + lvBadge(L) + " " + k + "/" + lw.length + '</span><div class="meter"><i style="width:' + (lw.length ? Math.round(100 * k / lw.length) : 0) + '%"></i></div><span class="muted">' + (t ? Math.round(100 * b.ok / t) + "%" : "—") + "</span></div>";
     }).join("") + "</div>";
     var themes = Object.keys(P.byTheme).filter(function (t) { return t.charAt(0) !== "_"; }).map(function (t) { var b = P.byTheme[t]; return { t: t, pct: Math.round(100 * b.ok / (b.ok + b.ko)), n: b.ok + b.ko }; }).sort(function (a, b) { return a.pct - b.pct; });
-    if (themes.length) html += '<div class="box"><h3>🧩 ' + esc(T("by_theme")) + "</h3>" + themes.map(function (x) { return '<div class="hbar"><span>' + esc(themeLabel(x.t)) + '</span><div class="meter"><i style="width:' + x.pct + '%"></i></div><span class="muted">' + x.pct + "%</span></div>"; }).join("") + "</div>";
+    if (themes.length) html += '<div class="box"><h2>🧩 ' + esc(T("by_theme")) + "</h2>" + themes.map(function (x) { return '<div class="hbar"><span>' + esc(themeLabel(x.t)) + '</span><div class="meter"><i style="width:' + x.pct + '%"></i></div><span class="muted">' + x.pct + "%</span></div>"; }).join("") + "</div>";
     if (!locked("premium:progress-detailed")) {
       var hard = Object.keys(P.words).map(function (id) { return { w: wordIndex()[id], s: P.words[id] }; }).filter(function (x) { return x.w && x.s.ko; }).sort(function (a, b) { return (b.s.ko - b.s.ok) - (a.s.ko - a.s.ok); }).slice(0, 15);
-      if (hard.length) html += '<div class="box"><h3>🔥 ' + esc(T("hardest_words")) + '</h3><div class="vlist">' + hard.map(function (x) { return vrow(x.w).replace('<div class="main">', '<div class="main"><span class="tag">✓' + x.s.ok + " ✗" + x.s.ko + "</span>"); }).join("") + "</div></div>";
+      if (hard.length) html += '<div class="box"><h2>🔥 ' + esc(T("hardest_words")) + '</h2><div class="vlist">' + hard.map(function (x) { return vrow(x.w).replace('<div class="main">', '<div class="main"><span class="tag">✓' + x.s.ok + " ✗" + x.s.ko + "</span>"); }).join("") + "</div></div>";
     }
     return shell("mod_stats", html);
   };
@@ -1396,7 +1396,7 @@
     var html = '<h1 class="ttl">' + esc(T("mod_dictionnaire")) + '</h1><p class="sub">' + esc(T("dict_sub")) + '</p><input class="field" type="search" id="dq" placeholder="' + esc(T("search")) + '" style="width:100%;margin-bottom:var(--ig27-space-4)"><div id="dres"></div>' +
       '<div class="sect"><div class="secttit">➕ ' + esc(T("my_words")) + " (" + (P.custom || []).length + (cap < Infinity ? "/" + cap : "") + ')</div><div class="box"><div class="row">' +
       '<input class="field" id="cw_t" placeholder="' + esc(T("word_in", { lang: langName(LANG) })) + '"><input class="field" id="cw_r" placeholder="' + esc(T("romanization")) + '"><input class="field" id="cw_g" placeholder="' + esc(T("translation")) + '">' +
-      '<select class="sel" id="cw_l">' + LEVELS.map(function (l) { return "<option>" + l + "</option>"; }).join("") + '</select><button type="button" class="bpr" id="cw_add">+</button></div></div><div class="vlist" id="cwlist"></div></div>';
+      '<select class="sel" id="cw_l" aria-label="' + esc(T("chat_level")) + '">' + LEVELS.map(function (l) { return "<option>" + l + "</option>"; }).join("") + '</select><button type="button" class="bpr" id="cw_add">+</button></div></div><div class="vlist" id="cwlist"></div></div>';
     return shell("mod_dictionnaire", html);
   };
   function bindDict() {
@@ -1430,19 +1430,19 @@
     var voices = TTS.voicesFor();
     var html = '<h1 class="ttl">' + esc(T("mod_profil")) + '</h1><p class="sub">' + esc(T("profile_sub")) + "</p>" +
       '<div class="box row"><div><b>' + esc(ME.name || T("learner")) + '</b><div class="muted small">' + esc(T("base_lang")) + " : " + esc(langName(BASE)) + " → " + esc(langName(LANG)) + '</div></div><span class="spacer"></span><button type="button" class="btn2" data-go="/profile">✏️ ' + esc(T("change")) + "</button></div>" +
-      '<div class="box"><h3>🔊 ' + esc(T("audio")) + '</h3><div class="row" style="margin-bottom:var(--ig27-space-2)"><label for="rate">' + esc(T("speech_rate")) + '</label><input type="range" id="rate" min="0.5" max="1.3" step="0.1" value="' + P.settings.rate + '"><span id="rateV">' + P.settings.rate + "×</span>" + snd(C.words[0] ? C.words[0].t : C.name, true) + "</div>" +
+      '<div class="box"><h2>🔊 ' + esc(T("audio")) + '</h2><div class="row" style="margin-bottom:var(--ig27-space-2)"><label for="rate">' + esc(T("speech_rate")) + '</label><input type="range" id="rate" min="0.5" max="1.3" step="0.1" value="' + P.settings.rate + '"><span id="rateV">' + P.settings.rate + "×</span>" + snd(C.words[0] ? C.words[0].t : C.name, true) + "</div>" +
       (C.audio ? '<div class="row"><label for="voiceSource">' + esc(T("voice_source")) + '</label><select class="sel" id="voiceSource"><option value="">' + esc(T("voice_papote")) + '</option><option value="device"' + (P.settings.voiceSource === "device" ? " selected" : "") + ">" + esc(T("voice_device")) + "</option></select></div>" : "") +
       '<div class="row"><label for="voice">' + esc(T("voice")) + '</label><select class="sel" id="voice"><option value="">' + esc(T("auto")) + "</option>" + voices.map(function (v) { return "<option" + (v.name === P.settings.voice ? " selected" : "") + ">" + esc(v.name) + "</option>"; }).join("") + "</select></div>" +
       (voices.length ? "" : '<p class="muted small">' + esc(T("tts_no_voice", { lang: C.name })) + "</p>") + "</div>" +
-      '<div class="box"><h3>⚙️ ' + esc(T("settings")) + "</h3>" +
+      '<div class="box"><h2>⚙️ ' + esc(T("settings")) + "</h2>" +
       toggleRow("rom", T("show_rom")) + toggleRow("autoplay", T("autoplay")) +
       '<div class="row"><label for="goal">' + esc(T("daily_goal")) + '</label><select class="sel" id="goal">' + [10, 30, 50, 100].map(function (n) { return "<option" + (P.settings.goal === n ? " selected" : "") + ' value="' + n + '">' + n + " XP</option>"; }).join("") + "</select></div></div>" +
-      '<div class="box"><h3>★ ' + esc(T("premium_tools")) + '</h3><div class="row">' +
+      '<div class="box"><h2>★ ' + esc(T("premium_tools")) + '</h2><div class="row">' +
       '<button type="button" class="btn2" id="offline">📴 ' + esc(T("feat_offline")) + (locked("premium:offline") ? " 🔒" : "") + "</button>" +
       '<button type="button" class="btn2" id="export">⬇️ ' + esc(T("feat_export")) + (locked("premium:export") ? " 🔒" : "") + "</button>" +
       '</div><p class="muted small" id="offState" style="margin-top:var(--ig27-space-2)"></p></div>' +
-      '<div class="box"><h3>🧭 ' + esc(T("place_title")) + '</h3><p class="muted small">' + esc(P.placement && !P.placement.skipped ? T("place_result", { level: P.placement.level }) : T("place_d")) + '</p><button type="button" class="btn2" id="placeRedo" style="margin-top:var(--ig27-space-3)">' + esc(T("place_redo")) + "</button></div>" +
-      '<div class="box"><h3>🗑️ ' + esc(T("danger")) + '</h3><button type="button" class="btn2 ko" id="reset">' + esc(T("reset_progress")) + "</button></div>";
+      '<div class="box"><h2>🧭 ' + esc(T("place_title")) + '</h2><p class="muted small">' + esc(P.placement && !P.placement.skipped ? T("place_result", { level: P.placement.level }) : T("place_d")) + '</p><button type="button" class="btn2" id="placeRedo" style="margin-top:var(--ig27-space-3)">' + esc(T("place_redo")) + "</button></div>" +
+      '<div class="box"><h2>🗑️ ' + esc(T("danger")) + '</h2><button type="button" class="btn2 ko" id="reset">' + esc(T("reset_progress")) + "</button></div>";
     return shell("mod_profil", html);
   };
   function toggleRow(k, label) { return '<label class="row" style="margin-bottom:var(--ig27-space-2)"><input type="checkbox" data-set="' + k + '"' + (P.settings[k] !== false ? " checked" : "") + "> " + esc(label) + "</label>"; }

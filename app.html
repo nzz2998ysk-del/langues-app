@@ -325,13 +325,13 @@ window.addEventListener("error",function(e){if(e&&e.message)rep(e.message,e.erro
 })();
 </script>
 
-<div id="homeHub">
+<div id="homeHub" role="main">
   <div class="hub-orb hub-orb-1"></div>
   <div class="hub-orb hub-orb-2"></div>
   <div class="hub-orb hub-orb-3"></div>
   <div class="hub-wrap">
     <div class="hub-header">
-      <div class="hub-title"><!--BRAND_LOGO--><span class="hub-title-text" data-i18n="app_name">Papote</span></div>
+      <div class="hub-title" role="heading" aria-level="1"><!--BRAND_LOGO--><span class="hub-title-text" data-i18n="app_name">Papote</span></div>
       <div class="hub-subtitle" id="hubGreeting" data-i18n="hub_choose">Choisis une langue pour commencer</div>
       <div class="hub-header-actions">
         <a href="/admin" class="hub-admin-link" id="hubAdminLink" style="display:none">⚙️ <span data-i18n="admin">Admin</span></a>
@@ -350,9 +350,9 @@ window.addEventListener("error",function(e){if(e&&e.message)rep(e.message,e.erro
 
 <div id="appTop">
   <button id="backHomeBtn" data-click="goHome">‹ &#127968; <span data-i18n="all_languages">Toutes les langues</span></button>
-  <div id="appTopLabel"><span class="lgflag" id="appTopFlag"></span><span id="appTopName"></span></div>
+  <div id="appTopLabel" role="heading" aria-level="1"><span class="lgflag" id="appTopFlag"></span><span id="appTopName"></span></div>
 </div>
-<div id="frames"></div>
+<div id="frames" role="main"></div>
 <!-- Transition shown when a language is opened (see openLang) -->
 <div id="langPortal" aria-hidden="true">
   <div class="lp-sparks"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
@@ -400,6 +400,7 @@ function buildFrame(key){
   var f = document.createElement("iframe");
   f.setAttribute("allow", "microphone");
   f.id = "frame-" + key;
+  f.title = "Papote · " + key.replace(".html", "").split("__").join(" · ");
   container.appendChild(f);
   frames[key] = f;
   f.addEventListener("load", function(){

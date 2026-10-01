@@ -68,7 +68,9 @@ a{ color: var(--ig27-accent); }
 /* Keyboard focus only (mouse/touch clicks stay clean) */
 :focus{ outline: none; }
 :focus-visible{
-  outline: none;
+  /* A real outline (not only a shadow) stays visible in Windows high-contrast mode */
+  outline: 2px solid var(--ig27-accent);
+  outline-offset: 2px;
   box-shadow: var(--ig27-focus-ring) !important;
 }
 

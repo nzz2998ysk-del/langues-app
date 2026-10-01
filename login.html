@@ -54,7 +54,7 @@ a{color:inherit}
 .hero{padding:56px 0 30px}
 .hero .wrap{display:grid;gap:40px;align-items:center;grid-template-columns:1fr}
 @media(min-width:920px){.hero .wrap{grid-template-columns:1.05fr .95fr}}
-.eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:var(--ig27-fs-footnote);font-weight:var(--ig27-weight-semibold);color:var(--brand);
+.eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:var(--ig27-fs-footnote);font-weight:var(--ig27-weight-semibold);color:color-mix(in srgb,var(--brand) 78%,var(--ig27-label-primary));
   background:color-mix(in srgb,var(--brand) 12%,transparent);border-radius:999px;padding:6px 12px}
 .eyebrow b{width:7px;height:7px;border-radius:50%;background:var(--brand);animation:pulse 1.8s ease-in-out infinite}
 @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.7)}}
@@ -127,7 +127,7 @@ section{padding:56px 0}
 .demo-word{display:flex;align-items:center;gap:10px;margin-top:14px;padding:10px 12px;border-radius:16px;background:var(--ig27-fill-quaternary)}
 .demo-word button{width:32px;height:32px;border-radius:50%;border:none;cursor:pointer;background:var(--ig27-accent-soft);font-size:14px}
 .demo-word b{font-size:17px;white-space:nowrap}.demo-word span{color:var(--ig27-label-secondary);font-size:var(--ig27-fs-footnote)}
-.demo-word em{margin-inline-start:auto;font-style:normal;font-size:11px;font-weight:700;color:var(--ig27-green);background:var(--ig27-green-soft);padding:2px 7px;border-radius:999px}
+.demo-word em{margin-inline-start:auto;font-style:normal;font-size:11px;font-weight:700;color:#1a6b2c;background:var(--ig27-green-soft);padding:2px 7px;border-radius:999px}
 
 .mascots{display:flex;justify-content:center;gap:clamp(8px,2vw,22px);flex-wrap:wrap;margin-top:30px}
 .mascots img{width:clamp(84px,12vw,128px);height:auto;transition:transform .35s cubic-bezier(.34,1.56,.64,1)}
@@ -211,7 +211,7 @@ footer a{text-decoration:none}footer a:hover{color:var(--ig27-label-primary)}
 <header class="nav">
   <div class="wrap">
     <a class="brand" href="#top" aria-label="Papote"><!--BRAND_LOGO--><span class="brand-word"><i></i>Papote</span></a>
-    <nav class="links"><a href="#fonctionnalites">Fonctionnalités</a><a href="#langues">Langues</a><a href="#comment">Comment ça marche</a><a href="#premium">Premium</a></nav>
+    <nav class="links" aria-label="Sections"><a href="#fonctionnalites">Fonctionnalités</a><a href="#langues">Langues</a><a href="#comment">Comment ça marche</a><a href="#premium">Premium</a></nav>
     <span class="spacer"></span>
     <button type="button" class="pill glass icon-btn" id="themeBtn" aria-label="Mode clair / sombre">🌙</button>
     <button type="button" class="pill glass" data-click="openAuth" data-arg="login">Se connecter</button>
@@ -315,7 +315,7 @@ footer a{text-decoration:none}footer a:hover{color:var(--ig27-label-primary)}
 <footer>
   <div class="wrap">
     <span>© <span id="year">2026</span> Papote</span>
-    <nav><a href="/mentions-legales">Mentions légales</a><a href="/confidentialite">Confidentialité</a><a href="#top">Haut de page ↑</a></nav>
+    <nav aria-label="Informations légales"><a href="/mentions-legales">Mentions légales</a><a href="/confidentialite">Confidentialité</a><a href="#top">Haut de page ↑</a></nav>
   </div>
 </footer>
 
