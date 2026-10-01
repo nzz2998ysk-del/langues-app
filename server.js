@@ -12,6 +12,7 @@ const {
   invoiceEmailHtml,
   suggestionsDigestHtml,
   resetPasswordEmailHtml,
+  reminderEmailHtml,
   logEmailConfig,
 } = require("./lib/email");
 const { LEVELS, PREMIUM_FEATURES, loadCourse, courseForUser, syncVocabulary } = require("./lib/course");
@@ -281,6 +282,12 @@ async function initDb() {
   await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS token_version INTEGER NOT NULL DEFAULT 0;`);
   await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS stripe_customer_id TEXT;`);
   await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS stripe_subscription_id TEXT;`);
+  // Opt-in daily practice reminder by email: local hour + IANA time zone, and the
+  // local date of the last reminder sent (never twice the same day).
+  await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS reminder_enabled BOOLEAN NOT NULL DEFAULT FALSE;`);
+  await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS reminder_hour SMALLINT NOT NULL DEFAULT 19;`);
+  await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS reminder_tz TEXT NOT NULL DEFAULT 'Europe/Paris';`);
+  await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS reminder_last TEXT;`);
   // Two-factor authentication (TOTP), mandatory for administrators.
   await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS totp_secret_enc TEXT;`);
   await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS totp_enabled BOOLEAN NOT NULL DEFAULT FALSE;`);
@@ -465,7 +472,8 @@ app.use("/api", (req, res, next) => {
 // a state-changing request coming from another site is refused.
 const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
 app.use((req, res, next) => {
-  if (SAFE_METHODS.has(req.method) || req.path === "/api/webhooks/stripe" || req.path === "/api/internal/send-digest") return next();
+  if (SAFE_METHODS.has(req.method) || req.path === "/api/webhooks/stripe" || req.path === "/api/internal/send-digest" ||
+    req.path === "/api/internal/send-reminders" || req.path === "/api/reminders/unsubscribe") return next();
   if (req.get("sec-fetch-site") === "cross-site") return res.status(403).json({ error: "Requête refusée." });
   const origin = req.get("origin");
   if (origin) {
@@ -1052,7 +1060,7 @@ app.get("/api/me", async (req, res) => {
   if (!req.userId) return res.status(401).json({ authenticated: false });
   try {
     const result = await pool.query(
-      "SELECT id, email, name, subscribed, is_admin, lang_order, base_lang, email_verified FROM users WHERE id = $1",
+      "SELECT id, email, name, subscribed, is_admin, lang_order, base_lang, email_verified, reminder_enabled, reminder_hour, reminder_tz FROM users WHERE id = $1",
       [req.userId]
     );
     const user = result.rows[0];
@@ -1075,6 +1083,7 @@ app.get("/api/me", async (req, res) => {
       langOrder,
       baseLang: user.base_lang || "fr",
       emailVerified: user.email_verified,
+      reminder: { enabled: user.reminder_enabled, hour: user.reminder_hour, tz: user.reminder_tz },
     });
   } catch (err) {
     console.error("me error:", err);
@@ -1713,6 +1722,118 @@ setInterval(() => {
   if (hour < DIGEST_HOUR_LOCAL) return;
   sendSuggestionsDigest().catch((err) => console.error("scheduled digest error:", err));
 }, 15 * 60 * 1000).unref();
+
+// ---- daily practice reminders (opt-in) ----
+function validTimeZone(tz) {
+  if (typeof tz !== "string" || tz.length > 64 || !/^[A-Za-z_]+(\/[A-Za-z0-9_+-]+){0,2}$/.test(tz)) return false;
+  try { new Intl.DateTimeFormat("en-GB", { timeZone: tz }); return true; } catch (e) { return false; }
+}
+function localParts(tz, date = new Date()) {
+  const parts = new Intl.DateTimeFormat("en-CA", { timeZone: tz, year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", hourCycle: "h23" }).formatToParts(date);
+  const get = (t) => (parts.find((p) => p.type === t) || {}).value;
+  return { date: `${get("year")}-${get("month")}-${get("day")}`, hour: parseInt(get("hour"), 10) };
+}
+// Unsubscribe links are signed (no login needed from the mail client).
+function unsubToken(uid) {
+  return crypto.createHmac("sha256", JWT_SECRET).update("reminder-unsub:" + uid).digest("base64url").slice(0, 32);
+}
+function unsubOk(uid, token) {
+  const a = Buffer.from(String(token || "")), b = Buffer.from(unsubToken(uid));
+  return a.length === b.length && crypto.timingSafeEqual(a, b);
+}
+
+app.put("/api/reminders", async (req, res) => {
+  if (!req.userId) return res.status(401).json({ error: "Connecte-toi d'abord." });
+  if (rateLimited("reminders:" + req.userId, 30, 15 * 60 * 1000)) return res.status(429).json({ error: "Trop de requêtes." });
+  const body = req.body || {};
+  const enabled = body.enabled === true;
+  const hour = Number.isInteger(body.hour) && body.hour >= 0 && body.hour <= 23 ? body.hour : null;
+  if (hour === null) return res.status(400).json({ error: "Heure invalide." });
+  if (!validTimeZone(body.tz)) return res.status(400).json({ error: "Fuseau horaire invalide." });
+  try {
+    await pool.query("UPDATE users SET reminder_enabled = $1, reminder_hour = $2, reminder_tz = $3 WHERE id = $4", [enabled, hour, body.tz, req.userId]);
+    return res.json({ ok: true });
+  } catch (err) {
+    console.error("reminders error:", err);
+    return res.status(500).json({ error: "Erreur serveur." });
+  }
+});
+
+// GET from the link in the email, POST from mail clients' one-click
+// unsubscribe (RFC 8058, List-Unsubscribe-Post).
+async function handleUnsubscribe(req, res) {
+  const uid = parseInt(req.query.u, 10);
+  if (!Number.isInteger(uid) || !unsubOk(uid, req.query.t)) return res.status(400).type("text/plain").send("Lien invalide.");
+  try {
+    await pool.query("UPDATE users SET reminder_enabled = FALSE WHERE id = $1", [uid]);
+  } catch (err) {
+    console.error("unsubscribe error:", err);
+    return res.status(500).type("text/plain").send("Erreur serveur.");
+  }
+  if (req.method === "POST") return res.json({ ok: true });
+  res.type("html").send(`<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Papote</title></head>
+<body style="font-family:system-ui,sans-serif;max-width:480px;margin:15vh auto;padding:0 16px;text-align:center">
+<h1 style="font-size:22px">🐱 C'est noté.</h1><p>Tu ne recevras plus de rappels quotidiens. Tu peux les réactiver à tout moment dans ton profil.</p>
+<p lang="en" style="color:#8a8a8e">Done — you won't get daily reminders anymore.</p><p><a href="/">Papote</a></p></body></html>`);
+}
+app.get("/api/reminders/unsubscribe", handleUnsubscribe);
+app.post("/api/reminders/unsubscribe", handleUnsubscribe);
+
+// One pass over the accounts that opted in: whoever reached their reminder hour
+// (within a 3-hour window, to survive a sleeping free-tier instance), hasn't
+// practised yet today (local date) and wasn't reminded today gets one email.
+async function sendDueReminders(now = new Date()) {
+  const users = await pool.query(
+    `SELECT u.id, u.email, u.name, u.base_lang, u.reminder_hour, u.reminder_tz, u.reminder_last,
+            p.lang, p.data, p.updated_at
+     FROM users u
+     LEFT JOIN LATERAL (SELECT lang, data, updated_at FROM user_progress WHERE user_id = u.id ORDER BY updated_at DESC LIMIT 1) p ON TRUE
+     WHERE u.reminder_enabled AND u.email_verified`
+  );
+  let sent = 0;
+  for (const u of users.rows) {
+    const tz = validTimeZone(u.reminder_tz) ? u.reminder_tz : "Europe/Paris";
+    const local = localParts(tz, now);
+    if (local.hour < u.reminder_hour || local.hour >= u.reminder_hour + 3) continue;
+    if (u.reminder_last === local.date) continue;
+    if (u.updated_at && localParts(tz, new Date(u.updated_at)).date === local.date) continue; // already practised today
+    let streak = 0, due = 0;
+    const data = u.data && typeof u.data === "object" ? u.data : null;
+    if (data) {
+      if (data.streak && Number.isInteger(data.streak.count)) streak = data.streak.count;
+      if (data.srs && typeof data.srs === "object") due = Object.values(data.srs).filter((x) => x && x.due <= now.getTime()).length;
+    }
+    const lang = u.base_lang === "fr" ? "fr" : "en";
+    const langName = u.lang && LANG_META[u.lang] ? LANG_META[u.lang].name : "Papote";
+    const unsubLink = `${APP_URL}/api/reminders/unsubscribe?u=${u.id}&t=${unsubToken(u.id)}`;
+    // Mark first: a failed send is skipped for the day rather than retried every 10 minutes.
+    await pool.query("UPDATE users SET reminder_last = $1 WHERE id = $2", [local.date, u.id]);
+    const r = await sendEmail({
+      to: u.email,
+      subject: lang === "fr" ? (streak > 1 ? `🔥 ${streak} jours de suite — on continue ?` : "🐱 Ta leçon du jour t'attend") : (streak > 1 ? `🔥 ${streak}-day streak — keep it going?` : "🐱 Your daily lesson is waiting"),
+      html: reminderEmailHtml({ lang, name: u.name, streak, due, langName, appLink: APP_URL + "/", unsubLink }),
+      headers: { "List-Unsubscribe": `<${unsubLink}>`, "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" },
+    });
+    if (!r || r.ok !== false) sent++;
+  }
+  return sent;
+}
+app.post("/api/internal/send-reminders", async (req, res) => {
+  const given = Buffer.from(String(req.headers["x-digest-secret"] || ""));
+  const expected = Buffer.from(DIGEST_CRON_SECRET);
+  if (!DIGEST_CRON_SECRET || given.length !== expected.length || !crypto.timingSafeEqual(given, expected)) {
+    return res.status(403).json({ error: "Non autorisé." });
+  }
+  try {
+    return res.json({ ok: true, sent: await sendDueReminders() });
+  } catch (err) {
+    console.error("send-reminders error:", err);
+    return res.status(500).json({ error: "Erreur serveur." });
+  }
+});
+setInterval(() => {
+  sendDueReminders().catch((err) => console.error("scheduled reminders error:", err));
+}, 10 * 60 * 1000).unref();
 
 // ---- gate: serve the app only to authenticated users, else the login page ----
 app.get("/", (req, res) => {

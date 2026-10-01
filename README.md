@@ -112,6 +112,18 @@ idées (auteur, date, catégorie, contenu), avec recherche et filtres, un
 **statut** modifiable (nouvelle, vue, en cours, acceptée, refusée) et des
 **notes internes** visibles uniquement par l'administrateur.
 
+## Rappels quotidiens
+
+Depuis son profil, chaque compte peut activer un rappel par email (heure au
+choix, fuseau horaire du navigateur). Il ne part que les jours où la personne
+n'a pas encore pratiqué, au plus une fois par jour, et seulement vers une
+adresse vérifiée. Chaque email contient un lien de désinscription signé
+(et les en-têtes `List-Unsubscribe` pour la désinscription en un clic).
+Envoi : vérificateur interne toutes les 10 minutes, plus
+`POST /api/internal/send-reminders` (même en-tête `X-Digest-Secret` /
+`DIGEST_CRON_SECRET`) à appeler **toutes les heures** par un Render Cron Job,
+car le plan gratuit met le service en veille.
+
 ## Développement local
 
 ```

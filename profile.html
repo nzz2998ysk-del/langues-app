@@ -76,6 +76,22 @@ button.danger{background:var(--ig27-red);margin-top:12px}
   </div>
 
   <div class="card">
+    <h2 style="margin:0 0 6px;font-size:var(--ig27-fs-title3);line-height:var(--ig27-lh-title3)" data-i18n="reminder_title">Rappel quotidien</h2>
+    <p class="lead" style="margin:0 0 12px" data-i18n="reminder_lead"></p>
+    <div class="field">
+      <label style="display:flex;align-items:center;gap:10px;cursor:pointer"><input type="checkbox" id="remOn" style="width:auto;margin:0"> <span data-i18n="reminder_enable">M'envoyer un rappel par email</span></label>
+    </div>
+    <div class="field">
+      <label for="remHour" data-i18n="reminder_hour">Heure du rappel</label>
+      <select id="remHour"></select>
+      <div class="val" id="remTz" style="margin-top:6px;color:var(--ig27-label-secondary);font-size:13px"></div>
+    </div>
+    <div class="val" id="remUnverified" style="display:none;color:var(--ig27-orange);margin-top:10px" data-i18n="reminder_unverified"></div>
+    <button type="button" id="remSave" data-click="saveReminder" data-i18n="save">Enregistrer</button>
+    <div class="msg" id="remStatus"></div>
+  </div>
+
+  <div class="card">
     <h2 style="margin:0 0 6px;font-size:var(--ig27-fs-title3);line-height:var(--ig27-lh-title3)" data-i18n="data_title">Mes données</h2>
     <p class="lead" style="margin:0" data-i18n="data_lead"></p>
     <button type="button" id="exportBtn" data-click="exportData" data-i18n="data_export">Télécharger mes données</button>
@@ -122,6 +138,24 @@ LANG_ORDER.forEach(function(code){
   select.appendChild(opt);
 });
 
+var remHour = document.getElementById('remHour');
+for (var h = 6; h <= 23; h++){ var o = document.createElement('option'); o.value = h; o.textContent = (h < 10 ? '0' : '') + h + ':00'; remHour.appendChild(o); }
+var BROWSER_TZ = (function(){ try { return Intl.DateTimeFormat().resolvedOptions().timeZone || 'Europe/Paris'; } catch(e){ return 'Europe/Paris'; } })();
+function fillReminder(me){
+  var r = me.reminder || {enabled:false, hour:19, tz:BROWSER_TZ};
+  document.getElementById('remOn').checked = !!r.enabled;
+  remHour.value = String(r.hour >= 6 ? r.hour : 19);
+  document.getElementById('remTz').textContent = '🌍 ' + BROWSER_TZ;
+  document.getElementById('remUnverified').style.display = me.emailVerified === false ? 'block' : 'none';
+}
+async function saveReminder(){
+  var st = document.getElementById('remStatus'); st.className = 'msg';
+  try {
+    var r = await fetch('/api/reminders', {method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({enabled: document.getElementById('remOn').checked, hour: parseInt(remHour.value, 10), tz: BROWSER_TZ})});
+    var data = await r.json().catch(function(){ return {}; });
+    if (r.ok){ st.textContent = tr('saved'); st.classList.add('ok'); } else st.textContent = data.error || tr('save_error');
+  } catch(e){ st.textContent = tr('net_error'); }
+}
 async function loadProfile(){
   var r = await fetch('/api/me');
   if (!r.ok){ window.location.href = '/'; return; }
@@ -130,6 +164,7 @@ async function loadProfile(){
   document.getElementById('emailVal').textContent = me.email || '';
   document.getElementById('emailUnverified').style.display = me.emailVerified === false ? 'block' : 'none';
   select.value = me.baseLang || 'fr';
+  fillReminder(me);
   applyLang(select.value);
 }
 
