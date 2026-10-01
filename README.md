@@ -250,6 +250,29 @@ Resend :
 (La facture après paiement et le récapitulatif quotidien de la boîte à idées
 passent par le même helper.)
 
+### Option 1 — Gmail (le plus simple, sans nom de domaine)
+
+1. Crée une adresse Gmail dédiée au site, par ex. `papote.app@gmail.com`.
+2. Sur ce compte : [myaccount.google.com](https://myaccount.google.com) →
+   **Sécurité** → active la **Validation en deux étapes**, puis ouvre
+   **Mots de passe des applications** (ou va directement sur
+   `myaccount.google.com/apppasswords`) → nom « Papote » → *Créer*. Google
+   affiche un code de 16 lettres : c'est le mot de passe d'application (pas
+   ton mot de passe Gmail).
+3. Dans **Render → ton service → Environment**, ajoute :
+   - `GMAIL_USER` = l'adresse Gmail ;
+   - `GMAIL_APP_PASSWORD` = le code de 16 lettres (les espaces sont ignorés).
+4. Enregistre (Render redéploie). Les logs affichent
+   `[email] SMTP (smtp.gmail.com:465) configured, sending as Papote <…>` et
+   la page Admin passe la ligne « Envoi d'emails par Gmail » au vert.
+
+Les emails partent alors de « Papote <ton-adresse@gmail.com> ». Limite Gmail :
+environ 500 emails par jour. Si les deux variables sont définies, Gmail est
+utilisé en priorité sur Resend. `SMTP_HOST` / `SMTP_PORT` permettent d'utiliser
+un autre fournisseur SMTP avec les mêmes identifiants.
+
+### Option 2 — Resend (ton propre nom de domaine)
+
 Deux variables d'environnement, à créer dans **Render → ton service →
 Settings → Environment** (jamais dans le code ni dans un commit — voir aussi
 `.env.example`) :
@@ -260,9 +283,9 @@ Settings → Environment** (jamais dans le code ni dans un commit — voir aussi
 | `EMAIL_FROM` | L'expéditeur, ex. `Papote <no-reply@ton-domaine.com>`. Le domaine doit d'abord être **vérifié** dans Resend → **Domains** → *Add domain*, puis ajouter chez ton hébergeur DNS les enregistrements affichés (SPF + DKIM, DMARC conseillé) et attendre le statut *Verified*. |
 
 Comportement :
-- Sans `RESEND_API_KEY`, l'app fonctionne normalement : aucun email n'est
-  envoyé, un avertissement est loggé au démarrage et à chaque envoi sauté
-  (`[email] RESEND_API_KEY not set - skipping ...`). Jamais de crash.
+- Sans Gmail ni `RESEND_API_KEY`, l'app fonctionne normalement : aucun email
+  n'est envoyé, un avertissement est loggé au démarrage et à chaque envoi sauté
+  (`[email] no email provider set - skipping ...`). Jamais de crash.
 - Sans `EMAIL_FROM`, l'expéditeur de test de Resend (`onboarding@resend.dev`)
   est utilisé : il ne délivre qu'à l'adresse du propriétaire du compte Resend.
   Un avertissement le rappelle au démarrage.

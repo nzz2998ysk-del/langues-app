@@ -14,6 +14,7 @@ const {
   resetPasswordEmailHtml,
   reminderEmailHtml,
   logEmailConfig,
+  emailProvider,
 } = require("./lib/email");
 const { LEVELS, PREMIUM_FEATURES, loadCourse, courseForUser, syncVocabulary } = require("./lib/course");
 const stripeLib = require("./lib/stripe");
@@ -1445,8 +1446,8 @@ app.get("/api/admin/config", requireAdmin, async (req, res) => {
     { key: "admin_email", ok: Boolean(ADMIN_EMAIL), label: "ADMIN_EMAIL défini", help: "Render → Environment → ADMIN_EMAIL" },
     { key: "admin_mfa", ok: admins.rows[0].n > 0 && admins.rows[0].mfa === admins.rows[0].n, label: `Double authentification active pour tous les admins (${admins.rows[0].mfa}/${admins.rows[0].n})`, help: "Section « Sécurité » ci-dessous" },
     { key: "anthropic", ok: env("ANTHROPIC_API_KEY"), label: "Conversation IA (ANTHROPIC_API_KEY)", help: "console.anthropic.com → API Keys, puis Render → Environment (jamais dans le code)" },
-    { key: "resend", ok: env("RESEND_API_KEY"), label: "Envoi d'emails (RESEND_API_KEY)", help: "Resend → API Keys, puis Render → Environment (jamais dans le code)" },
-    { key: "email_from", ok: /<[^@\s]+@[^>\s]+>/.test(emailFrom) && !/resend\.dev/.test(emailFrom), label: "Expéditeur sur ton domaine (EMAIL_FROM)", help: "Domaine vérifié dans Resend → Domains" },
+    { key: "email", ok: Boolean(emailProvider()), label: emailProvider() === "smtp" ? "Envoi d'emails par Gmail (GMAIL_USER)" : "Envoi d'emails (GMAIL_USER + GMAIL_APP_PASSWORD, ou RESEND_API_KEY)", help: "Le plus simple : une adresse Gmail dédiée + un mot de passe d'application Google, dans Render → Environment (jamais dans le code). Voir README." },
+    ...(emailProvider() === "smtp" ? [] : [{ key: "email_from", ok: /<[^@\s]+@[^>\s]+>/.test(emailFrom) && !/resend\.dev/.test(emailFrom), label: "Expéditeur sur ton domaine (EMAIL_FROM, Resend)", help: "Domaine vérifié dans Resend → Domains — inutile avec Gmail" }]),
     { key: "stripe", ok: env("STRIPE_SECRET_KEY") && env("STRIPE_PRICE_ID") && env("STRIPE_WEBHOOK_SECRET"), label: "Paiement Stripe configuré", help: "STRIPE_SECRET_KEY, STRIPE_PRICE_ID, STRIPE_WEBHOOK_SECRET" },
     { key: "stripe_events", ok: STRIPE_STATUS.state === "ok" || STRIPE_STATUS.state === "updated", label: "Webhook Stripe : événements d'abonnement", help: STRIPE_STATUS.detail || STRIPE_STATUS.state },
     { key: "db_tls", ok: DB_TLS.mode === "verified" || DB_TLS.mode === "disabled", label: `TLS base de données : ${DB_TLS.mode}`, help: DB_TLS.note },
