@@ -213,8 +213,9 @@ for (const browserName of BROWSERS) {
           if (d.touch) { const st = await smallTargets(f); if (st.length) problems.push("quiz small targets: " + st.join(", ")); }
           // leaving the quiz gives the page back its normal layout
           await f.$eval("#quitQuiz", (e) => e.click());
-          await page.waitForTimeout(600);
-          const back = await page.evaluate(() => document.body.classList.contains("immersive"));
+          // the frame posts {immersive:false} to the app; slow profiles (TV 4K
+          // with 3x zoom) need more than a fixed pause, so poll up to 4 s
+          const back = await page.waitForFunction(() => !document.body.classList.contains("immersive"), null, { timeout: 4000 }).then(() => false, () => true);
           if (back) problems.push("app still immersive after leaving the quiz");
           if (errors.length) problems.push("page errors: " + errors.slice(0, 3).join(" | "));
           await ctx.close();
