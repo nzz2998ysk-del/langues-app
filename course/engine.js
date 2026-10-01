@@ -895,11 +895,78 @@
   PAGES.prononciation = function () {
     var SR = window.SpeechRecognition || window.webkitSpeechRecognition, ai = !locked("premium:pronunciation-ai");
     var html = '<h1 class="ttl">' + esc(T("mod_prononciation")) + '</h1><p class="sub">' + esc(ai ? T("pron_sub_ai") : T("pron_sub_free")) + "</p>" +
-      (!SR && ai ? '<div class="box">' + esc(T("sr_unsupported")) + "</div>" : "") +
+      (!SR ? '<div class="box">🎧 ' + esc(T("sr_fallback")) + "</div>" : "") +
+      (!canRecord() ? '<div class="box">' + esc(T("rec_unsupported")) + "</div>" : "") +
       (!ai ? '<div class="box row">🔒 ' + esc(T("feat_pronunciation-ai")) + '<span class="spacer"></span><button type="button" class="bpr" data-go="/subscribe">★ ' + esc(T("go_premium")) + "</button></div>" : "") +
       '<div class="filters">' + levelPills(PR.levels, null, true) + '</div><div id="prlist"></div>';
     return shell("mod_prononciation", html);
   };
+  // Record & compare: works in every browser with a microphone (MediaRecorder),
+  // including those without speech recognition (Firefox...). The learner hears
+  // the model and their own voice, sees both waveforms and grades themselves.
+  function canRecord() { return !!(window.MediaRecorder && navigator.mediaDevices && navigator.mediaDevices.getUserMedia); }
+  var REC = null;
+  function recMime() {
+    var c = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4", "audio/ogg;codecs=opus"];
+    for (var i = 0; i < c.length; i++) if (MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(c[i])) return c[i];
+    return "";
+  }
+  function envelope(buf, n) {
+    var d = buf.getChannelData(0), out = [], step = Math.max(1, Math.floor(d.length / n));
+    for (var i = 0; i < n; i++) { var m = 0; for (var k = i * step, e = Math.min(d.length, k + step); k < e; k++) { var v = Math.abs(d[k]); if (v > m) m = v; } out.push(m); }
+    var a = 0, b = out.length - 1, thr = Math.max.apply(null, out) * 0.08;
+    while (a < b && out[a] < thr) a++; while (b > a && out[b] < thr) b--;
+    out = out.slice(Math.max(0, a - 2), b + 3); var mx = Math.max.apply(null, out) || 1;
+    return out.map(function (v) { return v / mx; });
+  }
+  function drawWaves(canvas, model, mine) {
+    var ctx = canvas.getContext("2d"), W = canvas.width, H = canvas.height, cs = getComputedStyle(canvas);
+    ctx.clearRect(0, 0, W, H);
+    [[model, cs.getPropertyValue("--wave-model") || "#8e8e93", -1], [mine, cs.getPropertyValue("--wave-me") || "#0088ff", 1]].forEach(function (s) {
+      if (!s[0] || !s[0].length) return;
+      ctx.fillStyle = s[1].trim(); var n = s[0].length, bw = W / n;
+      s[0].forEach(function (v, i) { var h = Math.max(1, v * (H / 2 - 4)); ctx.fillRect(i * bw, s[2] < 0 ? H / 2 - h : H / 2, Math.max(1, bw - 1), h); });
+    });
+  }
+  function decodeBlob(blob) {
+    var AC = window.AudioContext || window.webkitAudioContext; if (!AC) return Promise.resolve(null);
+    var ac = new AC();
+    return blob.arrayBuffer().then(function (ab) { return new Promise(function (ok, ko) { ac.decodeAudioData(ab, ok, ko); }); }).then(function (b) { ac.close && ac.close(); return b; }).catch(function () { return null; });
+  }
+  function recordCompare(btn, x, box) {
+    if (REC && REC.state === "recording") { REC.stop(); return; }
+    navigator.mediaDevices.getUserMedia({ audio: true }).then(function (stream) {
+      var chunks = [], mime = recMime(), mr = mime ? new MediaRecorder(stream, { mimeType: mime }) : new MediaRecorder(stream);
+      REC = mr; btn.classList.add("recording"); btn.textContent = "⏹ " + T("rec_stop");
+      var timer = setTimeout(function () { if (mr.state === "recording") mr.stop(); }, 7000);
+      mr.ondataavailable = function (ev) { if (ev.data && ev.data.size) chunks.push(ev.data); };
+      mr.onstop = function () {
+        clearTimeout(timer); stream.getTracks().forEach(function (t) { t.stop(); }); REC = null;
+        btn.classList.remove("recording"); btn.textContent = "🎤 " + T("rec_compare");
+        var blob = new Blob(chunks, { type: mr.mimeType || mime || "audio/webm" }), url = URL.createObjectURL(blob);
+        box.hidden = false;
+        box.innerHTML = '<div class="row" style="gap:var(--ig27-space-2);flex-wrap:wrap">' + '<button type="button" class="btn2 small" data-say="' + esc(x.t) + '">🔊 ' + esc(T("rec_model")) + "</button>" +
+          '<button type="button" class="btn2 small" data-mine>▶︎ ' + esc(T("rec_me")) + '</button></div><canvas class="pr-wave" width="600" height="90" aria-hidden="true"></canvas>' +
+          '<div class="small muted pr-legend"><span class="lg-model">■ ' + esc(T("rec_model")) + '</span> <span class="lg-me">■ ' + esc(T("rec_me")) + "</span></div>" +
+          '<div class="row" style="gap:var(--ig27-space-2);margin-top:var(--ig27-space-2)"><span class="small">' + esc(T("rec_self")) + '</span><button type="button" class="btn2 small" data-self="1">👍 ' + esc(T("rec_good")) + '</button><button type="button" class="btn2 small" data-self="0">🔁 ' + esc(T("rec_again")) + "</button></div>";
+        var me = new Audio(url);
+        box.querySelector("[data-mine]").addEventListener("click", function () { me.currentTime = 0; me.play().catch(function () {}); });
+        box.querySelectorAll("[data-self]").forEach(function (b) { b.addEventListener("click", function () {
+          var good = b.getAttribute("data-self") === "1";
+          record({ id: x.id, level: x.level, theme: x.theme || "_pron" }, good); addXp(good ? 3 : 1); save();
+          box.querySelectorAll("[data-self]").forEach(function (z) { z.disabled = true; });
+          toast(good ? T("pron_great") : T("pron_retry"), good ? "happy" : "thinking");
+        }); });
+        var canvas = box.querySelector("canvas"), aid = AUDIO[x.t];
+        Promise.all([
+          decodeBlob(blob),
+          aid ? fetch("/course/audio/" + LANG + "/" + aid + ".mp3").then(function (r) { return r.ok ? r.blob() : null; }).then(function (b) { return b ? decodeBlob(b) : null; }).catch(function () { return null; }) : Promise.resolve(null),
+        ]).then(function (bufs) { drawWaves(canvas, bufs[1] ? envelope(bufs[1], 120) : null, bufs[0] ? envelope(bufs[0], 120) : null); });
+        me.play().catch(function () {});
+      };
+      mr.start();
+    }).catch(function () { toast(T("mic_denied"), "sad"); });
+  }
   function bindPron() {
     var SR = window.SpeechRecognition || window.webkitSpeechRecognition, ai = !locked("premium:pronunciation-ai") && SR;
     var paint = function () {
@@ -909,11 +976,15 @@
       items = items.slice(0, 60);
       document.getElementById("prlist").innerHTML = items.map(function (x, i) {
         return '<div class="prow">' + snd(x.t) + '<div style="flex:1">' + tgt(x.t) + (x.r ? '<div class="muted small">' + esc(x.r) + "</div>" : "") + '<div class="g">' + esc(gl(x.g)) + '</div><div class="small" id="prs' + i + '"></div></div>' +
-          (ai ? '<button type="button" class="btn2" data-rec="' + i + '">🎙️ ' + esc(T("record")) + "</button>" : "") + lvBadge(x.level) + "</div>";
+          '<div class="pr-actions">' + (ai ? '<button type="button" class="btn2" data-rec="' + i + '">🎙️ ' + esc(T("record")) + "</button>" : "") +
+          (canRecord() ? '<button type="button" class="btn2" data-cmp="' + i + '">⏺ ' + esc(T("rec_compare")) + "</button>" : "") + "</div>" + lvBadge(x.level) + '<div class="pr-cmp" id="prc' + i + '" hidden></div></div>';
       }).join("");
       paint.items = items;
     };
     bindLevelPills(PR, paint); paint();
+    app.addEventListener("click", function (e) {
+      var c = e.target.closest("[data-cmp]"); if (c) { var j = +c.getAttribute("data-cmp"); recordCompare(c, paint.items[j], document.getElementById("prc" + j)); }
+    });
     if (!ai) return;
     app.addEventListener("click", function (e) {
       var b = e.target.closest("[data-rec]"); if (!b) return;
