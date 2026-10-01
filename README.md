@@ -248,7 +248,11 @@ Resend :
   uniquement si le compte existe (réponse identique sinon).
 
 (La facture après paiement et le récapitulatif quotidien de la boîte à idées
-passent par le même helper.)
+passent par le même helper.) Tous les emails (bienvenue, mot de passe oublié,
+facture, rappel quotidien, boîte à idées) partagent le même gabarit au design
+de Papote (`layout()` dans `lib/email.js` : logo, mascotte, carte blanche
+arrondie, dégradé bleu → indigo, version texte incluse) ; logo et mascotte
+sont chargés depuis `APP_URL`.
 
 ### Option 1 — une boîte iCloud (le plus simple, sans domaine ni nouveau numéro)
 
@@ -322,7 +326,21 @@ en premium et envoie la facture par email. À configurer sur Render :
   un produit avec un prix récurrent mensuel/annuel).
 - `STRIPE_WEBHOOK_SECRET` — à créer dans Stripe (Developers → Webhooks → Add
   endpoint), URL : `https://<ton-app>.onrender.com/api/webhooks/stripe`,
-  événement à écouter : `checkout.session.completed`.
+  événements : `checkout.session.completed`, `invoice.paid`,
+  `customer.subscription.updated`, `customer.subscription.deleted` (l'app
+  ajoute elle-même les événements manquants au démarrage, voir la page Admin).
+
+**Factures** : à chaque paiement (premier mois via `checkout.session.completed`,
+renouvellements via `invoice.paid`), l'app crée une facture numérotée en
+continu (`PAP-2026-00001`, `PAP-2026-00002`…), l'envoie par email avec le PDF
+en pièce jointe (`lib/invoice.js`, au design de Papote) et la rend
+téléchargeable dans **Profil → Mes factures** (`GET /api/invoices`,
+`GET /api/invoices/<numéro>.pdf`, réservé au titulaire). Un même paiement
+renvoyé par Stripe ne crée ni deuxième facture ni deuxième email.
+L'émetteur vient des variables des mentions légales (`LEGAL_PUBLISHER`,
+`LEGAL_ADDRESS`, `LEGAL_SIRET`, `LEGAL_CONTACT_EMAIL`). La mention TVA par
+défaut est « TVA non applicable, art. 293 B du CGI » (micro-entreprise) ; si tu
+factures la TVA, remplace-la avec `INVOICE_VAT_NOTE`.
 
 **Virements sur ton compte** : Stripe reverse automatiquement l'argent encaissé
 vers le compte bancaire renseigné dans ton Dashboard Stripe (Paramètres →

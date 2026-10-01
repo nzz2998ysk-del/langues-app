@@ -378,6 +378,31 @@ test("Premium follows the real Stripe subscription state", { skip }, async () =>
   assert.equal(await subscribed(), false);
 });
 
+test("invoices: one per payment, numbered in sequence, PDF only for its owner", { skip }, async () => {
+  const c = await signup("invoice@example.com");
+  const other = await signup("not-the-payer@example.com");
+  const id = (await pool.query("SELECT id FROM users WHERE email = 'invoice@example.com'")).rows[0].id;
+  const paid = { type: "checkout.session.completed", data: { object: { id: "cs_inv_1", client_reference_id: String(id), payment_status: "paid", customer: "cus_inv", subscription: "sub_inv", amount_total: 499, currency: "eur" } } };
+  assert.equal((await stripeEvent(paid)).status, 200);
+  assert.equal((await stripeEvent(paid)).status, 200); // Stripe retry: no second invoice
+  // the first subscription invoice is covered by checkout; a renewal adds one
+  await stripeEvent({ type: "invoice.paid", data: { object: { id: "in_first", billing_reason: "subscription_create", amount_paid: 499, currency: "eur", customer: "cus_inv", subscription: "sub_inv" } } });
+  await stripeEvent({ type: "invoice.paid", data: { object: { id: "in_cycle_1", billing_reason: "subscription_cycle", amount_paid: 499, currency: "eur", customer: "cus_inv", subscription: "sub_inv" } } });
+  const rows = (await pool.query("SELECT invoice_number, customer_email FROM payments WHERE user_id = $1 ORDER BY id", [id])).rows;
+  assert.equal(rows.length, 2);
+  assert.match(rows[0].invoice_number, /^PAP-\d{4}-\d{5}$/);
+  assert.ok(rows[1].invoice_number > rows[0].invoice_number);
+  assert.equal(rows[0].customer_email, "invoice@example.com");
+  const list = await c("GET", "/api/invoices");
+  assert.equal(list.status, 200);
+  assert.equal(list.json.invoices.length, 2);
+  const pdf = await c("GET", `/api/invoices/${rows[0].invoice_number}.pdf`);
+  assert.equal(pdf.status, 200);
+  assert.ok(pdf.text.startsWith("%PDF-"));
+  assert.equal((await other("GET", `/api/invoices/${rows[0].invoice_number}.pdf`)).status, 404);
+  assert.equal((await fetch(`${BASE}/api/invoices/${rows[0].invoice_number}.pdf`)).status, 401);
+});
+
 test("legal pages are public and never inject raw environment values", { skip }, async () => {
   for (const u of ["/mentions-legales", "/confidentialite"]) {
     const r = await client()("GET", u);

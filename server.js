@@ -16,6 +16,7 @@ const {
   logEmailConfig,
   emailProvider,
 } = require("./lib/email");
+const { invoicePdf } = require("./lib/invoice");
 const { LEVELS, PREMIUM_FEATURES, loadCourse, courseForUser, syncVocabulary } = require("./lib/course");
 const stripeLib = require("./lib/stripe");
 const totp = require("./lib/totp");
@@ -308,6 +309,10 @@ async function initDb() {
   // GDPR: deleting an account removes its ideas and progress; invoices are kept
   // for accounting but detached from the (deleted) account.
   await pool.query(`ALTER TABLE payments ALTER COLUMN user_id DROP NOT NULL;`);
+  // Invoice snapshot (kept after account deletion) and continuous numbering.
+  await pool.query(`ALTER TABLE payments ADD COLUMN IF NOT EXISTS customer_email TEXT;`);
+  await pool.query(`ALTER TABLE payments ADD COLUMN IF NOT EXISTS customer_name TEXT;`);
+  await pool.query(`CREATE SEQUENCE IF NOT EXISTS invoice_seq;`);
   await pool.query(`ALTER TABLE payments DROP CONSTRAINT IF EXISTS payments_user_id_fkey;`);
   await pool.query(`ALTER TABLE payments ADD CONSTRAINT payments_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL;`);
   await pool.query(`ALTER TABLE suggestions DROP CONSTRAINT IF EXISTS suggestions_user_id_fkey;`);
@@ -451,6 +456,41 @@ for (const method of ["get", "post", "put", "patch", "delete"]) {
         : h));
 }
 
+// One payment = one invoice: numbered in sequence (PAP-YYYY-00001), stored
+// with a snapshot of the customer, emailed once with the PDF attached. Stripe
+// retries webhooks: an already-recorded payment is skipped (no duplicate
+// number, no second email).
+async function recordPaymentAndInvoice(userId, stripeRef, amount, currency, description) {
+  const u = (await pool.query("SELECT email, name FROM users WHERE id = $1", [userId])).rows[0];
+  if (!u) return;
+  const seen = await pool.query("SELECT 1 FROM payments WHERE stripe_session_id = $1", [stripeRef]);
+  if (seen.rows[0]) return;
+  const ins = await pool.query(
+    `INSERT INTO payments (user_id, stripe_session_id, amount_cents, currency, invoice_number, customer_email, customer_name)
+     VALUES ($1, $2, $3, $4, 'PAP-' || to_char(NOW() AT TIME ZONE 'Europe/Paris', 'YYYY') || '-' || lpad(nextval('invoice_seq')::text, 5, '0'), $5, $6)
+     ON CONFLICT (stripe_session_id) DO NOTHING
+     RETURNING invoice_number, created_at`,
+    [userId, stripeRef, amount, currency, u.email, u.name || null]
+  );
+  if (!ins.rows[0]) return;
+  const { invoice_number: number, created_at: date } = ins.rows[0];
+  let attachments;
+  try {
+    const pdf = await invoicePdf({ number, date, amountCents: amount, currency, customerEmail: u.email, customerName: u.name, description });
+    attachments = [{ filename: `Facture-${number}.pdf`, content: pdf, contentType: "application/pdf" }];
+  } catch (e) { console.error("[invoice] PDF generation failed:", e.message); }
+  sendEmail({
+    to: u.email,
+    subject: `Ta facture ${number} - ${BUSINESS_NAME} Premium`,
+    html: invoiceEmailHtml({
+      invoiceNumber: number,
+      date: date.toLocaleDateString("fr-FR", { timeZone: "Europe/Paris" }),
+      amount, currency, email: u.email, businessName: BUSINESS_NAME,
+    }),
+    attachments,
+  }).catch(() => {});
+}
+
 // Stripe webhooks need the raw request body to verify the signature, so this route
 // is wired up with express.raw() BEFORE the global express.json() middleware below.
 app.post("/api/webhooks/stripe", express.raw({ type: "application/json" }), async (req, res) => {
@@ -471,6 +511,16 @@ app.post("/api/webhooks/stripe", express.raw({ type: "application/json" }), asyn
         "UPDATE users SET subscribed = $1 WHERE stripe_subscription_id = $2 OR (stripe_subscription_id IS NULL AND stripe_customer_id = $3)",
         [active, sub.id, sub.customer || ""]
       );
+      return res.json({ received: true });
+    }
+    // Monthly renewal paid: new invoice (the first payment is handled by
+    // checkout.session.completed below, so only "subscription_cycle").
+    if (event.type === "invoice.paid") {
+      const inv = event.data.object;
+      if (inv.billing_reason === "subscription_cycle" && inv.amount_paid > 0) {
+        const r = await pool.query("SELECT id FROM users WHERE stripe_customer_id = $1 OR stripe_subscription_id = $2 LIMIT 1", [inv.customer || "", inv.subscription || ""]);
+        if (r.rows[0]) await recordPaymentAndInvoice(r.rows[0].id, inv.id, inv.amount_paid, inv.currency || "eur", "Abonnement Papote Premium (renouvellement)");
+      }
       return res.json({ received: true });
     }
     if (event.type === "checkout.session.completed") {
@@ -496,29 +546,7 @@ app.post("/api/webhooks/stripe", express.raw({ type: "application/json" }), asyn
               [rw.rows[0].referred_by, REFERRAL_DAYS]
             );
           }
-          const amount = session.amount_total || 0;
-          const currency = session.currency || "eur";
-          const invoiceNumber = `INV-${new Date().getFullYear()}-${String(userId).padStart(4, "0")}-${Date.now()
-            .toString()
-            .slice(-5)}`;
-          await pool.query(
-            `INSERT INTO payments (user_id, stripe_session_id, amount_cents, currency, invoice_number)
-             VALUES ($1, $2, $3, $4, $5)
-             ON CONFLICT (stripe_session_id) DO NOTHING`,
-            [userId, session.id, amount, currency, invoiceNumber]
-          );
-          sendEmail({
-            to: user.email,
-            subject: `Facture ${invoiceNumber} - ${BUSINESS_NAME}`,
-            html: invoiceEmailHtml({
-              invoiceNumber,
-              date: new Date().toLocaleDateString("fr-FR"),
-              amount,
-              currency,
-              email: user.email,
-              businessName: BUSINESS_NAME,
-            }),
-          }).catch(() => {});
+          await recordPaymentAndInvoice(userId, session.id, session.amount_total || 0, session.currency || "eur", "Abonnement Papote Premium");
         }
       }
     }
@@ -1231,6 +1259,27 @@ app.put("/api/profile", async (req, res) => {
   }
 });
 
+// ---- Invoices: list and PDF download (owner only) ----
+app.get("/api/invoices", async (req, res) => {
+  if (!req.userId) return res.status(401).json({ error: "Connecte-toi d'abord." });
+  const r = await pool.query("SELECT invoice_number, amount_cents, currency, created_at FROM payments WHERE user_id = $1 ORDER BY created_at DESC", [req.userId]);
+  return res.json({ invoices: r.rows });
+});
+app.get("/api/invoices/:number.pdf", async (req, res) => {
+  if (!req.userId) return res.status(401).json({ error: "Connecte-toi d'abord." });
+  const number = String(req.params.number || "");
+  if (!/^[A-Z0-9-]{4,40}$/.test(number)) return res.status(404).json({ error: "Facture introuvable." });
+  const r = await pool.query(
+    `SELECT p.invoice_number, p.amount_cents, p.currency, p.created_at, COALESCE(p.customer_email, u.email) AS email, COALESCE(p.customer_name, u.name) AS name
+     FROM payments p JOIN users u ON u.id = p.user_id WHERE p.user_id = $1 AND p.invoice_number = $2`, [req.userId, number]);
+  const p = r.rows[0];
+  if (!p) return res.status(404).json({ error: "Facture introuvable." });
+  const pdf = await invoicePdf({ number: p.invoice_number, date: p.created_at, amountCents: p.amount_cents, currency: p.currency, customerEmail: p.email, customerName: p.name });
+  res.setHeader("Content-Type", "application/pdf");
+  res.setHeader("Content-Disposition", `attachment; filename="Facture-${p.invoice_number}.pdf"`);
+  return res.send(pdf);
+});
+
 // ---- GDPR: data export and account deletion ----
 // Everything stored about the account, as a downloadable JSON file.
 app.get("/api/account/export", async (req, res) => {
@@ -1422,7 +1471,7 @@ app.get("/api/vocabulary", async (req, res) => {
 // Uses the Stripe API with STRIPE_SECRET_KEY: finds the endpoint pointing at
 // APP_URL/api/webhooks/stripe and adds any missing event (keeps the others and
 // the signing secret). The result is shown in /admin -> Configuration.
-const STRIPE_REQUIRED_EVENTS = ["checkout.session.completed", "customer.subscription.updated", "customer.subscription.deleted"];
+const STRIPE_REQUIRED_EVENTS = ["checkout.session.completed", "invoice.paid", "customer.subscription.updated", "customer.subscription.deleted"];
 const STRIPE_STATUS = { state: "unknown", detail: "" };
 async function checkStripeWebhook() {
   if (!process.env.STRIPE_SECRET_KEY) {

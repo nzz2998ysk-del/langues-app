@@ -107,6 +107,12 @@ button.danger{background:var(--ig27-red);margin-top:12px}
     </div>
   </div>
 
+  <div class="card" id="invoicesCard" hidden>
+    <h2 style="margin:0 0 6px;font-size:var(--ig27-fs-title3);line-height:var(--ig27-lh-title3)" data-i18n="invoices_title">Mes factures</h2>
+    <p class="lead" style="margin:0 0 10px" data-i18n="invoices_lead">Tes factures Premium, au format PDF.</p>
+    <ul id="invoicesList" style="list-style:none;margin:0;padding:0"></ul>
+  </div>
+
   <div class="card">
     <h2 style="margin:0 0 6px;font-size:var(--ig27-fs-title3);line-height:var(--ig27-lh-title3)" data-i18n="data_title">Mes données</h2>
     <p class="lead" style="margin:0" data-i18n="data_lead"></p>
@@ -251,6 +257,28 @@ async function saveProfile(){
 }
 
 loadProfile();
+// Premium invoices (PDF download); the card stays hidden without any.
+(async function(){
+  try {
+    var r = await fetch('/api/invoices'); if (!r.ok) return;
+    var list = (await r.json()).invoices || []; if (!list.length) return;
+    var ul = document.getElementById('invoicesList');
+    list.forEach(function(inv){
+      var li = document.createElement('li');
+      li.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-top:1px solid var(--ig27-separator)';
+      var info = document.createElement('span');
+      var amount = (inv.amount_cents / 100).toFixed(2).replace('.', ',') + (String(inv.currency).toLowerCase() === 'eur' ? ' €' : ' ' + String(inv.currency).toUpperCase());
+      info.textContent = inv.invoice_number + ' · ' + new Date(inv.created_at).toLocaleDateString() + ' · ' + amount;
+      var a = document.createElement('a');
+      a.href = '/api/invoices/' + encodeURIComponent(inv.invoice_number) + '.pdf';
+      a.textContent = 'PDF';
+      a.setAttribute('download', 'Facture-' + inv.invoice_number + '.pdf');
+      a.style.cssText = 'font-weight:700;color:var(--ig27-accent);text-decoration:none;min-height:44px;display:inline-flex;align-items:center';
+      li.appendChild(info); li.appendChild(a); ul.appendChild(li);
+    });
+    document.getElementById('invoicesCard').hidden = false;
+  } catch (e) {}
+})();
 </script>
 <script>
 // Click delegation: [data-click="fn"] calls the global fn (with data-arg if set).
