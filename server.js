@@ -371,6 +371,15 @@ async function initDb() {
       PRIMARY KEY (user_id, lang)
     );
   `);
+  // ---- AI conversation partner: messages used per account per day (quota) ----
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS ai_usage (
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      day DATE NOT NULL,
+      count INTEGER NOT NULL DEFAULT 0,
+      PRIMARY KEY (user_id, day)
+    );
+  `);
   const synced = await syncVocabulary(pool);
   if (synced) console.log(`Course vocabulary synced (${synced} words).`);
 
@@ -1348,6 +1357,7 @@ app.get("/api/admin/config", requireAdmin, async (req, res) => {
   const checks = [
     { key: "admin_email", ok: Boolean(ADMIN_EMAIL), label: "ADMIN_EMAIL défini", help: "Render → Environment → ADMIN_EMAIL" },
     { key: "admin_mfa", ok: admins.rows[0].n > 0 && admins.rows[0].mfa === admins.rows[0].n, label: `Double authentification active pour tous les admins (${admins.rows[0].mfa}/${admins.rows[0].n})`, help: "Section « Sécurité » ci-dessous" },
+    { key: "anthropic", ok: env("ANTHROPIC_API_KEY"), label: "Conversation IA (ANTHROPIC_API_KEY)", help: "console.anthropic.com → API Keys, puis Render → Environment (jamais dans le code)" },
     { key: "resend", ok: env("RESEND_API_KEY"), label: "Envoi d'emails (RESEND_API_KEY)", help: "Resend → API Keys, puis Render → Environment (jamais dans le code)" },
     { key: "email_from", ok: /<[^@\s]+@[^>\s]+>/.test(emailFrom) && !/resend\.dev/.test(emailFrom), label: "Expéditeur sur ton domaine (EMAIL_FROM)", help: "Domaine vérifié dans Resend → Domains" },
     { key: "stripe", ok: env("STRIPE_SECRET_KEY") && env("STRIPE_PRICE_ID") && env("STRIPE_WEBHOOK_SECRET"), label: "Paiement Stripe configuré", help: "STRIPE_SECRET_KEY, STRIPE_PRICE_ID, STRIPE_WEBHOOK_SECRET" },
@@ -1722,6 +1732,125 @@ setInterval(() => {
   if (hour < DIGEST_HOUR_LOCAL) return;
   sendSuggestionsDigest().catch((err) => console.error("scheduled digest error:", err));
 }, 15 * 60 * 1000).unref();
+
+// ---- AI conversation partner ------------------------------------------------
+// The browser never talks to the AI provider: it posts the conversation here,
+// the server adds the system prompt and its key (ANTHROPIC_API_KEY, set only in
+// the hosting environment) and returns the reply. Daily quotas per account.
+const AI_MODEL = process.env.AI_MODEL || "claude-sonnet-5-5";
+// Overridable only so tests can point it at a local mock.
+const AI_API_URL = process.env.AI_API_URL || "https://api.anthropic.com/v1/messages";
+const AI_DAILY_FREE = parseInt(process.env.AI_DAILY_FREE || "10", 10);
+const AI_DAILY_PREMIUM = parseInt(process.env.AI_DAILY_PREMIUM || "150", 10);
+const AI_SCENARIOS = {
+  free: "a friendly free conversation about the learner's day, hobbies and plans",
+  cafe: "ordering at a café or restaurant (you are the waiter)",
+  travel: "asking for directions and travel information in a city (you are a local passer-by)",
+  intro: "meeting someone for the first time and introducing yourselves",
+  shopping: "shopping for clothes or groceries (you are the shop assistant)",
+  doctor: "a visit to the doctor (you are the doctor)",
+  job: "a job interview (you are the recruiter)",
+  debate: "a friendly debate on a current topic of the learner's choice",
+};
+const LEVEL_STYLE = {
+  A1: "very short sentences (max 8 words), the most common words only, present tense",
+  A2: "short simple sentences, everyday vocabulary, present/past/future basics",
+  B1: "clear sentences of moderate length, common idioms are fine",
+  B2: "natural sentences, varied vocabulary and tenses",
+  C1: "rich, idiomatic language with nuance",
+  C2: "fully native, sophisticated and idiomatic language",
+};
+async function aiQuota(userId, unlocked) {
+  const r = await pool.query("SELECT count FROM ai_usage WHERE user_id = $1 AND day = CURRENT_DATE", [userId]);
+  const used = r.rows[0] ? r.rows[0].count : 0;
+  const limit = unlocked ? AI_DAILY_PREMIUM : AI_DAILY_FREE;
+  return { used, limit, left: Math.max(0, limit - used) };
+}
+app.get("/api/chat/status", async (req, res) => {
+  if (!req.userId) return res.status(401).json({ error: "Connecte-toi d'abord." });
+  try {
+    const access = await accessFor(req.userId);
+    if (!access) return res.status(401).json({ error: "Session invalide." });
+    const q = await aiQuota(req.userId, access.unlocked);
+    return res.json({ enabled: Boolean(process.env.ANTHROPIC_API_KEY), ...q, premium: access.unlocked });
+  } catch (err) {
+    console.error("chat status error:", err);
+    return res.status(500).json({ error: "Erreur serveur." });
+  }
+});
+function parseAiJson(text) {
+  const m = /\{[\s\S]*\}/.exec(text || "");
+  if (m) {
+    try {
+      const j = JSON.parse(m[0]);
+      const str = (v) => (typeof v === "string" ? v.slice(0, 1200) : "");
+      if (str(j.reply)) return { reply: str(j.reply), rom: str(j.rom), translation: str(j.translation), correction: str(j.correction) };
+    } catch (e) { /* fall through */ }
+  }
+  return { reply: String(text || "").slice(0, 1200), rom: "", translation: "", correction: "" };
+}
+app.post("/api/chat", async (req, res) => {
+  if (!req.userId) return res.status(401).json({ error: "Connecte-toi d'abord." });
+  if (!process.env.ANTHROPIC_API_KEY) return res.status(503).json({ error: "La conversation IA n'est pas encore activée." });
+  if (rateLimited("chat:" + req.userId, 30, 5 * 60 * 1000)) return res.status(429).json({ error: "Doucement ! Réessaie dans quelques minutes." });
+  const body = req.body || {};
+  const lang = String(body.lang || "");
+  const level = LEVELS.includes(body.level) ? body.level : "A2";
+  const scenario = hasOwn(AI_SCENARIOS, body.scenario) ? body.scenario : "free";
+  if (!hasOwn(LANG_META, lang)) return res.status(400).json({ error: "Langue inconnue." });
+  const raw = Array.isArray(body.messages) ? body.messages.slice(-16) : [];
+  const messages = [];
+  for (const m of raw) {
+    if (!m || (m.role !== "user" && m.role !== "assistant") || typeof m.content !== "string") return res.status(400).json({ error: "Message invalide." });
+    const content = m.content.trim().slice(0, 500);
+    if (!content) continue;
+    if (messages.length && messages[messages.length - 1].role === m.role) messages[messages.length - 1].content += "\n" + content;
+    else messages.push({ role: m.role, content });
+  }
+  // Papote speaks first: the API wants a user turn first, so the opening is
+  // represented by the "[start]" marker the system prompt explains.
+  if (!messages.length || messages[0].role !== "user") messages.unshift({ role: "user", content: "[start]" });
+  if (messages[messages.length - 1].role !== "user") return res.status(400).json({ error: "Message invalide." });
+  try {
+    const access = await accessFor(req.userId);
+    if (!access) return res.status(401).json({ error: "Session invalide." });
+    if ((level === "C1" || level === "C2") && access.features["premium:levels-c"]) return res.status(403).json({ error: "Niveaux C réservés à Premium." });
+    const q = await aiQuota(req.userId, access.unlocked);
+    if (q.left <= 0) return res.status(429).json({ error: "quota", ...q });
+    const base = access.user.base_lang && LANG_META[access.user.base_lang] ? access.user.base_lang : "fr";
+    const target = LANG_META[lang].name, baseName = LANG_META[base].name;
+    const system =
+      `You are Papote, a warm and playful cat who is a language tutor. You are having a spoken-style conversation in ${target} (language code "${lang}") ` +
+      `with a learner whose own language is ${baseName} ("${base}"). Learner level: ${level} — use ${LEVEL_STYLE[level]}. Scenario: ${AI_SCENARIOS[scenario]}.\n` +
+      "Rules: always answer in the target language, 1 to 3 sentences, and end with a question that keeps the conversation going. " +
+      "Stay in the scenario, stay kind and encouraging, never produce unsafe or adult content; if the learner goes off-topic in a harmful way, gently steer back. " +
+      'If the learner\'s message is "[start]", open the conversation yourself.\n' +
+      "Reply ONLY with a JSON object, no prose around it: " +
+      `{"reply": "<your answer in ${target}>", "rom": "<romanization of reply if ${target} is not written in Latin script, else empty>", ` +
+      `"translation": "<translation of your reply in ${baseName}>", ` +
+      `"correction": "<if the learner's last message had mistakes: the corrected sentence in ${target} followed by a one-sentence explanation in ${baseName}; else empty>"}`;
+    const r = await fetch(AI_API_URL, {
+      method: "POST",
+      headers: { "x-api-key": process.env.ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01", "content-type": "application/json" },
+      body: JSON.stringify({ model: AI_MODEL, max_tokens: 600, system, messages }),
+      signal: AbortSignal.timeout(30000),
+    });
+    if (!r.ok) {
+      console.error(`chat: AI provider error ${r.status}`);
+      return res.status(502).json({ error: "Le partenaire de conversation ne répond pas. Réessaie." });
+    }
+    const j = await r.json();
+    const text = (j.content || []).filter((c) => c.type === "text").map((c) => c.text).join("");
+    await pool.query(
+      `INSERT INTO ai_usage (user_id, day, count) VALUES ($1, CURRENT_DATE, 1)
+       ON CONFLICT (user_id, day) DO UPDATE SET count = ai_usage.count + 1`, [req.userId]
+    );
+    return res.json({ ...parseAiJson(text), left: q.left - 1, limit: q.limit });
+  } catch (err) {
+    console.error("chat error:", err.name === "TimeoutError" ? "timeout" : err);
+    return res.status(502).json({ error: "Le partenaire de conversation ne répond pas. Réessaie." });
+  }
+});
 
 // ---- daily practice reminders (opt-in) ----
 function validTimeZone(tz) {

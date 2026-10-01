@@ -276,6 +276,7 @@
     { id: "exercices", ic: "✏️" },
     { id: "revision", ic: "🧠" },
     { id: "prononciation", ic: "🎙️" },
+    { id: "conversation", ic: "🤖" },
     { id: "culture", ic: "🌍", need: function () { return C.culture && C.culture.length; } },
     { id: "examen", ic: "🎓", premium: "premium:exam" },
     { id: "stats", ic: "📊" },
@@ -933,6 +934,93 @@
   }
 
   // ------------------------------------------------------------------ culture
+  // ------------------------------------------------------------------ AI conversation
+  // Chat with Papote (an AI tutor) through the server proxy /api/chat; the
+  // conversation stays in this tab (sessionStorage), never on the server.
+  var SCENARIOS = ["free", "cafe", "travel", "intro", "shopping", "doctor", "job", "debate"];
+  var CHAT = null;
+  function chatKey() { return "papote-chat-" + LANG; }
+  function chatLoad() {
+    if (CHAT && CHAT.lang === LANG) return CHAT;
+    try { CHAT = JSON.parse(sessionStorage.getItem(chatKey()) || "null"); } catch (e) { CHAT = null; }
+    if (!CHAT || !Array.isArray(CHAT.msgs)) CHAT = { lang: LANG, scenario: "free", level: dailyLevel(), msgs: [] };
+    return CHAT;
+  }
+  function chatSave() { try { sessionStorage.setItem(chatKey(), JSON.stringify(CHAT)); } catch (e) {} }
+  PAGES.conversation = function () {
+    var ch = chatLoad(), lv = LEVELS.filter(function (l) { return !(C.locked && C.locked.levels.indexOf(l) >= 0); });
+    var html = '<h1 class="ttl">' + esc(T("mod_conversation")) + '</h1><p class="sub">' + esc(T("chat_sub")) + "</p>" +
+      '<div id="chatStatus"></div>' +
+      '<div class="filters chat-opts"><label class="small">' + esc(T("chat_scenario")) + ' <select class="sel" id="chatSc">' + SCENARIOS.map(function (k) { return '<option value="' + k + '"' + (ch.scenario === k ? " selected" : "") + ">" + esc(T("sc_" + k)) + "</option>"; }).join("") + "</select></label>" +
+      '<label class="small">' + esc(T("chat_level")) + ' <select class="sel" id="chatLv">' + lv.map(function (l) { return "<option" + (ch.level === l ? " selected" : "") + ">" + l + "</option>"; }).join("") + "</select></label>" +
+      '<button type="button" class="btn2" id="chatNew">↺ ' + esc(T("chat_new")) + "</button></div>" +
+      '<div class="chat-log" id="chatLog" role="log" aria-live="polite"></div>' +
+      '<form class="chat-in" id="chatForm"><textarea id="chatIn" rows="2" maxlength="500" aria-label="' + esc(T("chat_ph")) + '" placeholder="' + esc(T("chat_ph")) + '"' + (C.dir === "rtl" ? ' dir="rtl"' : "") + ' lang="' + esc(LANG) + '"></textarea>' +
+      '<button type="submit" class="bpr" id="chatSend">' + esc(T("chat_send")) + "</button></form>";
+    return shell("mod_conversation", html);
+  };
+  function chatMsgHtml(m, i) {
+    if (m.role === "user") {
+      return '<div class="chat-row me"><div class="chat-bubble me"' + (C.dir === "rtl" ? ' dir="rtl"' : "") + ">" + esc(m.content) + "</div></div>" +
+        (m.correction ? '<div class="chat-row me"><div class="chat-fix">✏️ ' + esc(m.correction) + "</div></div>" : "");
+    }
+    return '<div class="chat-row">' + masc(i % 3 ? "happy" : "wave", 40, "chat-av") + '<div class="chat-bubble"><div class="t"' + (C.dir === "rtl" ? ' dir="rtl"' : "") + ">" + esc(m.content) + "</div>" +
+      (m.rom && P.settings.rom !== false ? '<div class="muted small">' + esc(m.rom) + "</div>" : "") +
+      '<div class="chat-tools">' + snd(m.content, true) + (m.translation ? '<button type="button" class="btn2 small" data-tr="' + i + '">' + esc(T("chat_translate")) + "</button>" : "") + "</div>" +
+      (m.translation ? '<div class="muted small chat-tr" id="tr' + i + '" hidden>' + esc(m.translation) + "</div>" : "") + "</div></div>";
+  }
+  function bindConversation() {
+    var ch = chatLoad(), log = document.getElementById("chatLog"), input = document.getElementById("chatIn"), sendB = document.getElementById("chatSend"), status = document.getElementById("chatStatus");
+    var busy = false, enabled = true;
+    var paint = function (typing) {
+      log.innerHTML = ch.msgs.map(chatMsgHtml).join("") + (typing ? '<div class="chat-row">' + mascTyping(T("chat_typing")) + "</div>" : "") +
+        (!ch.msgs.length && !typing && enabled ? '<div class="box with-masc">' + masc("wave", 64, "masc-inline") + '<div><p>' + esc(T("chat_intro")) + '</p><button type="button" class="bpr" id="chatStart" style="margin-top:var(--ig27-space-3)">' + esc(T("chat_start")) + "</button></div></div>" : "");
+      log.querySelectorAll("[data-tr]").forEach(function (b) { b.addEventListener("click", function () { var el = document.getElementById("tr" + b.getAttribute("data-tr")); el.hidden = !el.hidden; }); });
+      var st = document.getElementById("chatStart"); if (st) st.addEventListener("click", function () { send(""); });
+      log.scrollTop = log.scrollHeight;
+    };
+    var setStatus = function (j) {
+      if (!j.enabled) { enabled = false; status.innerHTML = '<div class="box with-masc">' + masc("sleeping", 56, "masc-inline") + "<div>" + esc(T("chat_disabled")) + "</div></div>"; input.disabled = sendB.disabled = true; return; }
+      status.innerHTML = '<p class="muted small">' + esc(T("chat_left", { n: j.left, max: j.limit })) + (j.premium ? "" : ' · <button type="button" class="linkbtn" data-go="/subscribe">★ ' + esc(T("go_premium")) + "</button>") + "</p>";
+      if (j.left <= 0) { input.disabled = sendB.disabled = true; status.innerHTML += '<div class="box">' + esc(T("chat_quota")) + "</div>"; }
+    };
+    var send = function (text) {
+      if (busy) return;
+      text = (text || "").trim();
+      if (text) ch.msgs.push({ role: "user", content: text.slice(0, 500) });
+      busy = true; sendB.disabled = true; paint(true); chatSave();
+      fetch("/api/chat", { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ lang: LANG, level: ch.level, scenario: ch.scenario, messages: ch.msgs.map(function (m) { return { role: m.role, content: m.content }; }) }) })
+        .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { return { ok: r.ok, status: r.status, j: j }; }); })
+        .then(function (res) {
+          busy = false; sendB.disabled = false;
+          if (!res.ok) {
+            if (res.status === 429 && res.j.error === "quota") setStatus({ enabled: true, left: 0, limit: res.j.limit, premium: ACCESS.premium });
+            else toast(res.j.error || T("chat_error"), "sad");
+            if (text) { ch.msgs.pop(); input.value = text; }
+            paint(); chatSave(); return;
+          }
+          var last = ch.msgs[ch.msgs.length - 1];
+          if (last && last.role === "user" && res.j.correction) last.correction = res.j.correction;
+          ch.msgs.push({ role: "assistant", content: res.j.reply, rom: res.j.rom, translation: res.j.translation });
+          if (ch.msgs.length > 40) ch.msgs = ch.msgs.slice(-40);
+          chatSave(); paint();
+          setStatus({ enabled: true, left: res.j.left, limit: res.j.limit, premium: ACCESS.premium });
+          addXp(2); save();
+          if (P.settings.autoplay !== false) TTS.speak(res.j.reply);
+          input.focus();
+        })
+        .catch(function () { busy = false; sendB.disabled = false; if (text) { ch.msgs.pop(); input.value = text; } paint(); toast(T("chat_error"), "sad"); });
+    };
+    document.getElementById("chatForm").addEventListener("submit", function (e) { e.preventDefault(); var v = input.value; if (!v.trim()) return; input.value = ""; send(v); });
+    input.addEventListener("keydown", function (e) { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); document.getElementById("chatForm").requestSubmit(); } });
+    document.getElementById("chatSc").addEventListener("change", function (e) { ch.scenario = e.target.value; ch.msgs = []; chatSave(); paint(); });
+    document.getElementById("chatLv").addEventListener("change", function (e) { ch.level = e.target.value; chatSave(); });
+    document.getElementById("chatNew").addEventListener("click", function () { ch.msgs = []; chatSave(); paint(); });
+    paint();
+    fetch("/api/chat/status", { credentials: "same-origin" }).then(function (r) { return r.json(); }).then(function (j) { setStatus(j); paint(); }).catch(function () {});
+  }
+
   PAGES.culture = function () {
     var html = '<h1 class="ttl">' + esc(T("mod_culture")) + '</h1><p class="sub">' + esc(T("culture_sub", { lang: langName(LANG) })) + '</p><div id="cul">' +
       (C.culture || []).map(function (c, i) { return grammarCard({ title: c.title, body: c.body, level: c.level, icon: c.icon || "🌍", ex: c.ex }, i === 0); }).join("") + "</div>";
@@ -1310,7 +1398,7 @@
   // ------------------------------------------------------------------ render
   var BINDERS = {
     vocabulaire: bindVocab, phrases: bindPhrases, grammaire: bindGrammar, conjugaison: bindConj, alphabet: bindAlphabet,
-    lecture: bindLecture, ecoute: bindEcoute, exercices: bindExercices, revision: bindRevision, prononciation: bindPron,
+    lecture: bindLecture, ecoute: bindEcoute, exercices: bindExercices, revision: bindRevision, prononciation: bindPron, conversation: bindConversation,
     hub: bindGuided, culture: function () { decorateTargetText(app); }, dictionnaire: bindDict, profil: bindProfil,
     examen: function () { app.querySelectorAll("[data-exam]").forEach(function (b) { b.addEventListener("click", function () { examFlow(b.getAttribute("data-exam")); }); }); },
     certificat: function () {

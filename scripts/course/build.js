@@ -167,7 +167,7 @@ function mergeConj(a, b) {
 }
 
 // ---------------------------------------------------------------- app.html stubs
-const PAGES = ["hub", "vocabulaire", "phrases", "grammaire", "conjugaison", "alphabet", "lecture", "ecoute", "exercices", "revision", "prononciation", "culture", "examen", "stats", "badges", "certificat", "dictionnaire", "profil", "level_a1", "level_a2", "level_b1", "level_b2", "level_c1", "level_c2"];
+const PAGES = ["hub", "vocabulaire", "phrases", "grammaire", "conjugaison", "alphabet", "lecture", "ecoute", "exercices", "revision", "prononciation", "conversation", "culture", "examen", "stats", "badges", "certificat", "dictionnaire", "profil", "level_a1", "level_a2", "level_b1", "level_b2", "level_c1", "level_c2"];
 const { THEME_INIT } = require("../liquid-glass");
 function stub(code, page) {
   return `<!DOCTYPE html>

@@ -68,6 +68,8 @@ button:disabled{opacity:.5;cursor:default;box-shadow:var(--ig27-shadow-sm)}
 <tr><td>Idées envoyées dans la boîte à idées</td><td>Améliorer l'application</td><td>Intérêt légitime</td><td>Jusqu'à la suppression du compte</td></tr>
 <tr><td>Abonnement et factures (montant, date, identifiants Stripe)</td><td>Gérer l'abonnement Premium, obligations comptables</td><td>Contrat, obligation légale</td><td>10 ans (factures), détachées du compte s'il est supprimé</td></tr>
 <tr><td>Adresse IP et données techniques</td><td>Sécurité (limitation des tentatives, journal des actions d'administration), journaux du serveur</td><td>Intérêt légitime</td><td>Quelques heures en mémoire ; journaux d'hébergement selon l'hébergeur</td></tr>
+<tr><td>Messages échangés avec le partenaire de conversation IA</td><td>Te répondre et corriger tes phrases</td><td>Exécution du contrat</td><td>Non conservés par Papote (seul un compteur quotidien de messages est gardé, pour les quotas)</td></tr>
+<tr><td>Préférences de rappel (activé, heure, fuseau horaire)</td><td>T'envoyer le rappel quotidien que tu as demandé</td><td>Consentement (désactivable à tout moment)</td><td>Jusqu'à la désactivation ou la suppression du compte</td></tr>
 <tr><td>Jetons de réinitialisation et de confirmation d'email</td><td>Sécuriser ton compte</td><td>Exécution du contrat</td><td>1 heure / 7 jours</td></tr>
 </table>
 <p>Aucune publicité, aucun traceur, aucune revente de données.</p>
@@ -77,7 +79,8 @@ button:disabled{opacity:.5;cursor:default;box-shadow:var(--ig27-shadow-sm)}
 <ul>
 <li><b>Render</b> (hébergement, États-Unis) — transferts encadrés par les clauses contractuelles types de la Commission européenne.</li>
 <li><b>Stripe</b> (paiement, Irlande / États-Unis).</li>
-<li><b>Resend</b> (envoi des emails transactionnels, États-Unis).</li>
+<li><b>Resend</b> (envoi des emails transactionnels et des rappels, États-Unis).</li>
+<li><b>Anthropic</b> (modèle d'IA du partenaire de conversation, États-Unis) — reçoit uniquement le texte de la conversation en cours, sans ton email ni ton nom.</li>
 </ul>
 <h2>Cookies et stockage local</h2>
 <p>Un seul cookie : la session de connexion, strictement nécessaire (aucun consentement requis). Le stockage local du navigateur garde tes préférences (thème, réglages audio) et une copie de ta progression pour le mode hors ligne ; il est effacé à la déconnexion pour le mode hors ligne.</p>
