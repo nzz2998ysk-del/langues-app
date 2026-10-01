@@ -384,7 +384,7 @@ test("test emails: admin only, refused clearly when no email provider is set", {
   const admin = await sharedAdmin();
   const r = await admin("POST", "/api/admin/test-emails", {});
   assert.equal(r.status, 400); // the test server has no SMTP / Resend
-  assert.match(r.json.error, /SMTP_USER/);
+  assert.match(r.json.error, /RESEND_API_KEY/);
 });
 
 test("invoices: one per payment, numbered in sequence, PDF only for its owner", { skip }, async () => {

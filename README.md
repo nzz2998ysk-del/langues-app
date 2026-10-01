@@ -260,35 +260,16 @@ oublié, facture Premium avec son PDF, rappel quotidien, boîte à idées) part 
 l'adresse de l'admin connecté, sujet préfixé par `[TEST]`. Rien n'est créé
 (ni compte, ni paiement, ni numéro de facture) ; limité à 3 envois / 10 min.
 
-### Option 1 — une boîte iCloud (le plus simple, sans domaine ni nouveau numéro)
+Les emails passent par **l'API HTTP de Resend** (HTTPS). L'offre gratuite de
+Render bloque tout le trafic SMTP sortant (ports 25, 465 et 587) : un envoi
+direct par une boîte iCloud ou Gmail ne peut pas y fonctionner. Les variables
+`SMTP_USER`, `SMTP_PASS`, `SMTP_FROM`, `SMTP_HOST`, `SMTP_PORT`, `GMAIL_USER`
+et `GMAIL_APP_PASSWORD` ne sont **plus utilisées** : tu peux les retirer de
+Render (un avertissement le rappelle dans les logs tant qu'elles existent).
 
-1. **Mot de passe pour app** : [appleid.apple.com](https://appleid.apple.com) →
-   **Connexion et sécurité** → **Mots de passe pour app** → *Générer* → nom
-   « Papote ». Apple affiche un code du type `abcd-efgh-ijkl-mnop` (ce n'est
-   pas le mot de passe Apple ; la double authentification Apple doit être
-   active, ce qui est le cas par défaut).
-2. **Adresse dédiée (facultatif mais conseillé)** : sur
-   [icloud.com/mail](https://www.icloud.com/mail) → ⚙️ **Réglages** →
-   **Comptes** → *Ajouter un alias* → par ex. `papotelangues@icloud.com`
-   (gratuit, jusqu'à 3 alias).
-3. Dans **Render → ton service → Environment**, ajoute :
-   - `SMTP_USER` = l'adresse principale de ton identifiant Apple ;
-   - `SMTP_PASS` = le mot de passe pour app (avec ses tirets) ;
-   - `SMTP_FROM` = l'alias créé à l'étape 2 (sinon l'adresse principale sert
-     d'expéditeur).
-4. Enregistre (Render redéploie). Les logs affichent
-   `[email] SMTP (smtp.mail.me.com:587) configured, sending as Papote <…>` et
-   la page Admin passe « Envoi d'emails par boîte mail » au vert.
+Offre gratuite de Resend : 100 emails par jour, 3 000 par mois.
 
-Gmail marche de la même façon (`SMTP_USER` = l'adresse Gmail, `SMTP_PASS` =
-mot de passe d'application Google ; `GMAIL_USER` / `GMAIL_APP_PASSWORD` sont
-aussi acceptés). **Outlook.com / Hotmail ne marchent pas** : Microsoft refuse
-désormais les mots de passe en SMTP (OAuth uniquement). Pour un autre
-fournisseur, ajoute `SMTP_HOST` et `SMTP_PORT`. Le port 587 impose le
-chiffrement STARTTLS ; une boîte perso limite le volume (quelques centaines
-d'emails par jour) : au-delà, passe à l'option 2.
-
-### Option 2 — Resend (ton propre nom de domaine)
+### Configuration
 
 Deux variables d'environnement, à créer dans **Render → ton service →
 Settings → Environment** (jamais dans le code ni dans un commit — voir aussi
@@ -300,9 +281,9 @@ Settings → Environment** (jamais dans le code ni dans un commit — voir aussi
 | `EMAIL_FROM` | L'expéditeur, ex. `Papote <no-reply@ton-domaine.com>`. Le domaine doit d'abord être **vérifié** dans Resend → **Domains** → *Add domain*, puis ajouter chez ton hébergeur DNS les enregistrements affichés (SPF + DKIM, DMARC conseillé) et attendre le statut *Verified*. |
 
 Comportement :
-- Sans boîte mail (`SMTP_USER`) ni `RESEND_API_KEY`, l'app fonctionne normalement : aucun email
-  n'est envoyé, un avertissement est loggé au démarrage et à chaque envoi sauté
-  (`[email] no email provider set - skipping ...`). Jamais de crash.
+- Sans `RESEND_API_KEY`, l'app fonctionne normalement : aucun email n'est
+  envoyé, un avertissement est loggé au démarrage et à chaque envoi sauté
+  (`[email] RESEND_API_KEY not set - skipping ...`). Jamais de crash.
 - Sans `EMAIL_FROM`, l'expéditeur de test de Resend (`onboarding@resend.dev`)
   est utilisé : il ne délivre qu'à l'adresse du propriétaire du compte Resend.
   Un avertissement le rappelle au démarrage.
