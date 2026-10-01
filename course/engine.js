@@ -342,6 +342,18 @@
     return t ? (t.icon ? t.icon + " " : "") + gl(t) : id;
   }
 
+  // Anonymous usage counters (aggregated per day on the server, no user id
+  // stored) and error reports, both fire-and-forget.
+  function track(ev) {
+    try { fetch("/api/track", { method: "POST", credentials: "same-origin", keepalive: true, headers: { "Content-Type": "application/json" }, body: JSON.stringify({ event: ev, lang: LANG }) }).catch(function () {}); } catch (e) {}
+  }
+  var ERR_SENT = 0;
+  function reportError(msg, stack) {
+    if (ERR_SENT++ > 5) return;
+    try { fetch("/api/client-error", { method: "POST", credentials: "same-origin", keepalive: true, headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message: String(msg || "").slice(0, 300), stack: String(stack || "").slice(0, 2000), url: "/course/" + LANG + "/" + PAGE }) }).catch(function () {}); } catch (e) {}
+  }
+  window.addEventListener("error", function (e) { if (e && e.message) reportError(e.message, e.error && e.error.stack); });
+  window.addEventListener("unhandledrejection", function (e) { var r = e && e.reason; reportError("unhandledrejection: " + (r && r.message || r), r && r.stack); });
   // ================================================================== PAGES
   var PAGES = {};
 
@@ -808,6 +820,7 @@
     addXp(Q.xp); if (total >= 5 && Q.ko === 0) P.perfect = (P.perfect || 0) + 1;
     save();
     var res = Q.opts.onDone ? Q.opts.onDone(Q, pct) : null;
+    if (!Q.opts.onDone) track("quiz_done");
     var errs = Q.errors.length && !modLocked("feedback-avance") ? '<div class="box" style="text-align:left;margin-top:var(--ig27-space-5)"><h3>' + esc(T("review_errors")) + "</h3>" + Q.errors.map(function (e) {
       return '<div class="exline" style="margin-top:var(--ig27-space-2)">' + snd(e.q.audio || e.q.answer, true) + "<div><b>" + esc(e.q.prompt || e.q.audio) + "</b> → " + tgt(e.q.answer) + (e.given ? ' <span class="muted">(' + esc(T("you_said")) + " : " + esc(e.given) + ")</span>" : "") + "</div></div>";
     }).join("") + "</div>" : "";
@@ -875,7 +888,7 @@
   function reviewSession(cards) {
     var i = 0;
     var paint = function () {
-      if (i >= cards.length) { app.innerHTML = shell("mod_revision", '<div class="complete"><div class="big">' + mascOr("heart", "🎉") + '</div><h2>' + esc(T("review_done")) + '</h2><button type="button" class="bpr" data-nav="revision">' + esc(T("back")) + "</button></div>"); return; }
+      if (i >= cards.length) { track("review_done"); app.innerHTML = shell("mod_revision", '<div class="complete"><div class="big">' + mascOr("heart", "🎉") + '</div><h2>' + esc(T("review_done")) + '</h2><button type="button" class="bpr" data-nav="revision">' + esc(T("back")) + "</button></div>"); return; }
       var w = cards[i];
       app.innerHTML = shell("mod_revision", '<div class="quiz-card"><div class="quiz-kind">' + (i + 1) + "/" + cards.length + " " + lvBadge(w.level) + '</div><div class="flash"><div class="big t"' + (C.dir === "rtl" ? ' dir="rtl"' : "") + ">" + esc(w.t) + '</div><div class="row" style="justify-content:center;margin-top:var(--ig27-space-2)">' + snd(w.t) + "</div>" +
         '<div id="back" hidden>' + (w.r ? '<div class="rom">' + esc(w.r) + "</div>" : "") + '<div class="gl">' + esc(wg(w)) + "</div>" + (w.ex ? '<div class="exs">' + snd(w.ex.t, true) + " " + tgt(w.ex.t) + "<br>" + esc(gl(w.ex.g)) + "</div>" : "") + "</div></div>" +
@@ -937,7 +950,7 @@
     if (REC && REC.state === "recording") { REC.stop(); return; }
     navigator.mediaDevices.getUserMedia({ audio: true }).then(function (stream) {
       var chunks = [], mime = recMime(), mr = mime ? new MediaRecorder(stream, { mimeType: mime }) : new MediaRecorder(stream);
-      REC = mr; btn.classList.add("recording"); btn.textContent = "⏹ " + T("rec_stop");
+      REC = mr; btn.classList.add("recording"); track("pron_compare"); btn.textContent = "⏹ " + T("rec_stop");
       var timer = setTimeout(function () { if (mr.state === "recording") mr.stop(); }, 7000);
       mr.ondataavailable = function (ev) { if (ev.data && ev.data.size) chunks.push(ev.data); };
       mr.onstop = function () {
@@ -1142,6 +1155,7 @@
           var ls = (P.lessons[L] = P.lessons[L] || { done: 0 }); ls.done++;
           batch.forEach(function (w) { srsAdd(w); (P.words[w.id] = P.words[w.id] || { ok: 0, ko: 0, seen: 0, last: 0 }).seen++; });
           save();
+          track("lesson_done");
           return { title: T("lesson_done") };
         } });
       }
@@ -1200,7 +1214,7 @@
     var quiz = function () {
       var words = plan.fresh.concat(plan.reviews);
       startQuiz({ modes: ["mcq", "reverse", "listen", "mcq"], words: words.length >= 4 ? words.concat(pick(plan.pool, 6)) : plan.pool, n: 8, onDone: function () {
-        var d = dayRec(); d.daily = true;
+        var d = dayRec(); d.daily = true; track("daily_done");
         plan.fresh.forEach(function (w) { if (!P.srs[w.id]) { srsAdd(w); P.srs[w.id].due = Date.now() + DAY - 3600000; } (P.words[w.id] = P.words[w.id] || { ok: 0, ko: 0, seen: 0, last: 0 }).seen++; });
         save();
         return { title: T("daily_done") };
@@ -1238,7 +1252,7 @@
     var L, qs, k, ok;
     var result = function (level) {
       var beyond = level === lv[lv.length - 1] && passed[level] && C.locked && C.locked.levels.length;
-      P.placement = { level: level, at: Date.now() }; save();
+      P.placement = { level: level, at: Date.now() }; save(); track("placement_done");
       app.innerHTML = quizShellLesson(1, 2, '<div class="complete"><div class="big">' + mascOr("excited", "🧭") + "</div><h2>" + esc(T("place_result", { level: level })) + '</h2><p class="muted">' + esc(T("place_result_d")) + "</p>" +
         (beyond ? '<p class="small">' + esc(T("place_beyond")) + "</p>" : "") + '<div class="row" style="justify-content:center;margin-top:var(--ig27-space-5)"><button type="button" class="bpr" id="placeGo">☀️ ' + esc(T("daily_title")) + "</button></div></div>");
       document.getElementById("placeGo").addEventListener("click", dailyFlow);
@@ -1301,7 +1315,7 @@
     var lw = C.words.filter(function (w) { return w.level === L && wg(w); });
     if (lw.length < 4) { toast(T("not_enough")); return; }
     var modes = ["mcq", "reverse", "listen"]; if (!modLocked("exercices-avances")) modes.push("write", "cloze");
-    startQuiz({ modes: modes, words: lw, n: 20, onDone: function (Q, pct) {
+    startQuiz({ modes: modes, words: lw, n: 20, onDone: function (Q, pct) { track("exam_done");
       var prev = P.exams[L];
       P.exams[L] = { best: Math.max(pct, prev ? prev.best : 0), date: today(), passed: (prev && prev.passed) || pct >= 80 };
       save();
@@ -1486,6 +1500,7 @@
     if (!fn || (mod && !available(mod))) { PAGE = "hub"; fn = PAGES.hub; }
     document.title = T(L ? "mod_levels" : "mod_" + PAGE) + " · " + langName(LANG);
     app.innerHTML = fn();
+    track("view:" + (L ? "levels" : PAGE));
     if (L) bindLevel(L); else if (BINDERS[PAGE]) BINDERS[PAGE]();
     var fresh2 = checkBadges(); if (fresh2.length && !locked("premium:badges")) { save(); toast(fresh2[0].ic + " " + T("badge_new", { name: T("badge_" + fresh2[0].id) }), "cool"); }
     var goal = P.settings.goal || 30, d = dayRec();

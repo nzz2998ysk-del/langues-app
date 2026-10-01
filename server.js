@@ -371,6 +371,39 @@ async function initDb() {
       PRIMARY KEY (user_id, lang)
     );
   `);
+  // ---- Error tracking: client + server errors, deduplicated by fingerprint ----
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS app_errors (
+      fingerprint TEXT PRIMARY KEY,
+      source TEXT NOT NULL,
+      message TEXT NOT NULL,
+      stack TEXT,
+      url TEXT,
+      browser TEXT,
+      count INTEGER NOT NULL DEFAULT 1,
+      first_seen TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      last_seen TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+  `);
+  // ---- Privacy-friendly analytics: daily aggregate counters only (no user id,
+  // no IP, no cookie). Daily actives are counted with a per-day keyed hash that
+  // cannot be linked from one day to the next; rows older than 90 days go.
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS analytics_daily (
+      day DATE NOT NULL,
+      event TEXT NOT NULL,
+      lang TEXT NOT NULL DEFAULT '',
+      count INTEGER NOT NULL DEFAULT 0,
+      PRIMARY KEY (day, event, lang)
+    );
+  `);
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS analytics_active (
+      day DATE NOT NULL,
+      visitor TEXT NOT NULL,
+      PRIMARY KEY (day, visitor)
+    );
+  `);
   // ---- AI conversation partner: messages used per account per day (quota) ----
   await pool.query(`
     CREATE TABLE IF NOT EXISTS ai_usage (
@@ -1733,6 +1766,98 @@ setInterval(() => {
   sendSuggestionsDigest().catch((err) => console.error("scheduled digest error:", err));
 }, 15 * 60 * 1000).unref();
 
+// ---- Error tracking ------------------------------------------------------------
+// Errors from the browser (POST /api/client-error) and from the server land in
+// one deduplicated table the admin reads in /admin. No personal data: messages
+// are trimmed, URLs lose their query string, the user agent is reduced to a
+// browser family.
+function browserFamily(ua) {
+  ua = String(ua || "");
+  const m = /(Edg|OPR|Firefox|Chrome|CriOS|FxiOS|Safari)\/(\d+)/.exec(ua);
+  const name = m ? ({ Edg: "Edge", OPR: "Opera", CriOS: "Chrome iOS", FxiOS: "Firefox iOS" }[m[1]] || m[1]) : "autre";
+  const os = /Android/.test(ua) ? "Android" : /iPhone|iPad/.test(ua) ? "iOS" : /Mac OS X/.test(ua) ? "macOS" : /Windows/.test(ua) ? "Windows" : /Linux/.test(ua) ? "Linux" : "";
+  return `${name}${m ? " " + m[2] : ""}${os ? " · " + os : ""}`;
+}
+function scrubUrl(u) { return String(u || "").replace(/[?#].*$/, "").slice(0, 200); }
+async function logError(source, message, stack, url, ua) {
+  try {
+    message = String(message || "?").replace(/[\w.+-]+@[\w-]+\.[\w.]+/g, "<email>").slice(0, 300);
+    stack = String(stack || "").slice(0, 2000);
+    const firstFrame = (stack.split("\n").find((l) => /:\d+:\d+/.test(l)) || "").replace(/\?v=\w+/g, "").trim();
+    const fp = crypto.createHash("sha1").update(source + "|" + message + "|" + firstFrame).digest("hex");
+    await pool.query(
+      `INSERT INTO app_errors (fingerprint, source, message, stack, url, browser) VALUES ($1, $2, $3, $4, $5, $6)
+       ON CONFLICT (fingerprint) DO UPDATE SET count = app_errors.count + 1, last_seen = NOW(), url = EXCLUDED.url, browser = EXCLUDED.browser`,
+      [fp, source, message, stack, scrubUrl(url), browserFamily(ua)]
+    );
+  } catch (e) { /* never let error logging fail a request */ }
+}
+app.post("/api/client-error", (req, res) => {
+  if (rateLimited("cerr:" + (req.ip || "unknown"), 20, 10 * 60 * 1000)) return res.status(204).end();
+  const b = req.body || {};
+  if (typeof b.message === "string" && b.message) logError("client", b.message, typeof b.stack === "string" ? b.stack : "", b.url, req.get("user-agent"));
+  res.status(204).end();
+});
+app.get("/api/admin/errors", requireAdmin, async (req, res) => {
+  const r = await pool.query("SELECT fingerprint, source, message, stack, url, browser, count, first_seen, last_seen FROM app_errors ORDER BY last_seen DESC LIMIT 200");
+  return res.json({ errors: r.rows });
+});
+app.delete("/api/admin/errors", requireAdmin, async (req, res) => {
+  await pool.query("DELETE FROM app_errors");
+  await audit(req, "errors.clear", "", {});
+  return res.json({ ok: true });
+});
+
+// ---- Privacy-friendly analytics -------------------------------------------------
+const TRACK_EVENTS = new Set(["view", "lesson_done", "daily_done", "placement_done", "quiz_done", "review_done", "chat_msg", "pron_compare", "exam_done"]);
+const TRACK_PAGES = new Set(["hub", "vocabulaire", "phrases", "grammaire", "conjugaison", "alphabet", "lecture", "ecoute", "exercices", "revision", "prononciation", "conversation", "culture", "examen", "stats", "badges", "certificat", "dictionnaire", "profil", "amis", "levels"]);
+async function track(event, lang, uid) {
+  try {
+    await pool.query(
+      `INSERT INTO analytics_daily (day, event, lang, count) VALUES (CURRENT_DATE, $1, $2, 1)
+       ON CONFLICT (day, event, lang) DO UPDATE SET count = analytics_daily.count + 1`, [event, lang || ""]
+    );
+    if (uid) {
+      const day = new Date().toISOString().slice(0, 10);
+      const visitor = crypto.createHmac("sha256", JWT_SECRET).update("dau:" + day + ":" + uid).digest("base64url").slice(0, 22);
+      await pool.query("INSERT INTO analytics_active (day, visitor) VALUES (CURRENT_DATE, $1) ON CONFLICT DO NOTHING", [visitor]);
+    }
+  } catch (e) { /* analytics must never break anything */ }
+}
+app.post("/api/track", (req, res) => {
+  if (!req.userId) return res.status(204).end();
+  if (rateLimited("track:" + req.userId, 300, 15 * 60 * 1000)) return res.status(204).end();
+  const b = req.body || {};
+  let event = String(b.event || "");
+  if (event.startsWith("view:")) { const page = event.slice(5); if (!TRACK_PAGES.has(page)) return res.status(204).end(); }
+  else if (!TRACK_EVENTS.has(event)) return res.status(204).end();
+  const lang = hasOwn(LANG_META, b.lang) ? b.lang : "";
+  track(event, lang, req.userId);
+  res.status(204).end();
+});
+app.get("/api/admin/analytics", requireAdmin, async (req, res) => {
+  const days = Math.min(90, Math.max(7, parseInt(req.query.days, 10) || 30));
+  const dau = await pool.query(
+    `SELECT d::date AS day, COALESCE(a.n, 0)::int AS n FROM generate_series(CURRENT_DATE - ($1::int - 1), CURRENT_DATE, '1 day') d
+     LEFT JOIN (SELECT day, COUNT(*) AS n FROM analytics_active GROUP BY day) a ON a.day = d::date ORDER BY d`, [days]
+  );
+  const events = await pool.query(
+    `SELECT event, SUM(count)::int AS n FROM analytics_daily WHERE day > CURRENT_DATE - $1::int GROUP BY event ORDER BY n DESC LIMIT 40`, [days]
+  );
+  const langs = await pool.query(
+    `SELECT lang, SUM(count)::int AS n FROM analytics_daily WHERE day > CURRENT_DATE - $1::int AND lang <> '' GROUP BY lang ORDER BY n DESC LIMIT 40`, [days]
+  );
+  const signups = await pool.query(
+    `SELECT COUNT(*)::int AS n FROM users WHERE created_at > NOW() - ($1::int * INTERVAL '1 day')`, [days]
+  );
+  return res.json({ days, dau: dau.rows, events: events.rows, langs: langs.rows, signups: signups.rows[0].n });
+});
+setInterval(() => {
+  pool.query("DELETE FROM analytics_active WHERE day < CURRENT_DATE - 90").catch(() => {});
+  pool.query("DELETE FROM analytics_daily WHERE day < CURRENT_DATE - 400").catch(() => {});
+  pool.query("DELETE FROM app_errors WHERE last_seen < NOW() - INTERVAL '90 days'").catch(() => {});
+}, 6 * 60 * 60 * 1000).unref();
+
 // ---- AI conversation partner ------------------------------------------------
 // The browser never talks to the AI provider: it posts the conversation here,
 // the server adds the system prompt and its key (ANTHROPIC_API_KEY, set only in
@@ -1845,6 +1970,7 @@ app.post("/api/chat", async (req, res) => {
       `INSERT INTO ai_usage (user_id, day, count) VALUES ($1, CURRENT_DATE, 1)
        ON CONFLICT (user_id, day) DO UPDATE SET count = ai_usage.count + 1`, [req.userId]
     );
+    track("chat_msg", lang, req.userId);
     return res.json({ ...parseAiJson(text), left: q.left - 1, limit: q.limit });
   } catch (err) {
     console.error("chat error:", err.name === "TimeoutError" ? "timeout" : err);
@@ -2027,8 +2153,14 @@ app.use((err, req, res, next) => {
     return res.status(err.status || 400).json({ error: "Requête invalide." });
   }
   console.error(`unhandled error on ${req.method} ${req.path}:`, err && err.message);
+  logError("server", err && err.message, err && err.stack, req.path, "");
   if (res.headersSent) return;
   res.status(500).json({ error: "Erreur serveur." });
+});
+
+process.on("unhandledRejection", (err) => {
+  console.error("unhandled rejection:", err && err.message);
+  if (pool) logError("server", "unhandledRejection: " + (err && err.message), err && err.stack, "", "");
 });
 
 createPool()

@@ -111,6 +111,15 @@ input:checked + .slider:before{transform:translateX(16px)}
 .lv{display:inline-flex;min-width:26px;justify-content:center;padding:1px 6px;border-radius:var(--ig27-radius-full);font:var(--ig27-weight-heavy) var(--ig27-fs-caption2)/var(--ig27-lh-caption2) var(--ig27-font-family);background:var(--ig27-accent-soft);color:var(--ig27-accent)}
 .gf-row{display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid var(--line)}
 .gf-row:last-child{border-bottom:none}
+.an-h{font-size:15px;margin:14px 0 8px}
+.an-chart{display:flex;align-items:flex-end;gap:2px;height:110px;padding:6px;border-radius:12px;background:var(--ig27-fill-quaternary,rgba(120,120,128,.08))}
+.an-chart i{flex:1;background:var(--ig27-accent,#0088ff);border-radius:3px 3px 0 0;min-width:2px}
+.an-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px}
+.an-row{display:grid;grid-template-columns:minmax(90px,40%) 1fr auto;align-items:center;gap:8px;font-size:13px;margin:4px 0}
+.an-l{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.an-bar{height:8px;border-radius:4px;background:var(--ig27-fill-tertiary,rgba(120,120,128,.16));overflow:hidden}
+.an-bar i{display:block;height:100%;background:var(--ig27-accent,#0088ff)}
+.err-stack{white-space:pre-wrap;font-size:11px;max-width:60ch;margin:6px 0 0}
 </style>
 <link rel="stylesheet" href="/design-system/ios27-app.css">
 <link rel="stylesheet" href="/design-system/papote.css">
@@ -137,6 +146,8 @@ input:checked + .slider:before{transform:translateX(16px)}
     <a class="btn" href="#sec-ideas">💡 Idées <span id="ideasBadge"></span></a>
     <a class="btn" href="#sec-levels">🎯 Niveaux des mots</a>
     <a class="btn" href="#sec-users">👥 Comptes</a>
+    <a class="btn" href="#sec-analytics">📈 Usage</a>
+    <a class="btn" href="#sec-errors">🐞 Erreurs</a>
     <a class="btn" href="#sec-audit">🧾 Journal</a>
     <a class="btn" href="#sec-security">🔐 Sécurité &amp; configuration</a>
   </nav>
@@ -202,6 +213,16 @@ input:checked + .slider:before{transform:translateX(16px)}
           <tbody><tr><td colspan="5" class="empty">Chargement…</td></tr></tbody>
         </table>
       </div>
+
+      <div class="panel-title section" id="sec-analytics">📈 Usage (anonyme)</div>
+      <div class="sub" style="margin-bottom:10px">Compteurs agrégés par jour : aucun identifiant, aucune adresse IP, aucun cookie. Les « actifs » sont comptés avec une empreinte qui change chaque jour (impossible de suivre quelqu'un d'un jour à l'autre).</div>
+      <div class="toolbar"><div class="toolbar-row"><select id="anDays" data-change="loadAnalytics"><option value="7">7 jours</option><option value="30" selected>30 jours</option><option value="90">90 jours</option></select></div></div>
+      <div class="card" id="analytics"><div class="empty">Chargement…</div></div>
+
+      <div class="panel-title section" id="sec-errors">🐞 Erreurs</div>
+      <div class="sub" style="margin-bottom:10px">Erreurs JavaScript des navigateurs et erreurs du serveur, regroupées (même erreur = une ligne avec un compteur). Conservées 90 jours.</div>
+      <div class="toolbar"><div class="toolbar-row"><button class="btn" data-act="loadErrors">↻ Actualiser</button><button class="btn" data-act="clearErrors">🧹 Tout effacer</button></div></div>
+      <div class="card" style="overflow-x:auto"><table class="users-table" id="errorsTable"><tbody><tr><td class="empty">Chargement…</td></tr></tbody></table></div>
 
       <div class="panel-title section" id="sec-audit">🧾 Journal des actions admin</div>
       <div class="sub" style="margin-bottom:10px">Chaque action d'administration (premium offert ou retiré, fonctionnalités, statut des langues, niveaux des mots, idées) est enregistrée avec son auteur, sa date et son adresse IP. 200 dernières entrées.</div>
@@ -294,6 +315,42 @@ async function loadAudit(){
       return '<tr><td>'+escH(new Date(e.created_at).toLocaleString('fr-FR'))+'</td><td>'+escH(e.admin_email)+'</td><td>'+escH(AUDIT_LABEL[e.action]||e.action)+'</td><td>'+escH(e.target)+'</td><td style="font-family:ui-monospace,monospace;font-size:12px">'+escH(JSON.stringify(e.details))+'</td></tr>';
     }).join('') || '<tr><td colspan="5" class="empty">Aucune action pour l\'instant.</td></tr>') + '</tbody>';
 }
+function bars(rows, key, label){
+  var mx = Math.max.apply(null, rows.map(function(r){ return r[key]; }).concat([1]));
+  return rows.map(function(r){ return '<div class="an-row"><span class="an-l">'+escH(label(r))+'</span><span class="an-bar"><i style="width:'+Math.round(100*r[key]/mx)+'%"></i></span><b>'+r[key]+'</b></div>'; }).join('') || '<div class="empty">Pas encore de données.</div>';
+}
+var EVENT_LABEL = { lesson_done:'Leçons terminées', daily_done:'Leçons du jour', placement_done:'Tests de niveau', quiz_done:'Quiz terminés', review_done:'Sessions de révision', chat_msg:'Messages IA', pron_compare:'Enregistrements prononciation', exam_done:'Examens' };
+async function loadAnalytics(){
+  var days = document.getElementById('anDays').value;
+  var r = await fetch('/api/admin/analytics?days=' + days);
+  var box = document.getElementById('analytics');
+  if (!r.ok){ box.innerHTML = '<div class="empty">Accès refusé.</div>'; return; }
+  var d = await r.json();
+  var mx = Math.max.apply(null, d.dau.map(function(x){ return x.n; }).concat([1]));
+  var avg = d.dau.length ? Math.round(d.dau.reduce(function(a, x){ return a + x.n; }, 0) / d.dau.length) : 0;
+  var views = d.events.filter(function(e){ return e.event.indexOf('view:') === 0; }).map(function(e){ return { event: e.event.slice(5), n: e.n }; });
+  var acts = d.events.filter(function(e){ return e.event.indexOf('view:') !== 0; });
+  box.innerHTML = '<div class="stats" style="margin-bottom:14px"><div class="stat"><b>'+(d.dau.length ? d.dau[d.dau.length-1].n : 0)+'</b><span>Actifs aujourd\'hui</span></div><div class="stat"><b>'+avg+'</b><span>Actifs / jour (moy.)</span></div><div class="stat"><b>'+d.signups+'</b><span>Inscriptions ('+d.days+' j)</span></div></div>' +
+    '<h3 class="an-h">Actifs par jour</h3><div class="an-chart">' + d.dau.map(function(x){ return '<i title="'+escH(x.day.slice(0,10))+' : '+x.n+'" style="height:'+Math.max(2, Math.round(100*x.n/mx))+'%"></i>'; }).join('') + '</div>' +
+    '<div class="an-grid"><div><h3 class="an-h">Activités</h3>' + bars(acts, 'n', function(r){ return EVENT_LABEL[r.event] || r.event; }) + '</div>' +
+    '<div><h3 class="an-h">Pages vues</h3>' + bars(views.slice(0, 15), 'n', function(r){ return r.event; }) + '</div>' +
+    '<div><h3 class="an-h">Langues</h3>' + bars(d.langs.slice(0, 15), 'n', function(r){ var m = STATE.langMeta[r.lang]; return m ? m.flag + ' ' + m.name : r.lang; }) + '</div></div>';
+}
+async function loadErrors(){
+  var r = await fetch('/api/admin/errors');
+  var t = document.getElementById('errorsTable');
+  if (!r.ok){ t.innerHTML = '<tbody><tr><td class="empty">Accès refusé.</td></tr></tbody>'; return; }
+  var d = await r.json();
+  t.innerHTML = '<thead><tr><th>Dernière fois</th><th>Source</th><th>Message</th><th>×</th><th>Où</th><th>Navigateur</th></tr></thead><tbody>' +
+    (d.errors.map(function(e){
+      return '<tr><td>'+escH(new Date(e.last_seen).toLocaleString('fr-FR'))+'</td><td>'+(e.source === 'server' ? '🖥️ serveur' : '🌐 client')+'</td><td><details><summary>'+escH(e.message)+'</summary><pre class="err-stack">'+escH(e.stack || '')+'</pre></details></td><td><b>'+e.count+'</b></td><td>'+escH(e.url || '')+'</td><td>'+escH(e.browser || '')+'</td></tr>';
+    }).join('') || '<tr><td colspan="6" class="empty">Aucune erreur 🎉</td></tr>') + '</tbody>';
+}
+async function clearErrors(){
+  if (!confirm('Effacer toutes les erreurs enregistrées ?')) return;
+  await fetch('/api/admin/errors', { method: 'DELETE' });
+  loadErrors();
+}
 var STATE = { features: [], modules: [], langMeta: {}, langOrder: [], languageStatus: {} };
 
 async function loadStats(){
@@ -317,6 +374,7 @@ async function loadFeatures(){
   STATE.features = data.features;
   STATE.modules = data.modules;
   STATE.langMeta = data.langMeta;
+  loadAnalytics();
   STATE.langOrder = data.langOrder;
   STATE.languageStatus = data.languageStatus || {};
 
@@ -556,6 +614,7 @@ async function adminBoot(){
   }
   loadStats();
   loadFeatures();
+  loadErrors();
   loadUsers();
   initAdminExtras();
   loadConfig();
@@ -568,10 +627,13 @@ var ACT = {
   mfaEnable: function(){ mfaEnable(); },
   mfaDisable: function(){ mfaDisable(); },
   reload: function(){ location.reload(); },
+  loadErrors: function(){ loadErrors(); },
+  clearErrors: function(){ clearErrors(); },
   relogin: function(){ fetch('/api/logout', {method:'POST'}).then(function(){ location.href = '/?verified'; }); }
 };
 var CHANGE = {
   renderList: function(){ renderList(); },
+  loadAnalytics: function(){ loadAnalytics(); },
   toggleFeature: function(el){ toggleFeature(el); },
   ideaStatus: function(el){ saveIdea(+el.dataset.id, {status: el.value}); },
   ideaNotes: function(el){ saveIdea(+el.dataset.id, {admin_notes: el.value}); },

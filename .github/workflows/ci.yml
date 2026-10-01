@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: lg
+          POSTGRES_PASSWORD: lg
+          POSTGRES_DB: lg_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U lg" --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Syntax check
+        run: |
+          node --check server.js
+          for f in lib/*.js course/*.js scripts/course/*.js; do node --check "$f"; done
+      - name: Course data is in sync with content/ (run scripts/course/build.js)
+        run: |
+          node scripts/course/build.js > /dev/null
+          git diff --exit-code --stat -- course/data app.html
+      - name: Server and security tests
+        run: npm test
+        env:
+          TEST_DATABASE_URL: postgresql://lg:lg@localhost:5432/lg_test

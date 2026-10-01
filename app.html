@@ -269,6 +269,8 @@ body.in-lang > .themeToggle{display:none !important}
 </style>
 <link rel="stylesheet" href="/design-system/ios27-app.css">
 <link rel="stylesheet" href="/design-system/papote.css">
+<script>(function(){var n=0;function rep(m,st){if(n++>5)return;try{fetch("/api/client-error",{method:"POST",credentials:"same-origin",keepalive:true,headers:{"Content-Type":"application/json"},body:JSON.stringify({message:String(m||"").slice(0,300),stack:String(st||"").slice(0,2000),url:location.pathname})}).catch(function(){});}catch(e){}}
+window.addEventListener("error",function(e){if(e&&e.message)rep(e.message,e.error&&e.error.stack);});window.addEventListener("unhandledrejection",function(e){var r=e&&e.reason;rep("unhandledrejection: "+(r&&r.message||r),r&&r.stack);});})();</script>
 <script>(function(){function go(){document.body.classList.add("has-tabbar");} if(document.body){go();} else {document.addEventListener("DOMContentLoaded",go);}})();</script>
 <script>
 (function(){
