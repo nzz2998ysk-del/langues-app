@@ -519,8 +519,8 @@ svg [data-reveal]{transform-box:fill-box;transform-origin:center}
 .k-steps li small strong{color:#fff}
 .k-steps b{width:44px;height:44px;flex:none;border-radius:12px;display:grid;place-items:center;font-size:1.1rem;color:#fff}
 .k-steps li:nth-child(1) b{background:#E21B3C} .k-steps li:nth-child(2) b{background:#1368CE} .k-steps li:nth-child(3) b{background:#D89E00}
-.pin{display:inline-block;padding:16px 22px;border-radius:18px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.18)}
-.pin small{display:block;font:700 .72rem var(--font-title);letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:.5rem}
+.k-pin{display:inline-block;padding:16px 22px;border-radius:18px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.18)}
+.k-pin small{display:block;font:700 .72rem var(--font-title);letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:.5rem}
 .pin-digits{display:flex;gap:8px;flex-wrap:wrap}
 .pin-digits span{min-width:clamp(38px,4vw,58px);height:clamp(52px,5.5vw,76px);display:grid;place-items:center;border-radius:12px;background:#fff;color:#2E1065;
   font:800 clamp(1.8rem,3.4vw,3rem) var(--font-title);box-shadow:0 8px 0 #C9B6FF;
@@ -733,26 +733,8 @@ svg [data-reveal]{transform-box:fill-box;transform-origin:center}
   </aside>
 </section>
 
-<!-- ===================================================================== 04 CHAPITRE I -->
-<section class="slide bg-c1" data-title="Partie I" data-trans="wipe" data-chap="I" data-speaker="Maxime MOISAN" data-minutes="4" style="--c:var(--sky)">
-  <svg class="ghost-ring spin-slow" viewBox="0 0 400 400" aria-hidden="true" data-stars="160,20"></svg>
-  <div class="wrap chap" style="--c:var(--sky)">
-    <div class="num roman" data-n="I">I</div>
-    <div>
-      <span class="eyebrow" data-reveal>Première partie</span>
-      <h2 data-split>Zone de libre-échange ou marché unique : quelle différence ?</h2>
-      <div class="bar"></div>
-      <ol>
-        <li data-reveal style="--i:6"><b>1.1</b>Les niveaux d’intégration : la classification de Balassa</li>
-        <li data-reveal style="--i:7"><b>1.2</b>Ce que le marché unique change vraiment</li>
-      </ol>
-    </div>
-  </div>
-  <aside class="notes"><p>Transition : « Pour comprendre ce que l’Europe a gagné, il faut d’abord voir ce qui distingue une simple zone de libre-échange d’un marché unique. »</p></aside>
-</section>
-
 <!-- ===================================================================== 05 BALASSA -->
-<section class="slide bg-4" data-title="Balassa" data-fx="side">
+<section class="slide bg-4" data-title="Balassa" data-fx="side" data-trans="wipe" data-chap="I" data-speaker="Maxime MOISAN">
   <div class="wrap">
     <span class="eyebrow" data-reveal>I · Différences</span>
     <h2 data-split>Cinq niveaux d’intégration <span class="sky">(Balassa, 1961)</span></h2>
@@ -836,29 +818,8 @@ svg [data-reveal]{transform-box:fill-box;transform-origin:center}
   </aside>
 </section>
 
-<!-- ===================================================================== 08 CHAPITRE II -->
-<section class="slide bg-c2" data-title="Partie II" data-trans="wipe" data-chap="II" data-speaker="Félicien RICHARD" data-minutes="6">
-  <svg class="ghost-ring spin-slow" viewBox="0 0 400 400" aria-hidden="true" data-stars="160,20"></svg>
-  <div class="wrap chap" style="--c:var(--green)">
-    <div class="num roman" data-n="II">II</div>
-    <div>
-      <span class="eyebrow green" data-reveal>Deuxième partie</span>
-      <h2 data-split>Les avantages pour les pays membres</h2>
-      <div class="bar"></div>
-      <ol>
-        <li data-reveal style="--i:5"><b>2.1</b>Plus d’échanges et plus de richesse</li>
-        <li data-reveal style="--i:6"><b>2.2</b>Des entreprises plus fortes</li>
-        <li data-reveal style="--i:7"><b>2.3</b>Capitaux et travailleurs plus mobiles</li>
-        <li data-reveal style="--i:8"><b>2.4</b>Des investissements venus d’ailleurs</li>
-        <li data-reveal style="--i:9"><b>2.5</b>Moins de démarches et de coûts</li>
-      </ol>
-    </div>
-  </div>
-  <aside class="notes"><p>Transition : « Ces différences ont des effets très concrets. Voyons d’abord ce que les pays membres y ont gagné. »</p></aside>
-</section>
-
 <!-- ===================================================================== 09 COMMERCE ×6 -->
-<section class="slide bg-7" data-title="Commerce ×6" data-fx="zoom" data-trans="flash">
+<section class="slide bg-7" data-title="Commerce ×6" data-fx="zoom" data-trans="wipe" data-chap="II" data-speaker="Félicien RICHARD">
   <div class="wrap">
     <span class="eyebrow green" data-reveal>II · Avantages</span>
     <h2 data-split>Plus d’échanges, plus de richesse</h2>
@@ -899,89 +860,12 @@ svg [data-reveal]{transform-box:fill-box;transform-origin:center}
   </aside>
 </section>
 
-<!-- ===================================================================== 10 ENTREPRISES (carte) -->
-<section class="slide bg-8" data-title="Entreprises" data-fx="side">
-  <div class="wrap cols-2 wide-r">
-    <div>
-      <span class="eyebrow green" data-reveal>II · Avantages</span>
-      <h2 data-split>Des entreprises plus fortes</h2>
-      <div class="stack">
-        <div class="card hcard" data-reveal="left" style="--i:3"><span class="icon gold"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg></span><div><h3>450 M de consommateurs</h3><p>Des économies d’échelle (rapport Cecchini, 1988)</p></div></div>
-        <div class="card hcard" data-reveal="left" style="--i:4"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></span><div><h3>70 % des exportations des PME</h3><p>se font dans le marché unique</p></div></div>
-        <div class="card hcard" data-reveal="left" style="--i:5"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 17h14M6 17l1.5-6h9L18 17M8 11l1.5-4h5L16 11"/><circle cx="8" cy="18" r="1.8"/><circle cx="16" cy="18" r="1.8"/></svg></span><div><h3>Une seule homologation</h3><p>automobile pour toute l’UE (règlement 2018/858)</p></div></div>
-      </div>
-    </div>
-    <div data-reveal="scale" style="--i:2">
-      <!-- Carte : chaîne de valeur automobile (pays surlignés via data-hl="CODE:classe") -->
-      <svg class="eumap" viewBox="270 245 240 165" data-hl="DE:gold CZ:core SK:core HU:core PL:core" aria-label="Chaîne de valeur automobile entre l'Allemagne, la Tchéquie, la Slovaquie, la Hongrie et la Pologne">
-        <path id="carFlow" d="M352 322 C 380 345, 400 350, 415 346 S 455 352, 465 362 S 470 385, 466 390 S 455 330, 457 302" fill="none" stroke="#FFCC00" stroke-width="1.1" stroke-dasharray="1" class="draw" pathLength="1" style="--i:12"/>
-        <g fill="#FFCC00">
-          <circle r="2.2"><animateMotion dur="6s" repeatCount="indefinite"><mpath href="#carFlow"/></animateMotion></circle>
-          <circle r="2.2" opacity=".7"><animateMotion dur="6s" begin="2s" repeatCount="indefinite"><mpath href="#carFlow"/></animateMotion></circle>
-          <circle r="2.2" opacity=".45"><animateMotion dur="6s" begin="4s" repeatCount="indefinite"><mpath href="#carFlow"/></animateMotion></circle>
-        </g>
-        <g data-reveal style="--i:14">
-          <text class="lbl dark" x="352" y="325" style="font-size:8px">DE</text><text class="lbl" x="415" y="349" style="font-size:7px;stroke-width:1.5px">CZ</text>
-          <text class="lbl" x="476" y="364" style="font-size:6px;stroke-width:1.5px">SK</text><text class="lbl" x="466" y="395" style="font-size:7px;stroke-width:1.5px">HU</text><text class="lbl" x="457" y="304" style="font-size:8px;stroke-width:1.5px">PL</text>
-        </g>
-      </svg>
-      <p class="note" style="text-align:center">Chaîne de valeur automobile : les pièces circulent sans frontière avant l’assemblage final</p>
-    </div>
-  </div>
-  <p class="src">Commission européenne ; directive 70/156/CEE et règlement (UE) 2018/858 ; Gutiérrez &amp; Philippon (2020).</p>
-  <aside class="notes">
-    <p>Produire pour 450 millions de consommateurs permet d’amortir les coûts fixes sur de plus grands volumes. Les PME en profitent d’abord : 70 % de la valeur de leurs exportations de biens se réalise dans le marché unique, et 80 % des PME exportatrices vendent dans d’autres États membres.</p>
-    <p>Automobile : avant, il fallait homologuer chaque modèle dans chaque pays ; aujourd’hui une seule fois pour toute l’Union. D’où les chaînes de valeur entre l’Allemagne, la Tchéquie, la Slovaquie, la Hongrie et la Pologne. La concurrence est surveillée par la Commission, plus indépendante que les autorités nationales (Gutiérrez et Philippon, 2020).</p>
-  </aside>
-</section>
-
-<!-- ===================================================================== 11 CAPITAUX & TRAVAILLEURS -->
-<section class="slide bg-9" data-title="Capitaux & travail" data-fx="tilt">
-  <div class="wrap">
-    <span class="eyebrow green" data-reveal>II · Avantages</span>
-    <h2 data-split>Les capitaux et les travailleurs circulent</h2>
-    <div class="cols-3" style="align-items:stretch">
-      <div class="card stat" data-reveal="flip" style="--i:2">
-        <span class="icon gold"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 6.5A7 7 0 1017 17.5M4 10h9M4 14h9"/></svg></span>
-        <div class="big gold" style="margin-top:.9rem">×<span class="count" data-to="5">0</span></div>
-        <p>investissements directs intra-UE (début 2002 → début 2021)</p>
-        <p style="margin-top:.4rem"><b class="white">×4</b> pour les investissements de portefeuille</p>
-      </div>
-      <div class="card stat" data-reveal="flip" style="--i:3">
-        <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0113 0M16 4.5a3.5 3.5 0 010 7M18 14a6 6 0 013.5 6"/></svg></span>
-        <div class="big gold" style="margin-top:.9rem"><span class="count" data-to="17">0</span> M</div>
-        <p>de citoyens vivent ou travaillent dans un autre État membre</p>
-        <p style="margin-top:.4rem"><b class="white">1,8 M</b> de travailleurs frontaliers · <b class="white">≈ 4 M</b> d’installations dans l’UE à 15 (2004-2014)</p>
-      </div>
-      <!-- Erasmus : de 3 200 à 16,5 millions -->
-      <div class="card" data-reveal="flip" style="--i:4;text-align:center">
-        <span class="chip gold">Erasmus, depuis 1987</span>
-        <svg viewBox="0 0 260 150" style="width:100%;margin-top:.6rem" aria-label="Erasmus : 3 200 étudiants en 1987, plus de 16,5 millions de bénéficiaires depuis">
-          <circle class="bubble" style="--i:1" cx="40" cy="96" r="6" fill="#4A90D9"/>
-          <path class="draw" pathLength="1" style="--i:4" d="M52 96 H 112" stroke="#9FB5CF" stroke-width="2" stroke-dasharray="1" fill="none"/>
-          <circle class="bubble" style="--i:4" cx="185" cy="78" r="66" fill="rgba(255,204,0,.18)" stroke="#FFCC00" stroke-width="2"/>
-          <text x="40" y="132" fill="#C9D7EA" font-size="12" text-anchor="middle" font-family="Inter">3 200</text>
-          <text x="40" y="146" fill="#7F95B3" font-size="10" text-anchor="middle" font-family="Inter">en 1987</text>
-          <text x="185" y="84" fill="#FFCC00" font-size="26" font-weight="800" text-anchor="middle" font-family="Montserrat" data-reveal style="--i:8">16,5 M</text>
-          <text x="185" y="104" fill="#C9D7EA" font-size="11" text-anchor="middle" font-family="Inter" data-reveal style="--i:9">bénéficiaires</text>
-        </svg>
-      </div>
-    </div>
-  </div>
-  <p class="src">DG Trésor ; Stojkov &amp; Warin (2018) ; Conseil de l’UE ; Commission européenne (Erasmus+).</p>
-  <aside class="notes">
-    <p>Capitaux : libéralisation complète en 1990 (directive 88/361). L’adhésion augmente les IDE bilatéraux intra-UE d’environ 22 à 28 % (Stojkov et Warin, 2018) : ces flux financent l’appareil productif des pays les moins riches.</p>
-    <p>Travailleurs : élargissements de 2004 et 2007 ; le Royaume-Uni et la Suède ouvrent leur marché du travail dès 2004, d’autres pays gardent des restrictions jusqu’en 2011 et 2013. Dix ans après l’adhésion, les barrières à la mobilité baissent d’environ un tiers.</p>
-    <p>Erasmus : 3 200 étudiants de 11 pays la première année. Ce n’est pas le marché unique au sens strict, mais son complément humain.</p>
-  </aside>
-</section>
-
 <!-- ===================================================================== 12 INVESTISSEURS EXTÉRIEURS (carte) -->
-<section class="slide bg-9b" data-title="Investisseurs">
+<section class="slide bg-9b" data-title="Capitaux & investisseurs" data-fx="side">
   <div class="wrap cols-2 wide-r">
     <div>
       <span class="eyebrow green" data-reveal>II · Avantages</span>
-      <h2 data-split>Un aimant pour les investisseurs du monde entier</h2>
+      <h2 data-split>Des capitaux qui circulent, des investisseurs attirés</h2>
       <div class="row" style="align-items:center;flex-wrap:nowrap">
         <div class="donut" data-reveal="scale" style="--i:3;width:min(200px,40vw);margin:0">
           <svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="50" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="12"/>
@@ -990,7 +874,7 @@ svg [data-reveal]{transform-box:fill-box;transform-origin:center}
         </div>
         <div class="stack" style="flex:1">
           <div data-reveal style="--i:4"><div class="big green" style="font-size:clamp(2rem,3.6vw,3rem)">+<span class="count" data-to="60">0</span> %</div><p>d’IDE venus de l’extérieur de l’UE après l’adhésion</p></div>
-          <div data-reveal style="--i:5"><b class="white">1<sup>re</sup> zone mondiale</b><p>pour les investissements directs entrants</p></div>
+          <div data-reveal style="--i:5"><div class="big gold" style="font-size:clamp(2rem,3.6vw,3rem)">×<span class="count" data-to="5">0</span></div><p>investissements directs entre pays membres (2002 → 2021)</p></div>
         </div>
       </div>
       <p class="lead" data-reveal style="--i:7;margin-top:1.2rem;font-size:1.05rem">Produire dans <b class="gold">un seul</b> État membre = vendre aux <b class="gold">450 M</b> de consommateurs, sans droits de douane ni nouvelle homologation.</p>
@@ -1013,22 +897,23 @@ svg [data-reveal]{transform-box:fill-box;transform-origin:center}
       </svg>
     </div>
   </div>
-  <p class="src">Bruno, Campos &amp; Estrin (2021) ; stock mondial d’IDE entrants, 2022.</p>
+  <p class="src">DG Trésor ; Bruno, Campos &amp; Estrin (2021) ; stock mondial d’IDE entrants, 2022 ; règlement (UE) 2018/858.</p>
   <aside class="notes">
     <p>Les constructeurs japonais et coréens l’illustrent : Toyota à Onnaing près de Valenciennes (2001), Kia à Žilina en Slovaquie (2006), Hyundai à Nošovice en Tchéquie (2008). Grâce à l’homologation unique et à l’absence de droits de douane internes, une seule usine donne accès à tout le marché européen.</p>
     <p>Selon Bruno, Campos et Estrin (2021), l’adhésion à l’UE augmente d’environ 60 % les IDE reçus de l’extérieur de l’Union. C’est un facteur d’attractivité, surtout pour l’Europe centrale.</p>
+    <p>Entre pays membres, les investissements directs ont été multipliés par près de 5 entre 2002 et 2021 (DG Trésor). Les entreprises produisent pour 450 millions de consommateurs (économies d’échelle) ; 70 % des exportations des PME se font dans le marché unique.</p>
   </aside>
 </section>
 
 <!-- ===================================================================== 13 BREXIT -->
-<section class="slide bg-10" data-title="Brexit" data-fx="side">
+<section class="slide bg-10" data-title="Personnes & Brexit" data-fx="tilt">
   <div class="wrap cols-2">
     <div>
       <span class="eyebrow green" data-reveal>II · Avantages</span>
-      <h2 data-split>Moins de formalités… ce que le Brexit a révélé</h2>
+      <h2 data-split>Circuler librement… ce que le Brexit a révélé</h2>
       <div class="stack">
-        <div class="card" data-reveal="left" style="--i:3;display:flex;gap:14px;align-items:center"><span class="big gold" style="font-size:2rem">1993</span><p>Fin des contrôles douaniers aux frontières intérieures</p></div>
-        <div class="card" data-reveal="left" style="--i:4;display:flex;gap:14px;align-items:center"><span class="big gold" style="font-size:2rem">27</span><p>pays où médecins, architectes et infirmiers font reconnaître leur diplôme</p></div>
+        <div class="card" data-reveal="left" style="--i:3;display:flex;gap:14px;align-items:center"><span class="big gold" style="font-size:2rem"><span class="count" data-to="17">0</span> M</span><p>de citoyens vivent ou travaillent dans un autre État membre · <b class="white">1,8 M</b> de frontaliers</p></div>
+        <div class="card" data-reveal="left" style="--i:4;display:flex;gap:14px;align-items:center"><span class="big gold" style="font-size:2rem">27</span><p>pays où les diplômes sont reconnus · <b class="white">Erasmus</b> : 16,5 M de bénéficiaires depuis 1987</p></div>
         <div class="card red-edge" data-reveal="left" style="--i:5;display:flex;gap:14px;align-items:center"><span class="icon red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5M3 21L21 3"/></svg></span><p><b class="white">Passeport financier perdu</b> : les banques de Londres ne peuvent plus servir toute l’UE</p></div>
       </div>
     </div>
@@ -1042,36 +927,16 @@ svg [data-reveal]{transform-box:fill-box;transform-origin:center}
       <p class="note">Autres estimations : de −2 % à −10 % de PIB selon les études (DG Trésor).</p>
     </div>
   </div>
-  <p class="src">Office for Budget Responsibility (OBR) ; DG Trésor ; directive 2005/36/CE.</p>
+  <p class="src">Conseil de l’UE ; Commission européenne (Erasmus+) ; OBR ; DG Trésor ; directive 2005/36/CE.</p>
   <aside class="notes">
+    <p>Élargissements de 2004 et 2007 : près de 4 millions de citoyens des nouveaux États membres se sont installés dans l’UE à 15 entre 2004 et 2014. Erasmus : 3 200 étudiants en 1987, plus de 16,5 millions de bénéficiaires depuis.</p>
     <p>Depuis le 1<sup>er</sup> janvier 1993, plus de contrôles douaniers ni de formalités aux frontières intérieures. La directive 2005/36/CE permet la reconnaissance des qualifications professionnelles. Ces facilités sont invisibles quand elles fonctionnent… le Brexit les a rendues visibles.</p>
     <p>Depuis le 1<sup>er</sup> janvier 2021, les exportateurs britanniques remplissent des formalités douanières, justifient l’origine et la conformité de leurs produits. L’OBR estime le PIB inférieur d’environ 4 % à long terme (dont 2,7 % dès 2025). Certains économistes contestent la méthode, mais toutes les études indiquent un coût.</p>
   </aside>
 </section>
 
-<!-- ===================================================================== 14 CHAPITRE III -->
-<section class="slide bg-c3" data-title="Partie III" data-trans="wipe" data-chap="III" data-speaker="Simon VANACKERE" data-minutes="5">
-  <svg class="ghost-ring spin-slow" viewBox="0 0 400 400" aria-hidden="true" data-stars="160,20"></svg>
-  <div class="wrap chap" style="--c:var(--red)">
-    <div class="num roman" data-n="III">III</div>
-    <div>
-      <span class="eyebrow red" data-reveal>Troisième partie</span>
-      <h2 data-split>Les inconvénients et les limites</h2>
-      <div class="bar"></div>
-      <ol>
-        <li data-reveal style="--i:5"><b>3.1</b>Moins de pouvoir de décision</li>
-        <li data-reveal style="--i:6"><b>3.2</b>Des gains inégalement répartis</li>
-        <li data-reveal style="--i:7"><b>3.3</b>Un marché pas encore terminé</li>
-        <li data-reveal style="--i:8"><b>3.4</b>Trop de règles, selon certains</li>
-        <li data-reveal style="--i:9"><b>3.5</b>Des tensions sociales et politiques</li>
-      </ol>
-    </div>
-  </div>
-  <aside class="notes"><p>Transition : « Ce bilan positif a pourtant un prix. »</p></aside>
-</section>
-
 <!-- ===================================================================== 15 SOUVERAINETÉ -->
-<section class="slide bg-11" data-title="Souveraineté" data-fx="tilt">
+<section class="slide bg-11" data-title="Souveraineté" data-fx="tilt" data-trans="wipe" data-chap="III" data-speaker="Simon VANACKERE">
   <div class="wrap">
     <span class="eyebrow red" data-reveal>III · Limites</span>
     <h2 data-split>Moins de souveraineté nationale</h2>
@@ -1183,39 +1048,10 @@ svg [data-reveal]{transform-box:fill-box;transform-origin:center}
   </aside>
 </section>
 
-<!-- ===================================================================== 18 TENSIONS (pas à pas) -->
-<section class="slide bg-14" data-title="Tensions">
-  <div class="wrap">
-    <span class="eyebrow red" data-reveal>III · Limites</span>
-    <h2 data-split>Des tensions sociales et politiques</h2>
-    <div class="cols-2">
-      <div class="vtl">
-        <div class="ev" data-reveal style="--i:3"><div class="y">2004-2006</div><p>Projet de directive Bolkestein : la peur du « plombier polonais »</p></div>
-        <div class="ev" data-frag><div class="y">23 juin 2016</div><p>Référendum britannique : le « Leave » l’emporte</p></div>
-        <div class="ev" data-frag><div class="y">2018</div><p>Révision de la directive sur le détachement : « à travail égal, rémunération égale »</p></div>
-      </div>
-      <div data-reveal="scale" style="--i:4">
-        <div class="donut">
-          <svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="50" fill="none" stroke="rgba(74,144,217,.35)" stroke-width="12"/>
-            <circle class="ring-fg" pathLength="100" style="--v:51.9" cx="60" cy="60" r="50" fill="none" stroke="#E0574B" stroke-width="12"/></svg>
-          <div class="center"><div class="big red"><span class="count" data-to="51.9" data-decimals="1">0</span> %</div><p style="font-size:.85rem">pour le « Leave »<br>(Brexit, 2016)</p></div>
-        </div>
-      </div>
-    </div>
-    <p class="quote" data-frag>L’approfondissement ne peut pas se faire sans l’adhésion des citoyens.</p>
-  </div>
-  <p class="src">Directive 2006/123/CE ; directive (UE) 2018/957 ; résultats officiels du référendum de 2016.</p>
-  <aside class="notes">
-    <p>Espace : 2016, puis 2018, puis la phrase de conclusion.</p>
-    <p>Le détachement, encadré depuis 1996, permet d’envoyer temporairement des salariés dans un autre État membre. Les écarts de coût du travail ont nourri la crainte d’un « dumping social ». Bolkestein voulait appliquer la loi du pays d’origine : en France, pendant la campagne du référendum de 2005, c’est le « plombier polonais ». Le texte adopté en 2006 a écarté ce principe ; la directive de 2018, applicable depuis 2020, renforce l’égalité de rémunération.</p>
-    <p>Au Royaume-Uni, la libre circulation des personnes et la souveraineté ont été au cœur de la campagne.</p>
-  </aside>
-</section>
-
 <!-- ===================================================================== 19 BILAN (pas à pas) -->
 <section class="slide bg-15" data-title="Bilan" data-fx="zoom" data-trans="flash" data-speaker="Raphael SANGUINETTI" data-minutes="2">
   <div class="wrap">
-    <span class="eyebrow gold" data-reveal>Synthèse</span>
+    <span class="eyebrow gold" data-reveal>Bilan et conclusion</span>
     <h2 data-split>Les mêmes mécanismes créent les gains… et les coûts</h2>
     <div class="table">
       <div class="trow head" data-reveal style="--i:3"><div>Mécanisme</div><div class="green">✓ Avantage</div><div class="red">⚠ Limite</div></div>
@@ -1223,52 +1059,14 @@ svg [data-reveal]{transform-box:fill-box;transform-origin:center}
       <div class="trow" data-frag><div>Règles communes</div><div class="pro">Reconnaissance mutuelle, homologation unique</div><div class="con">Perte de souveraineté, charge pour les PME</div></div>
       <div class="trow" data-frag><div>Capitaux</div><div class="pro">IDE multipliés, attractivité</div><div class="con">Concurrence fiscale (IS de 9 % à 35 %)</div></div>
       <div class="trow" data-frag><div>Personnes</div><div class="pro">17 M de citoyens mobiles</div><div class="con">Fuite des cerveaux, travailleurs détachés</div></div>
-      <div class="trow" data-frag><div>Approfondissement</div><div class="pro">Commerce ×6, gains de PIB</div><div class="con">Services fragmentés, opposition (Brexit)</div></div>
+      <div class="trow" data-frag><div>Approfondissement</div><div class="pro">Commerce ×6, gains de PIB</div><div class="con">Services fragmentés, opposition (Brexit : 51,9 % pour le « Leave »)</div></div>
     </div>
-  </div>
-  <aside class="notes"><p>Espace : une ligne à la fois. Idée clé : les mêmes mécanismes qui créent les gains du marché unique en expliquent aussi les coûts.</p></aside>
-</section>
-
-<!-- ===================================================================== 20 CONCLUSION (pas à pas) -->
-<section class="slide bg-16" data-title="Conclusion" data-fx="tilt">
-  <div class="wrap">
-    <span class="eyebrow gold" data-reveal>Conclusion</span>
-    <h2 data-split>Un bilan positif, mais un projet inachevé</h2>
-    <div class="cols-2 two-times">
-      <div class="card" data-reveal="left" style="--i:3">
-        <h3 class="green"><span class="icon green">✓</span>Des gains tangibles</h3>
-        <ul class="green"><li>Commerce intra-UE multiplié par plus de 6 (1993-2023)</li><li>Plusieurs points de PIB et des emplois</li><li>1<sup>re</sup> destination mondiale des IDE</li></ul>
-      </div>
-      <div class="card red-edge" data-frag>
-        <h3 class="red"><span class="icon red">!</span>Mais des nuances</h3>
-        <ul class="red"><li>Leviers nationaux perdus (aides d’État, fiscalité)</li><li>Gains inégalement répartis</li><li>Services, finance, énergie et défense encore fragmentés</li></ul>
-      </div>
-    </div>
-    <div class="final-q" data-frag><p>Comment l’Europe peut-elle rester compétitive face aux États-Unis et à la Chine ?</p></div>
+    <div class="final-q" data-frag style="margin-top:clamp(16px,3.5vh,36px)"><p>Un bilan positif, mais un projet inachevé : comment l’Europe peut-elle rester compétitive face aux États-Unis et à la Chine ?</p></div>
   </div>
   <aside class="notes">
-    <p>Espace : la carte « nuances », puis la question d’ouverture.</p>
-    <p>Le marché unique demeure un projet inachevé : les rapports Draghi et Letta (2024) le soulignent, et les gains non réalisés se chiffrent en centaines, voire en milliers de milliards d’euros. Le Brexit montre que quitter le marché unique coûte cher, mais aussi que son approfondissement n’a de valeur que si les citoyens en comprennent l’importance et l’acceptent.</p>
+    <p>Espace : une ligne à la fois, puis la question d’ouverture. Idée clé : les mêmes mécanismes qui créent les gains du marché unique en expliquent aussi les coûts.</p>
+    <p>Tensions : la directive Bolkestein (2004-2006) et la peur du « plombier polonais », puis le référendum britannique de 2016 (51,9 % pour le « Leave »). L’approfondissement ne peut pas se faire sans l’adhésion des citoyens. Les rapports Draghi et Letta (2024) rappellent que le marché unique reste inachevé.</p>
   </aside>
-</section>
-
-<!-- ===================================================================== 21 MERCI -->
-<section class="slide bg-17" data-title="Merci" data-fx="zoom">
-  <div class="grid-lines"></div>
-  <div class="wrap thanks">
-    <div class="float" style="width:min(170px,38vw);margin:0 auto 1.4rem"><svg class="spin-slow" viewBox="0 0 400 400" style="width:100%;display:block;overflow:visible" aria-hidden="true"><g id="starRing2"></g></svg></div>
-    <h1 data-split>Merci de votre attention</h1>
-    <p class="q" data-reveal style="--i:5">Des questions ?</p>
-    <div class="names">
-      <span data-reveal="pop" style="--i:7"><b>Evan</b> SIMON</span>
-      <span data-reveal="pop" style="--i:8"><b>Maxime</b> MOISAN</span>
-      <span data-reveal="pop" style="--i:9"><b>Félicien</b> RICHARD</span>
-      <span data-reveal="pop" style="--i:10"><b>Simon</b> VANACKERE</span>
-      <span data-reveal="pop" style="--i:11"><b>Raphael</b> SANGUINETTI</span>
-    </div>
-    <p class="cohort" data-reveal style="--i:12">Demi-Cohorte B2</p>
-  </div>
-  <aside class="notes"><p>Questions possibles : rôle de l’euro, Brexit, travailleurs détachés, rapports Draghi et Letta.</p></aside>
 </section>
 
 <!-- ===================================================================== 22 KAHOOT
@@ -1276,19 +1074,19 @@ svg [data-reveal]{transform-box:fill-box;transform-origin:center}
        Le QR code (vers kahoot.it/?pin=…) se génère tout seul, même sans Internet.
        Pour utiliser votre propre image de QR code à la place : data-qr="images/qr-kahoot.png"
      ===================================================================== -->
-<section class="slide bg-k" data-title="Kahoot" data-fx="zoom" data-trans="flash" data-pin="598 919" data-link="https://kahoot.it/?pin=598919&amp;refer_method=link" data-qr="">
+<section class="slide bg-k" data-title="Merci & Kahoot" data-fx="zoom" data-trans="flash" data-pin="598 919" data-link="https://kahoot.it/?pin=598919&amp;refer_method=link" data-qr="">
   <div class="aurora k" aria-hidden="true"><i></i><i></i><i></i></div>
   <div class="wrap kahoot">
     <div>
-      <span class="eyebrow gold" data-reveal>Quiz</span>
+      <span class="eyebrow gold" data-reveal>Merci de votre attention</span>
       <h2 data-split>À vous de jouer&nbsp;!</h2>
-      <p class="lead" data-reveal style="--i:4">Testez ce que vous avez retenu avec notre Kahoot.</p>
+      <p class="lead" data-reveal style="--i:4">Des questions&nbsp;? Puis testez ce que vous avez retenu avec notre Kahoot.</p>
       <ol class="k-steps">
         <li data-reveal="left" style="--i:5"><b>1</b><span>Scannez le QR code<br><small>ou allez sur <strong>kahoot.it</strong></small></span></li>
         <li data-reveal="left" style="--i:6"><b>2</b><span>Entrez le code PIN</span></li>
         <li data-reveal="left" style="--i:7"><b>3</b><span>Choisissez un pseudo… et c’est parti&nbsp;!</span></li>
       </ol>
-      <div class="pin" data-reveal="scale" style="--i:8">
+      <div class="k-pin" data-reveal="scale" style="--i:8">
         <small>Code PIN du jeu</small>
         <div class="pin-digits" id="kPin"></div>
       </div>
@@ -3660,6 +3458,7 @@ var qrcode = function() {
     return d + 'Z';
   }
   function buildStars(g, ringR, size, animated = true, cx = 200, cy = 200) {
+    if (!g) return;
     for (let k = 0; k < 12; k++) {
       const a = k * Math.PI / 6, p = document.createElementNS(NS, 'path');
       p.setAttribute('d', starPath(cx + ringR * Math.cos(a), cy + ringR * Math.sin(a), size, size * .4));
@@ -3736,7 +3535,7 @@ var qrcode = function() {
 
   /* ---------- 2 ter. Kahoot : code PIN + QR code générés depuis data-pin ---------- */
   (() => {
-    const sec = document.querySelector('[data-title="Kahoot"]'); if (!sec) return;
+    const sec = document.querySelector('[data-pin]'); if (!sec) return;
     const raw = (sec.dataset.pin || '').trim(), digits = raw.replace(/\D/g, '');
     const pinEl = document.getElementById('kPin'), qrEl = document.getElementById('kQr'), cap = document.getElementById('kCap');
     // Affichage du PIN par blocs (ex. « 123 4567 ») ; tirets en attendant
