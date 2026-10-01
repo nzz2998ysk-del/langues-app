@@ -1507,6 +1507,37 @@ app.get("/api/admin/config", requireAdmin, async (req, res) => {
   return res.json({ checks });
 });
 
+// ---- Admin: send one sample of every email to the admin's own address ----
+// Sample data only: no account, token, payment or invoice is created; links
+// are harmless (the sample reset link is not a valid token).
+app.post("/api/admin/test-emails", requireAdmin, async (req, res) => {
+  if (rateLimited("test-emails:" + req.userId, 3, 10 * 60 * 1000)) return res.status(429).json({ error: "Trop d'envois de test, réessaie dans quelques minutes." });
+  if (!emailProvider()) return res.status(400).json({ error: "Aucun envoi d'email configuré (SMTP_USER + SMTP_PASS, ou RESEND_API_KEY)." });
+  const to = (await pool.query("SELECT email FROM users WHERE id = $1", [req.userId])).rows[0].email;
+  const now = new Date();
+  const number = "TEST-" + now.toISOString().slice(0, 10).replace(/-/g, "");
+  let pdf = null;
+  try { pdf = await invoicePdf({ number, date: now, amountCents: 499, currency: "eur", customerEmail: to, customerName: "Exemple" }); } catch (e) { console.error("[invoice] test PDF failed:", e.message); }
+  const samples = [
+    ["Bienvenue", { subject: `[TEST] Bienvenue sur ${BUSINESS_NAME}`, html: welcomeEmailHtml("Camille", APP_URL + "/") }],
+    ["Mot de passe oublié", { subject: `[TEST] Réinitialise ton mot de passe - ${BUSINESS_NAME}`, html: resetPasswordEmailHtml(APP_URL + "/reset-password?token=exemple-de-test") }],
+    ["Facture Premium", { subject: `[TEST] Ta facture ${number} - ${BUSINESS_NAME} Premium`,
+      html: invoiceEmailHtml({ invoiceNumber: number, date: now.toLocaleDateString("fr-FR", { timeZone: "Europe/Paris" }), amount: 499, currency: "eur", email: to, businessName: BUSINESS_NAME }),
+      attachments: pdf ? [{ filename: `Facture-${number}.pdf`, content: pdf, contentType: "application/pdf" }] : undefined }],
+    ["Rappel quotidien", { subject: "[TEST] 🔥 7 jours de suite — on continue ?", html: reminderEmailHtml({ lang: "fr", name: "Camille", streak: 7, due: 12, langName: "Espagnol", appLink: APP_URL + "/", unsubLink: APP_URL + "/profile" }) }],
+    ["Boîte à idées", { subject: "[TEST] 💡 Boîte à idées — 2 nouvelles suggestions", html: suggestionsDigestHtml([
+      { created_at: now, user_email: "exemple@papote.app", category: "langue", message: "Ajouter le breton !" },
+      { created_at: now, user_email: null, category: "", message: "Un mode sombre encore plus sombre la nuit." }]) }],
+  ];
+  const results = [];
+  for (const [label, mail] of samples) {
+    const r = await sendEmail({ to, ...mail });
+    results.push({ label, ok: Boolean(r && r.ok) });
+  }
+  await audit(req, "test_emails", to, { sent: results.filter((r) => r.ok).length });
+  return res.json({ to, results });
+});
+
 // ---- Admin: two-factor authentication (mandatory for admin routes) ----
 app.get("/api/admin/mfa", requireAdminBase, async (req, res) => {
   const r = await pool.query("SELECT totp_recovery FROM users WHERE id = $1", [req.userId]);

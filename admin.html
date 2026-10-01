@@ -252,6 +252,10 @@ input:checked + .slider:before{transform:translateX(16px)}
       <div class="panel-title section" id="sec-security">🔐 Sécurité &amp; configuration</div>
       <div class="sub" style="margin-bottom:10px">Vérification automatique de la configuration du serveur (aucune valeur secrète n'est affichée).</div>
       <div class="card"><ul class="cfg-list" id="cfgList"><li class="empty">Chargement…</li></ul></div>
+      <div class="card" style="margin-top:14px"><b>📧 Tester les emails</b>
+        <div class="sub">Envoie un exemplaire de chaque email (bienvenue, mot de passe oublié, facture Premium avec PDF, rappel quotidien, boîte à idées) à ton adresse admin. Aucun compte, paiement ni facture réelle n'est créé.</div>
+        <p style="margin-top:10px"><button class="btn primary" data-act="testEmails">Envoyer les emails de test</button></p>
+        <div class="sub" id="testEmailsResult" role="status" aria-live="polite"></div></div>
       <div class="card" style="margin-top:14px" id="mfaCard"></div>
     </div>
   </div>
@@ -622,6 +626,18 @@ async function mfaDisable(){
   if (!r.ok){ alert(d.error || 'Erreur'); return; }
   location.reload();
 }
+async function testEmails(btn){
+  var out = document.getElementById('testEmailsResult');
+  btn.disabled = true; out.textContent = 'Envoi en cours…';
+  try {
+    var r = await fetch('/api/admin/test-emails', {method:'POST', headers:{'Content-Type':'application/json'}, body:'{}'});
+    var d = await r.json();
+    if (!r.ok){ out.textContent = d.error || 'Erreur'; return; }
+    out.innerHTML = 'Envoyé à <b>' + escH(d.to) + '</b> : ' + d.results.map(function(x){ return (x.ok ? '✅ ' : '❌ ') + escH(x.label); }).join(' · ') +
+      (d.results.some(function(x){ return !x.ok; }) ? '<br>Un envoi a échoué : regarde la ligne [email] dans les logs Render.' : '<br>Pense à regarder aussi dans les spams.');
+  } catch(e){ out.textContent = 'Erreur réseau.'; }
+  finally { btn.disabled = false; }
+}
 async function loadConfig(){
   var r = await fetch('/api/admin/config'); if (!r.ok) return;
   var d = await r.json();
@@ -658,6 +674,7 @@ var ACT = {
   mfaStart: function(){ mfaStart(); },
   mfaEnable: function(){ mfaEnable(); },
   mfaDisable: function(){ mfaDisable(); },
+  testEmails: function(el){ testEmails(el); },
   reload: function(){ location.reload(); },
   loadErrors: function(){ loadErrors(); },
   clearErrors: function(){ clearErrors(); },

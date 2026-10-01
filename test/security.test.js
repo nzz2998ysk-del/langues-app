@@ -378,6 +378,15 @@ test("Premium follows the real Stripe subscription state", { skip }, async () =>
   assert.equal(await subscribed(), false);
 });
 
+test("test emails: admin only, refused clearly when no email provider is set", { skip }, async () => {
+  const user = await signup("not-admin-mail@example.com");
+  assert.equal((await user("POST", "/api/admin/test-emails", {})).status, 403);
+  const admin = await sharedAdmin();
+  const r = await admin("POST", "/api/admin/test-emails", {});
+  assert.equal(r.status, 400); // the test server has no SMTP / Resend
+  assert.match(r.json.error, /SMTP_USER/);
+});
+
 test("invoices: one per payment, numbered in sequence, PDF only for its owner", { skip }, async () => {
   const c = await signup("invoice@example.com");
   const other = await signup("not-the-payer@example.com");

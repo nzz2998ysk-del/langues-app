@@ -254,6 +254,12 @@ de Papote (`layout()` dans `lib/email.js` : logo, mascotte, carte blanche
 arrondie, dégradé bleu → indigo, version texte incluse) ; logo et mascotte
 sont chargés depuis `APP_URL`.
 
+**Tester les emails** : page Admin → « Sécurité & configuration » → *Envoyer
+les emails de test*. Un exemplaire de chaque email (bienvenue, mot de passe
+oublié, facture Premium avec son PDF, rappel quotidien, boîte à idées) part à
+l'adresse de l'admin connecté, sujet préfixé par `[TEST]`. Rien n'est créé
+(ni compte, ni paiement, ni numéro de facture) ; limité à 3 envois / 10 min.
+
 ### Option 1 — une boîte iCloud (le plus simple, sans domaine ni nouveau numéro)
 
 1. **Mot de passe pour app** : [appleid.apple.com](https://appleid.apple.com) →
