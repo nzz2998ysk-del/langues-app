@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Du libre-échange au marché unique</title>
+<title>Marché unique européen</title>
 <meta name="description" content="Avantages et inconvénients pour les pays membres de l'UE d'être passés d'une zone de libre-échange au marché unique — Demi-Cohorte B2">
 <!--
   ============================================================================
@@ -251,9 +251,10 @@ p{color:var(--muted);font-size:clamp(.98rem,1.15vw,1.12rem)}
 .hud .frags{display:flex;gap:4px}
 .hud .frags i{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.2)}
 .hud .frags i.on{background:var(--gold)}
-.hint{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:60;display:flex;align-items:center;gap:10px;font-size:.8rem;color:var(--muted);transition:opacity .6s;white-space:nowrap}
+.hint{position:fixed;right:calc(var(--pad-x) + 26px);bottom:22px;transform:translateX(-50%);z-index:60;display:flex;align-items:center;gap:10px;font-size:.8rem;color:var(--muted);transition:opacity .6s;white-space:nowrap}
 .hint kbd,.help kbd{font:600 .72rem var(--font-body);color:#fff;border:1px solid rgba(255,255,255,.3);border-bottom-width:3px;border-radius:6px;padding:.25em .7em;background:rgba(255,255,255,.05)}
 .hint.hide{opacity:0;pointer-events:none}
+.hint{transform:none!important;left:auto!important}
 @media (max-width:1100px){.hint{display:none}}
 
 /* Particules (étoiles) : s'étirent pendant les transitions */
@@ -304,20 +305,55 @@ p{color:var(--muted);font-size:clamp(.98rem,1.15vw,1.12rem)}
    8. STYLES PAR SECTION
    ===================================================================== */
 /* --- Titre --- */
-.hero{display:grid;grid-template-columns:1.25fr .9fr;gap:4vw;align-items:center}
-.hero .route{display:flex;align-items:center;gap:14px;margin-bottom:1.6rem;flex-wrap:wrap}
+.title-slide .wrap{width:min(1500px,100%)}
+.hero{display:grid;grid-template-columns:1.05fr 1fr;gap:3vw;align-items:center}
+.hero-text{position:relative;z-index:2}
+.kicker{display:inline-flex;align-items:center;gap:.8em;font:700 .78rem var(--font-title);letter-spacing:.28em;text-transform:uppercase;color:var(--gold);margin-bottom:1.3rem}
+.kicker .dot{width:5px;height:5px;border-radius:50%;background:var(--sky)}
+.hero .route{display:flex;align-items:center;gap:14px;margin-bottom:1.4rem;flex-wrap:wrap}
 .hero .route .arrow{width:70px;height:12px}
-.hero h1 .gold{color:var(--gold)}
-.hero .authors{margin-top:2.2rem;display:flex;flex-wrap:wrap;gap:8px 10px}
-.hero .authors span{font-size:.86rem;color:#DCE6F3;padding:.35em .8em;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.04)}
-.hero .authors span b{font-family:var(--font-title);font-weight:700;letter-spacing:.02em}
-.hero .cohort{margin-top:.9rem;font-size:.85rem;color:var(--muted);letter-spacing:.06em}
-.stars-ring{width:100%;max-width:460px;aspect-ratio:1;justify-self:center;overflow:visible}
-.spin-slow{animation:spin 140s linear infinite;transform-origin:50% 50%}
-@keyframes spin{to{transform:rotate(360deg)}}
+.hero h1{font-size:clamp(2.3rem,4.4vw,4.4rem);line-height:1.04;text-wrap:balance;text-shadow:0 10px 40px rgba(0,0,0,.35)}
+.glow-gold .w{background:linear-gradient(100deg,#FFCC00 0%,#FFE680 40%,#FFB800 60%,#FFCC00 100%);background-size:250% 100%;
+  -webkit-background-clip:text;background-clip:text;color:transparent;animation:goldflow 6s linear infinite}
+@keyframes goldflow{to{background-position:-250% 0}}
+.hero .lead{margin-top:1.2rem;max-width:44ch}
+.team{display:flex;align-items:center;gap:18px;margin-top:2.2rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+.avatars{display:flex}
+.avatars span{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;margin-left:-10px;font:800 .78rem var(--font-title);color:var(--navy);
+  background:linear-gradient(135deg,#FFE066,#FFB800);border:3px solid #0D2752;box-shadow:0 6px 18px -6px rgba(0,0,0,.6)}
+.avatars span:nth-child(2){background:linear-gradient(135deg,#8CC2FF,#4A90D9)}
+.avatars span:nth-child(3){background:linear-gradient(135deg,#7FE3BC,#3CC48F)}
+.avatars span:nth-child(4){background:linear-gradient(135deg,#FFA79E,#E0574B)}
+.avatars span:nth-child(5){background:linear-gradient(135deg,#C9B6FF,#7B61D9)}
+.avatars span:first-child{margin-left:0}
+.names p{margin:0;font-size:.92rem;color:#DCE6F3;line-height:1.5}
+.names .cohort{color:var(--muted);font-size:.8rem;letter-spacing:.14em;text-transform:uppercase;margin-top:.2rem}
+.hero-visual{position:relative}
+.hero-map{width:100%;max-width:760px;margin-left:auto;overflow:visible!important}
+.hero-map .countries{mask:url(#heroFade)}
+.hero-map .countries path{fill:rgba(16,40,82,.55)!important;stroke:rgba(110,160,220,.25)!important;stroke-width:.6}
+.is-visible .hero-map .countries path.hl.eu{fill:rgba(36,86,170,.55)!important;stroke:rgba(140,190,250,.55)!important}
+.hero-map .arc{fill:none;stroke:url(#arcGrad);stroke:#FFCC00;stroke-width:1.1;stroke-linecap:round;opacity:.75}
+.hero-map .node{fill:#FFE27A}
+.hero-map .halo{fill:#FFCC00;opacity:.25;transform-box:fill-box;transform-origin:center;animation:pulse 2.6s ease-in-out infinite;animation-delay:var(--d)}
+.hero-map .spark{fill:#fff;filter:drop-shadow(0 0 3px #FFCC00)}
 .star{opacity:0;transform:scale(.2) rotate(-90deg);transform-box:fill-box;transform-origin:center;
   transition:opacity .8s var(--ease),transform 1.2s var(--ease-back);transition-delay:calc(var(--i)*90ms + 400ms)}
 .is-visible .star{opacity:1;transform:none}
+.hero-map .star{filter:drop-shadow(0 0 6px rgba(255,204,0,.55))}
+.spin-slow{animation:spin 140s linear infinite;transform-origin:50% 50%}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* Halos lumineux qui dérivent lentement */
+.aurora{position:absolute;inset:0;z-index:-1;overflow:hidden;pointer-events:none}
+.aurora i{position:absolute;width:55vw;height:55vw;border-radius:50%;filter:blur(80px);opacity:.35;animation:aur 18s ease-in-out infinite alternate}
+.aurora i:nth-child(1){background:#1F5FD1;left:-15vw;top:-20vw}
+.aurora i:nth-child(2){background:#FFB800;opacity:.12;right:-10vw;bottom:-25vw;animation-duration:22s}
+.aurora i:nth-child(3){background:#2BB3A0;opacity:.12;left:30vw;top:30vh;width:35vw;height:35vw;animation-duration:26s}
+@keyframes aur{to{transform:translate(8vw,6vh) scale(1.15)}}
+.scroll-cue{position:absolute;left:50%;bottom:26px;transform:translateX(-50%);display:flex;align-items:center;gap:10px;font-size:.8rem;color:var(--muted);z-index:3}
+.scroll-cue kbd{font:600 .72rem var(--font-body);color:#fff;border:1px solid rgba(255,255,255,.3);border-bottom-width:3px;border-radius:6px;padding:.25em .8em}
+.scroll-cue i{width:10px;height:10px;border-right:2px solid var(--gold);border-bottom:2px solid var(--gold);transform:rotate(45deg);animation:cue 1.6s ease-in-out infinite}
+@keyframes cue{50%{transform:translateY(5px) rotate(45deg);opacity:.4}}
 .orbit{transform-origin:200px 200px;animation:spin 9s linear infinite}
 
 /* --- Repères --- */
@@ -474,6 +510,41 @@ svg [data-reveal]{transform-box:fill-box;transform-origin:center}
 .thanks .names b{font-family:var(--font-title)}
 .thanks .cohort{margin-top:.8rem;color:var(--muted);font-size:.9rem}
 
+/* --- Kahoot --- */
+.bg-k{--bg:radial-gradient(90% 90% at 80% 50%,#3B1C7A 0%,#1A1450 45%,#0A0E2E 100%)}
+.aurora.k i:nth-child(1){background:#7B3FE4} .aurora.k i:nth-child(2){background:#FF3355;opacity:.15} .aurora.k i:nth-child(3){background:#26890C;opacity:.12}
+.kahoot{display:grid;grid-template-columns:1.1fr .9fr;gap:clamp(24px,5vw,80px);align-items:center}
+.kahoot h2{font-size:clamp(2.4rem,5vw,4.6rem)}
+.k-steps{list-style:none;display:grid;gap:14px;margin:1.6rem 0}
+.k-steps li{display:flex;align-items:center;gap:16px;font:700 clamp(1rem,1.4vw,1.25rem) var(--font-title)}
+.k-steps li small{font:500 .85rem var(--font-body);color:var(--muted)}
+.k-steps li small strong{color:#fff}
+.k-steps b{width:44px;height:44px;flex:none;border-radius:12px;display:grid;place-items:center;font-size:1.1rem;color:#fff}
+.k-steps li:nth-child(1) b{background:#E21B3C} .k-steps li:nth-child(2) b{background:#1368CE} .k-steps li:nth-child(3) b{background:#D89E00}
+.pin{display:inline-block;padding:16px 22px;border-radius:18px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.18)}
+.pin small{display:block;font:700 .72rem var(--font-title);letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:.5rem}
+.pin-digits{display:flex;gap:8px;flex-wrap:wrap}
+.pin-digits span{min-width:clamp(38px,4vw,58px);height:clamp(52px,5.5vw,76px);display:grid;place-items:center;border-radius:12px;background:#fff;color:#2E1065;
+  font:800 clamp(1.8rem,3.4vw,3rem) var(--font-title);box-shadow:0 8px 0 #C9B6FF;
+  opacity:0;transform:translateY(-20px) rotateX(80deg);transition:opacity .5s var(--ease),transform .8s var(--ease-back);transition-delay:calc(var(--k) * 90ms + 1.2s)}
+.pin-digits span.gap{min-width:10px;background:none;box-shadow:none}
+.pin-digits span.todo{color:#9A8BC7;background:rgba(255,255,255,.85)}
+.is-visible .pin-digits span{opacity:1;transform:none}
+.qr-card{position:relative;justify-self:center;width:min(440px,80vw);padding:26px;border-radius:28px;background:#fff;
+  box-shadow:0 40px 90px -30px rgba(0,0,0,.8),0 0 0 10px rgba(255,255,255,.06),0 0 80px rgba(123,63,228,.45);animation:float 6s ease-in-out infinite}
+.qr{aspect-ratio:1;display:grid;place-items:center;position:relative;overflow:hidden;border-radius:10px}
+.qr svg,.qr img{width:100%;height:100%;display:block}
+.qr::after{content:"";position:absolute;left:0;right:0;height:18%;top:-20%;background:linear-gradient(180deg,transparent,rgba(123,63,228,.35),transparent);animation:scan 3.2s ease-in-out infinite 1.5s}
+@keyframes scan{0%{top:-20%}60%,100%{top:105%}}
+.qr .placeholder{width:100%;height:100%;border:3px dashed #B9A7E8;border-radius:12px;display:grid;place-content:center;text-align:center;color:#5B3FA8;font:700 1.1rem var(--font-title);gap:8px}
+.qr .placeholder small{font:500 .82rem var(--font-body);color:#8A7BB8}
+.qr-cap{text-align:center;margin-top:12px;font:800 1.2rem var(--font-title);color:#2E1065;letter-spacing:.02em}
+.corner{position:absolute;width:34px;height:34px;border:4px solid var(--gold)}
+.corner.tl{top:-12px;left:-12px;border-right:0;border-bottom:0;border-radius:12px 0 0 0}
+.corner.tr{top:-12px;right:-12px;border-left:0;border-bottom:0;border-radius:0 12px 0 0}
+.corner.bl{bottom:-12px;left:-12px;border-right:0;border-top:0;border-radius:0 0 0 12px}
+.corner.br{bottom:-12px;right:-12px;border-left:0;border-top:0;border-radius:0 0 12px 0}
+
 /* --- Sources --- */
 .biblio{columns:2;column-gap:48px;font-size:.86rem}
 .biblio li{color:#C9D7EA;margin:0 0 .55rem 1.1em;break-inside:avoid}
@@ -489,12 +560,13 @@ svg [data-reveal]{transform-box:fill-box;transform-origin:center}
   .card[style*="display:flex"]{flex-wrap:wrap}
   .hud .who,.hud .frags{display:none}
   .wrap{width:100%}
-  .stars-ring{max-width:240px;order:-1}
+  .hero-visual{order:-1;max-width:340px;margin:0 auto}.team{flex-wrap:wrap}.scroll-cue{display:none}
   .stairs{grid-template-columns:repeat(5,1fr);height:340px}.gauge{display:none}.step h3{font-size:.7rem}.step small{display:none}
   .hrow{grid-template-columns:1fr 70px}.hrow .lab{grid-column:1/-1}
   .trow{grid-template-columns:1fr}.trow.head{display:none}
   .src{position:static;text-align:left;margin-top:1rem;max-width:none}
   .biblio{columns:1}
+  .kahoot{grid-template-columns:1fr}
   .chap .num{font-size:7rem}
   .tl-items .y{font-size:1rem}.tl-items .l{font-size:.68rem}
   .src{right:auto;bottom:auto}
@@ -519,6 +591,8 @@ svg [data-reveal]{transform-box:fill-box;transform-origin:center}
 .print-mode .ring-fg{stroke-dashoffset:calc(100 - var(--v))!important}
 .print-mode .chap .num::after{clip-path:none!important}
 .print-mode .src{opacity:1!important}
+.print-mode .pin-digits span{opacity:1!important;transform:none!important}
+.print-mode .qr::after,.print-mode .aurora{display:none}
 .print-mode .shine{background:none;color:var(--gold)!important;-webkit-background-clip:border-box}
 </style>
 </head>
@@ -527,8 +601,8 @@ svg [data-reveal]{transform-box:fill-box;transform-origin:center}
 <!-- ============ INTERFACE FIXE ============ -->
 <div class="progress" aria-hidden="true"><span id="progressBar"></span></div>
 <nav class="dots" id="dots" aria-label="Navigation entre les sections"></nav>
-<div class="hud" aria-live="polite"><b id="hudCurrent">01</b><span class="sep"></span><span id="hudTotal">22</span><span class="sep"></span><span class="who" id="hudWho"></span><span class="frags" id="hudFrags"></span></div>
-<div class="hint" id="hint"><kbd>Espace</kbd> suivant · <kbd>⇧ Espace</kbd> précédent · <kbd>F</kbd> plein écran · <kbd>P</kbd> présentateur · <kbd>H</kbd> aide</div>
+<div class="hud" aria-live="polite"><b id="hudCurrent">01</b><span class="sep"></span><span id="hudTotal">22</span><span class="frags" id="hudFrags" style="margin-left:6px"></span></div>
+<div class="hint" id="hint"><kbd>F</kbd> plein écran · <kbd>P</kbd> vue présentateur · <kbd>H</kbd> aide</div>
 <canvas id="stars" aria-hidden="true"></canvas>
 <div class="grain" aria-hidden="true"></div>
 <div class="vignette" aria-hidden="true"></div>
@@ -553,33 +627,47 @@ svg [data-reveal]{transform-box:fill-box;transform-origin:center}
 <main id="deck">
 
 <!-- ===================================================================== 01 TITRE -->
-<section class="slide bg-1" data-title="Titre" data-speaker="Evan SIMON" data-minutes="3">
+<section class="slide bg-1 title-slide" data-title="Titre" data-speaker="Evan SIMON" data-minutes="3">
+  <div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
   <div class="grid-lines"></div>
   <div class="wrap hero">
-    <div>
-      <div class="route" data-reveal>
+    <div class="hero-text">
+      <div class="kicker" data-reveal><span>Exposé</span><span class="dot"></span><span>Union européenne</span></div>
+      <div class="route" data-reveal style="--i:1">
         <span class="chip">Zone de libre-échange</span>
-        <svg class="arrow" viewBox="0 0 70 12" fill="none"><path class="draw" pathLength="1" d="M0 6H66M60 1l6 5-6 5" stroke="#FFCC00" stroke-width="2"/></svg>
+        <svg class="arrow" viewBox="0 0 70 12" fill="none"><path class="draw" pathLength="1" style="--i:2" d="M0 6H66M60 1l6 5-6 5" stroke="#FFCC00" stroke-width="2"/></svg>
         <span class="chip gold">Marché unique</span>
       </div>
-      <h1 data-split>Avantages et inconvénients du passage de la zone de libre-échange <span class="gold">au marché unique</span></h1>
-      <p class="lead" data-reveal style="--i:4;margin-top:1rem">Pour les pays membres de l’Union européenne</p>
-      <div class="authors">
-        <span data-reveal="pop" style="--i:6"><b>Evan</b> SIMON</span>
-        <span data-reveal="pop" style="--i:7"><b>Maxime</b> MOISAN</span>
-        <span data-reveal="pop" style="--i:8"><b>Félicien</b> RICHARD</span>
-        <span data-reveal="pop" style="--i:9"><b>Simon</b> VANACKERE</span>
-        <span data-reveal="pop" style="--i:10"><b>Raphael</b> SANGUINETTI</span>
+      <h1 data-split>Avantages et inconvénients du passage de la zone de libre-échange <span class="glow-gold">au marché unique</span></h1>
+      <p class="lead" data-reveal style="--i:7">Ce que les pays membres de l’Union européenne y ont gagné… et à quel prix.</p>
+      <div class="team" data-reveal style="--i:9">
+        <div class="avatars">
+          <span data-reveal="pop" style="--i:10">ES</span><span data-reveal="pop" style="--i:11">MM</span><span data-reveal="pop" style="--i:12">FR</span><span data-reveal="pop" style="--i:13">SV</span><span data-reveal="pop" style="--i:14">RS</span>
+        </div>
+        <div class="names">
+          <p>Evan SIMON · Maxime MOISAN · Félicien RICHARD</p>
+          <p>Simon VANACKERE · Raphael SANGUINETTI</p>
+          <p class="cohort">Demi-Cohorte B2</p>
+        </div>
       </div>
-      <p class="cohort" data-reveal style="--i:11">Demi-Cohorte B2</p>
     </div>
-    <svg class="stars-ring" viewBox="0 0 400 400" aria-hidden="true">
-      <circle cx="200" cy="200" r="150" fill="none" stroke="rgba(255,204,0,.18)" stroke-width="1" class="draw" pathLength="1"/>
-      <circle cx="200" cy="200" r="185" fill="none" stroke="rgba(74,144,217,.18)" stroke-width="1" stroke-dasharray="2 8"/>
-      <g class="orbit"><circle cx="385" cy="200" r="4" fill="#4A90D9"/></g>
-      <g class="spin-slow" id="starRing"></g>
-    </svg>
+    <!-- Europe vue « de nuit » : carte, échanges entre capitales, cercle d'étoiles -->
+    <div class="hero-visual" data-reveal="scale" style="--i:1">
+      <svg class="eumap hero-map" viewBox="40 110 560 470" data-hl="AT:eu BE:eu BG:eu HR:eu CY:eu CZ:eu DK:eu EE:eu FI:eu FR:eu DE:eu GR:eu HU:eu IE:eu IT:eu LV:eu LT:eu LU:eu MT:eu NL:eu PL:eu PT:eu RO:eu SK:eu SI:eu ES:eu SE:eu" aria-label="Carte de l'Europe et échanges entre les capitales">
+        <defs>
+          <radialGradient id="heroGlow"><stop offset="0" stop-color="#4A90D9" stop-opacity=".35"/><stop offset="1" stop-color="#4A90D9" stop-opacity="0"/></radialGradient>
+          <radialGradient id="fadeGrad" gradientUnits="userSpaceOnUse" cx="320" cy="345" r="340"><stop offset=".6" stop-color="#fff"/><stop offset="1" stop-color="#000"/></radialGradient>
+          <mask id="heroFade" maskUnits="userSpaceOnUse" x="-300" y="-200" width="1300" height="1100"><rect x="-300" y="-200" width="1300" height="1100" fill="url(#fadeGrad)"/></mask>
+        </defs>
+        <circle cx="320" cy="345" r="230" fill="url(#heroGlow)"/>
+        <g id="heroArcs"></g>
+        <g id="heroNodes"></g>
+        <circle cx="320" cy="345" r="215" fill="none" stroke="rgba(255,204,0,.22)" stroke-width="1" class="draw" pathLength="1" style="--i:4"/>
+        <g class="spin-slow" id="starRing" style="transform-origin:320px 345px"></g>
+      </svg>
+    </div>
   </div>
+  <div class="scroll-cue" data-reveal style="--i:16"><kbd>Espace</kbd><span>pour commencer</span><i></i></div>
   <aside class="notes">
     <p>Bonjour à tous. Le traité de Rome (1957) crée la CEE : un marché commun entre six pays. En 1968, l’union douanière est achevée. Mais dans les années 1970-1980, les normes, les contrôles aux frontières, les marchés publics réservés et les TVA différentes fragmentent encore l’Europe.</p>
     <p>Notre question : <b>le passage d’une simple zone de libre-échange au marché unique a-t-il vraiment profité aux pays membres, et à quel coût ?</b></p>
@@ -628,19 +716,16 @@ svg [data-reveal]{transform-box:fill-box;transform-origin:center}
         <div class="num roman">I</div>
         <h3>Zone de libre-échange ou marché unique ?</h3>
         <p>De la suppression des droits de douane aux quatre libertés.</p>
-        <div class="who">Maxime MOISAN</div>
       </article>
       <article class="card gold-edge" data-frag>
         <div class="num roman">II</div>
         <h3>Les avantages pour les pays membres</h3>
         <p>Échanges, entreprises, capitaux, travailleurs, investisseurs.</p>
-        <div class="who">Félicien RICHARD</div>
       </article>
       <article class="card red-edge p3" data-frag>
         <div class="num roman">III</div>
         <h3>Les inconvénients et les limites</h3>
         <p>Souveraineté, répartition des gains, règles, tensions.</p>
-        <div class="who">Simon VANACKERE · conclusion : Raphael SANGUINETTI</div>
       </article>
     </div>
   </div>
@@ -663,7 +748,6 @@ svg [data-reveal]{transform-box:fill-box;transform-origin:center}
         <li data-reveal style="--i:6"><b>1.1</b>Les niveaux d’intégration : la classification de Balassa</li>
         <li data-reveal style="--i:7"><b>1.2</b>Ce que le marché unique change vraiment</li>
       </ol>
-      <div class="speaker" data-reveal style="--i:9"><small>Présenté par</small> Maxime MOISAN</div>
     </div>
   </div>
   <aside class="notes"><p>Transition : « Pour comprendre ce que l’Europe a gagné, il faut d’abord voir ce qui distingue une simple zone de libre-échange d’un marché unique. »</p></aside>
@@ -770,7 +854,6 @@ svg [data-reveal]{transform-box:fill-box;transform-origin:center}
         <li data-reveal style="--i:8"><b>2.4</b>Des investissements venus d’ailleurs</li>
         <li data-reveal style="--i:9"><b>2.5</b>Moins de démarches et de coûts</li>
       </ol>
-      <div class="speaker" data-reveal style="--i:11"><small>Présenté par</small> Félicien RICHARD</div>
     </div>
   </div>
   <aside class="notes"><p>Transition : « Ces différences ont des effets très concrets. Voyons d’abord ce que les pays membres y ont gagné. »</p></aside>
@@ -984,7 +1067,6 @@ svg [data-reveal]{transform-box:fill-box;transform-origin:center}
         <li data-reveal style="--i:8"><b>3.4</b>Trop de règles, selon certains</li>
         <li data-reveal style="--i:9"><b>3.5</b>Des tensions sociales et politiques</li>
       </ol>
-      <div class="speaker" data-reveal style="--i:11"><small>Présenté par</small> Simon VANACKERE</div>
     </div>
   </div>
   <aside class="notes"><p>Transition : « Ce bilan positif a pourtant un prix. »</p></aside>
@@ -1191,7 +1273,38 @@ svg [data-reveal]{transform-box:fill-box;transform-origin:center}
   <aside class="notes"><p>Questions possibles : rôle de l’euro, Brexit, travailleurs détachés, rapports Draghi et Letta.</p></aside>
 </section>
 
-<!-- ===================================================================== 22 SOURCES -->
+<!-- ===================================================================== 22 KAHOOT
+     ➜ À REMPLIR LE JOUR J : mettez le code PIN du Kahoot dans data-pin (ex. data-pin="123 4567").
+       Le QR code (vers kahoot.it/?pin=…) se génère tout seul, même sans Internet.
+       Pour utiliser votre propre image de QR code à la place : data-qr="images/qr-kahoot.png"
+     ===================================================================== -->
+<section class="slide bg-k" data-title="Kahoot" data-fx="zoom" data-trans="flash" data-pin="" data-qr="">
+  <div class="aurora k" aria-hidden="true"><i></i><i></i><i></i></div>
+  <div class="wrap kahoot">
+    <div>
+      <span class="eyebrow gold" data-reveal>Quiz</span>
+      <h2 data-split>À vous de jouer&nbsp;!</h2>
+      <p class="lead" data-reveal style="--i:4">Testez ce que vous avez retenu avec notre Kahoot.</p>
+      <ol class="k-steps">
+        <li data-reveal="left" style="--i:5"><b>1</b><span>Scannez le QR code<br><small>ou allez sur <strong>kahoot.it</strong></small></span></li>
+        <li data-reveal="left" style="--i:6"><b>2</b><span>Entrez le code PIN</span></li>
+        <li data-reveal="left" style="--i:7"><b>3</b><span>Choisissez un pseudo… et c’est parti&nbsp;!</span></li>
+      </ol>
+      <div class="pin" data-reveal="scale" style="--i:8">
+        <small>Code PIN du jeu</small>
+        <div class="pin-digits" id="kPin"></div>
+      </div>
+    </div>
+    <div class="qr-card" data-reveal="flip" style="--i:6">
+      <div class="qr" id="kQr"></div>
+      <p class="qr-cap" id="kCap">kahoot.it</p>
+      <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+    </div>
+  </div>
+  <aside class="notes"><p>Lancer le Kahoot sur l’ordinateur (mode « Classique »), afficher le code PIN, attendre que tout le monde soit connecté.</p></aside>
+</section>
+
+<!-- ===================================================================== 23 SOURCES -->
 <section class="slide bg-18" data-title="Sources">
   <div class="wrap">
     <span class="eyebrow" data-reveal>Annexe</span>
@@ -1225,6 +1338,2307 @@ svg [data-reveal]{transform-box:fill-box;transform-origin:center}
      ====================================================================== -->
 <script type="application/json" id="europe-data">[{"code":"GB","d":"M213,298L210,298L206,300L203,299L199,295L196,295L198,294L195,292L193,291L189,292L187,290L186,287L188,285L197,284L200,282L203,278L203,272L200,271L196,272L197,271L204,266L207,265L213,266L215,268L214,265L217,267L216,263L218,260L218,257L219,256L220,252L217,252L214,246L214,244L216,240L219,238L221,238L218,237L211,239L208,237L206,238L203,236L201,239L200,235L203,230L207,225L206,221L208,217L210,217L208,215L205,215L203,217L205,213L202,214L202,218L198,225L196,224L198,220L200,218L199,217L200,213L204,205L207,202L202,204L200,203L199,201L198,200L203,199L201,197L205,195L206,192L204,189L205,187L207,187L206,184L208,181L212,182L211,179L212,175L215,176L216,171L217,170L219,172L235,173L234,176L232,178L224,183L223,185L224,186L221,190L223,190L228,189L231,190L239,191L241,191L242,193L243,196L240,199L236,206L232,211L230,212L225,212L228,213L230,215L229,217L227,216L222,218L220,218L225,220L227,220L230,220L234,223L238,230L239,245L240,247L244,251L249,259L247,260L250,268L246,266L249,271L251,276L247,280L249,282L253,280L258,281L261,283L264,286L264,291L261,297L258,299L257,301L254,301L251,302L253,303L252,305L249,306L250,308L258,310L257,313L253,315L251,317L249,317L242,319L238,317L231,317L225,313L225,315L223,316L217,315L217,317L211,316L209,314L206,313L202,313L198,318L196,320L192,316L185,316L179,319L177,317L174,318L176,315L178,315L189,308L190,305L193,304L195,302L199,302L207,304L216,296ZM203,264L204,266L201,267L199,264L200,262L202,262ZM242,163L242,163L242,163ZM260,143L259,141L260,139ZM257,142L258,145L259,144L257,152L255,153L256,150L253,146L256,146L255,143L257,141ZM263,138L262,140L261,138ZM234,170L233,168L234,168ZM236,171L236,171L236,171ZM236,166L239,168L238,169L234,166L234,164L237,165ZM240,164L238,161L238,160ZM193,201L193,201L193,201ZM203,225L201,224L202,220L203,221ZM200,207L196,207L197,204L196,203L198,201L201,205ZM195,214L194,219L191,219L192,216L190,217L191,215ZM196,216L195,215L197,212L199,212ZM205,171L203,174L200,175L201,177L195,180L194,179L197,177L195,175L197,171L199,173L199,171L205,169ZM198,195L198,195L198,195ZM201,186L201,190L205,192L201,195L201,192L198,191L198,189L195,186L197,184L201,183ZM192,181L193,182L191,183L189,181ZM189,190L188,190L189,185L190,186ZM187,193L187,193L187,193ZM186,246L181,245L180,239L179,238L177,241L174,242L169,239L168,235L169,233L173,233L171,231L175,230L178,226L180,226L181,227L183,225L188,225L191,226L192,230L194,234L192,236L195,237L195,242L193,239L193,244L190,244L187,247ZM228,318L225,319L223,316L225,316Z","c":[223,257]},{"code":"UA","d":"M691,339L683,342L682,345L678,348L677,351L675,351L671,354L666,356L662,364L660,362L659,366L657,368L658,371L661,375L659,375L656,372L654,373L652,372L648,372L643,372L643,374L641,375L637,374L629,378L623,377L620,376L622,374L618,374L616,373L626,372L628,369L625,370L623,370L620,369L618,364L615,361L618,365L619,370L615,371L607,376L607,379L605,384L603,389L596,394L599,400L599,402L597,400L593,400L588,405L582,404L580,403L583,401L583,398L585,394L584,392L587,390L587,388L585,383L587,381L588,383L589,382L596,382L599,380L596,378L595,373L590,372L589,367L583,365L583,360L580,356L579,357L576,354L573,354L572,355L570,353L567,353L564,351L560,351L557,354L552,354L550,357L547,359L546,363L538,366L532,371L527,367L522,369L516,368L513,369L510,367L507,370L505,368L503,368L500,366L498,363L497,364L496,361L498,358L500,351L503,351L502,349L502,347L500,342L503,335L510,326L513,325L513,321L512,318L513,317L507,309L505,306L506,303L509,304L511,302L513,298L522,295L530,294L539,295L543,294L545,296L549,296L551,298L552,295L555,294L560,294L562,296L563,294L566,292L569,295L571,294L577,292L580,294L582,294L583,292L581,288L581,284L584,279L587,277L592,276L594,276L597,274L597,271L599,270L603,270L605,268L611,266L614,267L617,271L621,273L619,276L623,282L623,283L628,283L632,281L633,283L635,283L638,288L639,291L643,293L645,291L648,291L650,292L654,292L655,290L662,286L667,290L671,292L673,288L678,289L682,290L684,288L686,289L688,289L693,290L695,289L698,294L697,298L695,300L697,301L700,301L698,303L698,307L700,307L703,311L704,319L694,323L693,326L689,330L690,335ZM623,378L619,378L618,378Z","c":[600,329]},{"code":"TR","d":"M570,503L567,504L569,502ZM768,417L773,416L774,415L781,413L781,410L784,409L791,411L792,412L796,413L799,415L802,417L802,422L806,427L806,428L811,428L814,425L819,426L823,428L824,429L820,428L819,431L821,435L816,438L820,441L821,444L824,445L828,453L829,452L830,461L836,462L839,467L843,468L844,471L841,471L838,476L834,472L832,473L831,475L826,477L819,477L815,479L813,485L812,486L809,484L800,491L797,493L789,496L782,504L774,510L765,513L760,512L756,513L747,521L742,523L739,522L735,522L736,529L738,532L735,535L736,538L734,542L730,542L730,540L726,535L729,527L728,525L726,523L719,532L709,531L706,532L703,537L701,543L697,547L685,553L678,553L671,548L660,546L649,547L649,549L650,554L649,559L646,559L639,563L633,563L630,561L627,556L622,557L619,556L616,556L615,559L613,560L613,558L607,561L604,561L606,559L611,558L614,553L601,556L600,555L603,552L603,551L598,549L595,544L597,543L596,539L592,538L587,536L586,537L581,536L583,533L581,529L583,529L585,532L589,533L592,531L588,529L587,527L589,523L587,523L586,519L583,517L586,512L584,511L575,515L574,505L576,504L580,496L584,496L587,494L590,496L595,494L594,491L597,491L596,493L601,492L606,491L611,489L607,488L609,486L621,481L614,481L609,479L609,476L612,474L620,473L625,471L632,471L638,469L640,465L647,458L649,455L661,446L672,443L679,441L682,438L684,438L685,441L688,443L692,443L696,440L698,440L701,444L706,446L709,443L714,444L724,443L726,444L732,443L745,434L750,434L756,432L764,425L768,419ZM591,465L591,467L595,472L598,473L608,475L608,479L605,480L597,480L594,482L588,484L586,490L580,495L575,503L574,504L574,499L580,492L571,494L569,492L573,488L572,482L575,479L574,475L570,474L572,469L578,466L581,465L585,467Z","c":[705,490]},{"code":"TN","d":"M368,651L367,661L368,665L357,672L354,674L351,678L349,679L345,683L347,691L347,696L341,703L335,706L329,671L318,661L316,654L314,651L309,647L306,637L306,632L310,629L312,626L316,623L318,620L320,614L321,612L320,608L320,603L319,599L321,590L319,588L323,583L326,582L325,580L329,579L334,575L342,573L345,574L349,575L349,579L352,584L355,582L362,578L363,582L361,584L358,589L354,592L353,595L355,600L361,605L361,610L363,612L359,619L353,625L348,629L346,631L346,634L347,638L352,642L356,641L356,644L360,642L362,644L363,650ZM365,621L365,621L365,621ZM360,641L356,640L356,637L359,637Z","c":[338,633]},{"code":"SY","d":"M730,542L734,542L736,538L735,535L738,532L736,529L735,522L739,522L742,523L747,521L756,513L760,512L765,513L774,510L782,504L789,496L797,493L800,491L809,484L812,486L812,487L808,498L803,502L802,505L804,510L807,514L809,517L809,524L813,533L812,540L809,544L788,571L779,582L765,601L758,602L752,601L749,598L747,599L748,594L745,589L744,586L746,583L744,581L745,577L749,576L747,574L750,568L747,565L744,564L745,562L739,564L736,560L735,554L733,550L730,548Z","c":[773,544]},{"code":"CH","d":"M346,387L347,388L346,392L345,396L346,396L349,397L351,399L354,399L356,397L357,399L357,405L354,404L352,406L353,410L350,408L345,409L344,406L342,406L342,409L339,414L339,417L338,418L332,410L331,406L327,409L328,411L326,414L323,415L320,414L315,415L313,414L311,410L311,405L307,405L304,407L305,408L302,410L302,405L304,401L307,399L308,396L310,395L315,389L314,388L316,386L320,387L323,385L324,385L332,386L332,384L335,382L338,385L342,384Z","c":[329,400]},{"code":"SE","d":"M444,199L442,201L442,205L443,207L441,210L439,213L438,215L437,216L438,213L436,210L435,205L439,199L441,199L442,197ZM421,229L420,228L420,224L422,218L423,217L425,209L426,210L423,219ZM370,180L371,182L373,182L374,176L373,170L375,165L378,164L380,161L381,154L379,146L379,144L382,144L384,138L381,135L377,131L379,121L377,115L377,109L378,108L376,102L378,99L377,97L381,90L384,88L387,88L392,89L393,86L393,81L389,78L393,72L395,65L396,58L396,55L395,49L399,49L402,46L402,42L408,31L408,30L406,25L406,23L409,21L410,16L414,11L418,14L419,9L419,3L420,2L425,3L432,5L433,2L431,1L433,-3L433,-6L431,-8L435,-8L437,-8L437,-6L445,0L451,2L454,4L458,9L457,11L459,15L458,19L460,19L461,20L460,23L461,25L464,30L464,34L463,36L464,42L466,42L468,48L467,49L465,48L461,50L461,51L458,49L456,50L455,50L455,54L452,56L452,58L450,58L451,63L448,70L449,71L452,76L452,77L448,82L447,88L443,92L441,93L439,96L436,96L434,101L431,102L430,107L425,109L427,113L423,116L422,115L422,118L424,120L423,121L422,127L423,130L421,130L421,132L422,137L423,148L426,149L427,151L429,150L432,154L435,155L435,157L438,158L439,161L440,164L433,171L431,172L433,173L436,171L437,172L435,173L435,176L427,182L423,186L417,186L416,186L421,187L423,189L420,190L422,194L421,195L421,199L420,201L421,207L420,211L420,214L419,221L417,225L416,230L414,232L412,231L407,231L403,232L404,234L402,234L398,238L398,240L400,243L398,246L394,245L390,247L385,246L386,241L386,239L382,233L381,230L384,230L383,227L385,227L385,224L383,223L380,219L377,213L377,209L376,209L375,205L373,204L373,199L371,197L371,193L369,192L369,190L368,179ZM445,197L445,197L445,197ZM436,178L436,178L436,178ZM437,170L437,170L437,170Z","c":[416,110]},{"code":"ES","d":"M227,538L224,538L225,536ZM252,521L256,522L256,523L252,528L249,529L245,527L244,524L242,525L240,523L247,519L252,517ZM268,522L262,518L262,517L267,518ZM225,533L222,533L225,530L228,530L228,532ZM195,445L195,447L200,449L198,452L201,453L207,456L209,459L213,459L216,462L225,464L226,461L234,465L235,467L235,470L238,469L242,472L245,471L251,474L255,472L258,473L259,476L257,476L258,482L254,485L244,489L240,492L233,492L225,494L221,497L223,499L218,501L214,506L207,513L202,519L203,527L204,531L207,534L203,536L198,538L194,543L190,550L189,552L182,552L177,554L174,556L171,561L167,564L165,562L161,562L158,563L151,561L148,561L143,559L135,558L129,561L126,560L122,560L118,565L113,566L108,562L107,558L107,553L105,550L105,546L101,540L93,539L94,531L95,529L100,525L103,525L104,522L102,522L100,516L102,512L106,509L108,507L106,505L105,498L103,494L110,495L114,490L113,486L116,485L118,479L118,472L122,470L130,466L128,463L126,462L126,457L120,454L116,456L109,453L106,454L105,452L107,450L106,448L102,448L98,449L98,446L101,444L99,443L101,441L101,437L99,437L101,434L98,429L99,426L104,425L108,426L112,425L113,423L117,421L121,421L123,422L126,426L141,430L144,429L146,431L160,438L163,438L168,438L172,438L179,443L181,442L188,445L192,446ZM-94,650L-97,654L-102,655L-103,647L-97,649L-93,647L-90,649ZM-49,657L-52,657L-49,654L-45,654L-45,657ZM-62,668L-65,669L-67,667L-62,666L-54,659L-53,662L-57,668ZM-81,661L-83,666L-87,667L-89,665L-89,661L-86,659ZM-110,651L-112,649L-108,649ZM-123,650L-126,653L-128,649ZM-117,639L-117,633L-116,632L-113,634Z","c":[161,494]},{"code":"SK","d":"M500,351L498,358L496,361L497,364L493,365L488,362L484,363L481,363L477,364L476,368L471,372L467,370L466,373L459,374L458,375L457,379L446,381L440,377L438,377L434,370L435,366L437,362L441,362L444,361L448,357L448,353L453,349L456,348L457,350L460,350L463,346L465,349L467,350L467,353L471,353L472,350L477,348L481,349L482,347L489,346L492,347L493,349Z","c":[465,362]},{"code":"SI","d":"M432,405L430,404L429,407L421,411L422,417L417,419L418,424L412,424L408,421L406,424L401,424L400,425L396,424L398,422L400,422L396,418L396,416L395,414L396,412L393,410L397,406L407,407L413,403L419,403L421,402L425,402L426,398L429,398Z","c":[411,412]},{"code":"RS","d":"M514,437L514,440L511,442L512,447L515,451L521,455L518,461L515,463L515,466L517,470L515,472L513,472L505,475L506,467L501,466L496,461L492,458L490,460L490,462L487,466L487,465L481,462L476,461L471,457L471,455L474,454L474,452L470,447L474,447L475,446L469,441L468,437L470,434L470,431L466,431L467,429L467,425L470,425L469,424L465,422L465,420L462,414L463,412L465,411L466,411L470,408L478,407L479,408L481,410L486,413L487,418L490,420L496,422L497,423L495,426L498,427L496,428L500,430L503,431L506,433L511,429L514,430L511,434Z","c":[490,441]},{"code":"RU","d":"M608,-159L612,-160L614,-160L615,-157L617,-153L616,-151L617,-148L617,-147L618,-145L621,-141L623,-136L625,-136L627,-133L633,-129L638,-127L642,-125L647,-126L648,-125L647,-121L644,-120L642,-121L641,-120L644,-119L644,-118L641,-118L640,-117L638,-117L634,-114L632,-115L633,-113L630,-113L624,-112L625,-114L624,-116L624,-118L626,-119L619,-121L617,-123L615,-121L612,-120L612,-118L610,-117L608,-118L605,-121L603,-124L603,-126L603,-129L606,-129L605,-134L603,-140L601,-140L601,-143L603,-146L600,-148L600,-151L601,-154L603,-154L605,-158ZM559,38L559,41L557,39ZM597,-8L595,-8L596,-9ZM617,-119L620,-116L621,-114L616,-116L614,-115L614,-118ZM712,-148L713,-146L711,-146L711,-148ZM695,-158L694,-158L692,-160ZM765,-120L763,-119L759,-120L763,-123ZM814,315L814,315L814,315ZM624,-74L624,-71L623,-72L623,-66L621,-64L618,-61L616,-62L613,-65L611,-69L611,-71L612,-74L614,-76L622,-75ZM672,-124L674,-121L674,-119L670,-117L668,-119L665,-118L665,-117L661,-119L658,-121L658,-125L658,-126L665,-125ZM468,243L465,248L468,249L471,248L471,242L480,245L485,244L488,248L487,254L489,257L482,257L462,259L455,259L457,257L458,253L458,250L464,248L467,242ZM643,374L643,372L648,372L652,372L654,373L656,372L659,375L661,375L668,380L671,380L673,377L676,377L678,374L682,374L682,381L676,384L672,383L668,389L668,391L663,392L661,394L659,398L655,402L652,403L649,401L649,394L647,391L645,390L642,391L638,389L635,391L633,390L639,382L641,381L644,376Z","c":[-97,-1064]},{"code":"RO","d":"M580,403L582,404L588,405L593,400L597,400L599,402L599,409L593,412L591,408L591,416L592,417L590,422L591,427L592,432L589,432L584,432L582,429L576,430L571,428L563,431L560,433L556,439L552,441L548,442L538,441L535,442L522,443L518,444L517,442L519,440L514,437L511,434L514,430L511,429L506,433L503,431L500,430L496,428L498,427L495,426L497,423L496,422L490,420L487,418L486,413L481,410L479,408L484,407L486,404L489,404L491,401L491,397L496,387L497,380L500,375L505,373L507,370L510,367L513,369L516,368L522,369L527,367L532,371L538,366L546,363L547,359L550,357L555,358L558,361L561,366L569,374L572,376L576,381L576,385L577,394L579,399L578,400Z","c":[538,404]},{"code":"PT","d":"M-74,566L-68,571L-71,572L-75,569ZM98,449L102,448L106,448L107,450L105,452L106,454L109,453L116,456L120,454L126,457L126,462L128,463L130,466L122,470L118,472L118,479L116,485L113,486L114,490L110,495L103,494L105,498L106,505L108,507L106,509L102,512L100,516L102,522L104,522L103,525L100,525L95,529L94,531L93,539L86,540L82,538L76,535L70,535L74,529L76,523L76,519L79,515L79,510L82,512L80,509L74,509L75,505L79,504L81,500L77,504L72,503L77,493L81,490L88,481L88,480L91,473L93,470L95,466L96,451ZM-149,445L-149,445L-149,445ZM-160,403L-162,401L-162,399L-158,402ZM-169,399L-173,395L-174,392ZM-180,393L-182,390L-180,391ZM-175,398L-176,398L-179,396L-178,394ZM-149,426L-143,429L-145,431L-151,427L-150,424Z","c":[97,492]},{"code":"PL","d":"M505,306L507,309L513,317L512,318L513,321L513,325L510,326L503,335L500,342L502,347L502,349L503,351L500,351L493,349L492,347L489,346L482,347L481,349L477,348L472,350L471,353L467,353L467,350L465,349L463,346L460,350L457,350L456,348L455,346L453,344L452,342L449,342L446,340L444,341L440,338L442,335L438,336L435,334L432,334L433,337L430,340L424,334L426,331L425,330L422,331L418,329L414,328L413,325L410,324L410,327L408,327L410,320L409,316L407,315L407,313L405,310L406,305L404,300L405,297L403,295L399,291L402,287L402,284L400,276L404,277L403,274L400,273L399,272L401,272L405,270L417,266L420,265L424,260L427,259L431,256L437,254L442,253L446,256L443,255L446,260L449,261L454,260L455,259L462,259L482,257L489,257L491,256L495,258L497,263L499,269L504,278L505,283L505,285L500,288L499,293L502,294L504,296L504,304Z","c":[457,301]},{"code":"NO","d":"M435,-8L431,-8L433,-6L433,-3L431,1L433,2L432,5L425,3L420,2L419,3L419,9L418,14L414,11L410,16L409,21L406,23L406,25L408,30L408,31L402,42L402,46L399,49L395,49L396,55L396,58L395,65L393,72L389,78L393,81L393,86L392,89L387,88L384,88L381,90L377,97L378,99L376,102L378,108L377,109L377,115L379,121L377,131L381,135L384,138L382,144L379,144L379,146L381,154L380,161L378,164L375,165L373,170L374,176L373,182L371,182L370,180L370,179L365,177L363,174L363,167L363,170L361,171L361,176L359,181L356,181L354,180L351,183L352,184L347,188L343,193L339,195L333,197L328,197L327,195L326,196L324,195L325,192L323,192L316,187L315,183L316,178L321,181L323,179L321,180L319,177L320,173L323,169L319,172L316,173L314,175L312,174L313,170L315,166L316,165L319,166L323,164L320,164L319,163L323,158L323,156L327,153L326,158L329,152L325,153L323,154L319,160L317,163L313,166L314,158L317,159L319,158L316,157L315,154L315,151L318,149L316,150L314,147L314,141L319,141L323,140L327,141L330,140L332,144L332,141L337,140L335,138L334,140L331,140L329,139L329,137L328,140L324,139L317,140L315,137L315,134L318,133L315,129L316,125L320,126L324,128L328,128L331,127L325,127L320,125L317,124L317,120L319,121L321,118L324,116L326,118L330,117L331,116L326,117L328,114L332,113L336,114L338,115L340,114L338,113L343,112L343,111L337,112L336,111L332,112L332,110L334,107L338,106L339,105L344,105L344,107L348,110L344,104L345,102L348,101L348,99L346,99L346,97L350,95L353,96L353,99L354,97L357,96L359,100L362,99L366,99L366,96L371,93L369,91L372,89L370,88L367,91L368,92L367,94L362,97L359,98L358,95L356,95L357,93L359,91L360,88L362,86L365,82L368,79L372,76L373,74L370,75L371,73L372,71L377,68L378,69L380,69L383,65L380,67L377,66L377,64L379,59L382,53L384,53L382,50L386,49L389,49L391,46L384,48L384,44L385,40L388,37L390,37L388,35L390,34L391,31L396,29L401,29L401,28L394,28L396,24L397,22L401,24L403,23L400,23L399,21L400,19L398,20L396,20L396,18L398,15L400,16L402,14L399,13L404,10L406,16L407,12L405,9L407,6L410,7L415,5L412,5L408,5L408,2L411,0L413,-2L414,-6L415,-8L417,-9L417,-12L418,-15L421,-12L423,-13L420,-15L421,-16L423,-17L424,-21L427,-22L427,-15L428,-21L429,-24L431,-25L431,-24L431,-18L430,-14L431,-14L433,-18L434,-18L433,-20L432,-24L433,-25L436,-25L437,-27L438,-28L441,-24L441,-28L437,-31L437,-32L439,-32L445,-36L447,-35L448,-31L450,-29L450,-34L451,-37L453,-39L455,-44L453,-46L455,-50L456,-50L460,-47L460,-49L463,-48L461,-42L461,-37L460,-35L461,-33L463,-36L463,-38L467,-50L469,-49L468,-46L469,-45L470,-41L472,-43L472,-48L474,-50L471,-52L473,-55L477,-55L478,-54L479,-50L477,-48L479,-48L480,-40L481,-45L481,-50L482,-52L483,-53L486,-51L489,-50L490,-51L492,-48L494,-49L497,-47L498,-44L495,-42L494,-41L492,-40L485,-39L485,-38L490,-37L492,-33L493,-32L495,-33L495,-35L500,-35L501,-31L499,-30L496,-31L496,-27L492,-24L492,-20L491,-18L489,-21L491,-27L489,-30L484,-32L479,-36L477,-35L475,-32L471,-31L469,-26L468,-17L469,-13L468,-11L467,-10L465,-4L457,-7L456,-5L454,-4L448,-4L446,-7L441,-14L438,-13L437,-12L438,-9ZM314,140L313,140L314,138ZM314,154L314,156L312,155L313,151ZM494,-34L493,-33L492,-36ZM376,59L376,59L376,59ZM347,95L346,94L349,93L350,94ZM344,101L341,99L344,98ZM448,-45L447,-40L445,-39L442,-38L440,-40L442,-41L442,-42L446,-42L447,-45ZM461,-53L463,-53L464,-51L461,-50L459,-51ZM450,-40L450,-37L448,-34L446,-37L448,-39L450,-41ZM453,-41L452,-40L450,-41L451,-44L453,-42ZM389,9L391,10L389,13L385,15L384,13L387,10ZM383,17L382,18L383,14L384,14ZM398,-4L399,-1L398,2L396,3L395,1L393,2L392,1L394,-1L395,-1L396,-3L397,-3L397,-5ZM426,-30L429,-28L427,-28L425,-31ZM433,-29L431,-28L431,-30L432,-31L433,-31ZM423,-27L425,-27L426,-25L424,-22L423,-22L421,-17L418,-16L417,-18L418,-21L420,-21L420,-23L422,-26L423,-30ZM380,54L380,52L382,52ZM379,51L379,49L381,49ZM370,73L367,74L367,72L369,71ZM413,-17L416,-16L417,-14L416,-12L416,-10L414,-9L413,-9L411,-6L409,-7L410,-8L410,-12L412,-13L411,-15ZM402,3L404,1L404,-2L406,-3L407,0L407,2L405,4L403,7L402,6L400,8L399,7L397,9L396,8L394,11L392,11L392,10L394,7L398,6L400,2L400,-2L400,-3L400,-6L402,-10L404,-9L402,-5L403,0ZM245,-58L245,-60L249,-61L250,-63L253,-63L252,-61L247,-60ZM415,-111L414,-110L412,-113L414,-114ZM416,-199L418,-199L420,-191L423,-192L425,-190L424,-189L425,-187L427,-185L430,-186L433,-183L430,-181L429,-177L428,-174L426,-174L425,-172L424,-172L423,-175L424,-177L423,-178L422,-177L417,-174L416,-177L417,-178L417,-180L418,-185L416,-186L414,-189L414,-191L412,-192L412,-194L411,-195L411,-196ZM373,-196L375,-193L377,-188L376,-188L375,-190L373,-193L372,-193L370,-199L370,-203L372,-201Z","c":[391,85]},{"code":"NL","d":"M308,327L304,326L304,325L306,320L303,317L301,317L299,315L298,313L296,314L295,312L292,312L291,314L289,314L287,312L284,313L281,310L282,309L285,310L288,312L290,312L287,310L289,310L287,306L288,303L293,297L297,289L298,286L299,287L304,284L306,281L312,279L320,279L322,281L324,282L324,288L322,294L319,294L318,297L322,299L321,302L318,304L318,307L313,308L311,307L309,309L311,314L309,318L310,320L307,323L309,324ZM289,314L288,315L285,316L281,315L280,315L279,313L282,313L285,314ZM315,278L315,278L315,278ZM311,278L311,278L311,278ZM302,280L302,280L302,280ZM304,279L304,279L304,279ZM299,284L298,284L299,282ZM286,307L286,309L284,307ZM320,277L320,277L320,277Z","c":[306,299]},{"code":"MA","d":"M160,594L161,597L165,602L164,604L165,607L164,609L165,612L163,621L164,624L162,628L163,637L169,646L166,648L164,652L146,648L138,648L136,652L129,653L122,652L122,658L120,661L123,664L121,666L117,665L110,668L99,670L94,675L89,678L83,678L71,676L68,680L61,677L53,680L50,680L31,687L30,689L25,707L23,706L21,715L20,716L10,714L3,716L-2,714L-6,714L-10,710L-16,707L-24,707L-25,712L-28,713L-35,720L-40,719L-45,726L-51,735L-55,739L-68,744L-75,750L-85,751L-87,752L-92,757L-99,768L-103,776L-113,781L-116,786L-120,788L-131,784L-135,781L-153,774L-158,773L-153,765L-146,760L-142,760L-138,756L-135,752L-131,749L-131,748L-120,738L-119,737L-123,739L-120,736L-113,734L-104,729L-101,729L-95,724L-91,714L-82,706L-78,701L-73,700L-69,700L-61,697L-49,683L-43,679L-26,681L-16,679L-8,675L3,672L18,661L22,657L24,650L22,644L24,642L27,632L31,627L38,622L42,614L51,609L56,605L61,603L74,602L85,598L88,596L97,586L108,569L113,570L116,568L118,569L116,572L119,578L122,582L129,586L139,586L140,587L146,588L150,586L151,592Z","c":[40,667]},{"code":"ME","d":"M471,455L471,457L476,461L481,462L487,465L487,466L483,469L484,472L480,474L478,471L474,480L475,482L475,485L469,479L463,476L462,474L463,472L462,466L464,465L464,461L466,459L469,460L467,456Z","c":[472,469]},{"code":"MD","d":"M550,357L552,354L557,354L560,351L564,351L567,353L570,353L572,355L573,354L576,354L579,357L580,356L583,360L583,365L589,367L590,372L595,373L596,378L599,380L596,382L589,382L588,383L587,381L585,383L587,388L587,390L584,392L585,394L583,398L583,401L580,403L578,400L579,399L577,394L576,385L576,381L572,376L569,374L561,366L558,361L555,358Z","c":[576,371]},{"code":"MT","d":"M415,600L413,601L411,598ZM411,597L411,597L411,597Z","c":[413,600]},{"code":"MK","d":"M505,475L513,472L515,472L517,475L522,477L525,482L525,489L523,490L523,492L520,494L516,493L512,495L511,498L508,500L500,501L496,501L492,494L491,490L492,483L494,483L494,479L498,477L501,478L502,476Z","c":[508,487]},{"code":"LU","d":"M308,338L308,341L312,344L310,350L305,350L304,348L305,347L303,344L304,342L307,337Z","c":[307,345]},{"code":"LT","d":"M468,243L467,242L468,243ZM489,257L487,254L488,248L485,244L480,245L471,242L470,239L468,233L467,228L472,223L476,221L482,221L484,220L486,221L488,220L494,220L497,220L501,219L504,217L507,220L512,220L517,223L520,226L523,226L523,232L526,233L525,236L522,236L522,239L519,241L518,245L519,248L517,252L519,253L520,255L518,255L517,253L513,257L511,257L511,260L506,262L505,261L500,263L497,263L495,258L491,256Z","c":[497,238]},{"code":"LI","d":"M346,396L345,396L346,392Z","c":[346,394]},{"code":"LY","d":"M335,706L341,703L347,696L347,691L345,683L349,679L351,678L354,674L357,672L368,665L367,661L368,651L373,653L380,657L388,658L396,656L402,658L405,658L412,660L416,663L427,665L430,669L430,673L432,678L436,683L443,685L454,686L463,687L471,690L477,692L486,698L490,700L496,700L503,695L507,689L509,683L507,679L505,675L504,670L504,666L506,662L509,657L513,654L519,650L525,649L528,646L537,645L552,648L553,654L556,655L564,655L570,657L579,655L585,657L587,661L584,668L585,673L588,678L587,684L585,689L593,708L618,847L625,887L606,891L608,901L527,870L449,838L431,847L417,855L405,846L403,845L375,838L367,822L352,817L348,819L345,816L342,812L341,807L340,802L331,787L332,782L339,778L339,772L338,770L337,762L340,754L339,749L339,739L340,731L338,723L337,718L331,708Z","c":[480,764]},{"code":"LB","d":"M739,564L745,562L744,564L747,565L750,568L747,574L749,576L745,577L744,581L746,583L744,586L740,591L739,594L735,596L736,579L737,576L736,572Z","c":[741,577]},{"code":"LV","d":"M523,226L520,226L517,223L512,220L507,220L504,217L501,219L497,220L494,220L488,220L486,221L484,220L482,221L476,221L472,223L467,228L466,225L465,215L468,211L468,205L470,201L478,197L479,199L484,203L486,207L490,209L493,207L496,204L497,201L494,191L501,187L503,187L508,189L510,189L514,193L516,194L520,191L524,192L529,195L530,196L529,203L531,203L535,208L537,213L537,215L535,216L533,220L533,222L527,223L526,225Z","c":[503,209]},{"code":"XK","d":"M487,466L490,462L490,460L492,458L496,461L501,466L506,467L505,475L502,476L501,478L498,477L494,479L494,483L492,483L490,477L487,475L484,472L483,469Z","c":[495,470]},{"code":"KZ","d":"M844,311L844,311L844,311ZM844,308L844,308L844,308ZM866,286L866,286L866,286Z","c":[979,137]},{"code":"JO","d":"M747,599L749,598L752,601L758,602L765,601L779,582L788,571L798,585L799,589L801,587L803,588L801,591L800,594L773,615L784,620L795,627L791,632L790,639L780,645L778,653L772,661L754,664L754,660L753,649L751,644L751,629L750,623L750,617L748,613L746,606L745,601Z","c":[771,620]},{"code":"IT","d":"M313,414L315,415L320,414L323,415L326,414L328,411L327,409L331,406L332,410L338,418L339,417L339,414L342,409L342,406L344,406L345,409L350,408L353,410L352,406L354,404L357,405L357,399L361,401L364,401L365,398L370,397L373,397L378,396L378,398L381,403L390,405L397,406L393,410L396,412L395,414L396,416L396,418L400,422L398,422L397,419L395,420L391,419L389,422L382,425L382,423L379,425L379,429L383,434L379,438L381,447L385,452L388,453L393,457L396,458L398,462L403,475L405,478L415,486L419,488L422,488L430,487L432,488L432,491L429,493L431,497L438,500L446,502L452,506L459,509L464,514L467,518L465,524L461,522L458,516L452,516L449,514L448,513L445,514L441,520L440,525L441,529L444,530L449,533L450,540L449,542L444,543L441,546L442,552L438,555L435,561L430,561L429,557L431,554L433,546L436,545L436,542L435,541L433,535L430,530L428,523L426,522L422,522L417,519L418,517L414,511L409,513L410,510L405,509L400,501L393,501L391,501L388,499L385,497L377,489L373,486L371,483L367,480L364,481L365,478L359,471L356,470L357,467L356,463L354,460L353,454L351,451L346,449L341,445L334,443L331,444L325,452L320,453L317,454L317,452L320,448L319,447L316,447L310,443L309,440L312,436L312,434L309,432L307,429L310,429L313,427L315,424L310,418L311,416ZM382,490L382,490L382,490ZM382,453L382,453L382,453ZM355,472L354,474L351,473ZM403,511L403,511L403,511ZM377,584L377,584L377,584ZM428,556L423,564L421,570L423,575L425,578L423,581L422,584L417,584L413,583L411,580L408,577L404,577L390,569L386,569L384,567L382,564L384,560L387,558L389,560L393,557L396,558L400,561L406,560L412,560L417,557L421,557L427,555ZM343,508L345,514L343,519L344,522L342,536L340,540L334,537L334,541L331,543L328,543L325,538L325,533L327,526L326,525L327,518L325,514L323,511L324,506L329,508L332,506L338,501L343,505ZM326,540L326,540L326,540ZM325,504L325,504L325,504Z","c":[378,460]},{"code":"IL","d":"M744,586L745,589L748,594L747,599L745,601L746,606L739,605L738,607L738,613L740,617L744,619L741,623L741,627L745,627L750,623L751,629L751,644L753,649L754,660L753,662L745,650L733,634L735,627L734,626L735,619L735,613L735,605L735,596L739,594L740,591Z","c":[743,625]},{"code":"IE","d":"M147,238L144,236L147,236ZM180,226L178,226L175,230L171,231L173,233L169,233L168,235L169,239L174,242L177,241L179,238L180,239L181,245L186,246L184,247L184,255L183,260L182,267L181,268L179,273L175,276L176,278L173,278L171,277L163,277L161,278L155,280L154,278L152,281L146,282L141,282L139,281L135,280L139,278L133,277L138,275L134,275L131,273L131,272L137,269L133,267L136,266L140,267L139,264L143,263L152,263L151,261L148,263L144,261L140,261L145,259L147,256L149,254L153,253L152,252L148,251L147,249L145,249L146,248L143,246L143,244L147,244L146,242L150,241L150,240L147,239L149,235L147,232L151,232L155,233L156,236L158,235L163,237L162,235L167,233L169,231L165,231L163,228L167,226L168,224L170,222L175,223L177,222L177,224L175,227L177,226L177,223L181,221L183,224Z","c":[161,257]},{"code":"IQ","d":"M812,486L813,485L815,479L819,477L826,477L831,475L832,473L834,472L838,476L841,471L844,471L848,476L851,477L852,479L856,481L861,486L865,485L867,486L873,483L875,484L873,487L873,490L877,492L878,495L876,498L875,504L876,508L874,509L875,512L878,516L878,520L886,524L888,522L895,527L896,532L900,530L904,531L915,533L919,532L923,535L931,539L932,546L936,553L941,551L946,560L953,561L956,564L958,564L955,565L951,566L949,568L944,568L939,571L937,574L938,584L936,594L933,596L907,606L869,596L853,591L821,587L801,591L803,588L801,587L799,589L798,585L788,571L809,544L812,540L813,533L809,524L809,517L807,514L804,510L802,505L803,502L808,498L812,487Z","c":[862,547]},{"code":"IR","d":"M959,402L963,400L968,393L967,388L968,384L972,377L980,372L981,367L990,362L994,364L1005,360L1008,361L1011,360L1015,356L1022,354L1025,356L1029,357L1035,355L1044,357L1054,350L1055,351L1061,357L1062,360L1064,360L1067,364L1070,369L1069,370L1072,373L1074,377L1074,381L1074,385L1078,386L1075,389L1075,394L1081,400L1087,398L1087,407L1089,409L1101,418L1107,427L1110,429L1122,422L1127,425L1130,429L1129,453L1141,456L1143,457L1152,461L1159,462L1167,459L1171,459L1174,457L1177,461L1184,468L1186,472L1189,471L1192,467L1195,468L1199,476L1194,481L1191,486L1190,491L1187,497L1190,504L1190,506L1196,516L1195,520L1182,525L1178,524L1178,528L1172,530L1166,535L1162,535L1157,541L1152,541L1143,547L1138,548L1128,552L1124,550L1119,546L1115,541L1111,538L1106,537L1099,540L1094,546L1091,550L1090,556L1088,557L1085,564L1081,568L1074,568L1065,573L1059,572L1050,573L1044,573L1038,570L1029,570L1024,573L1021,573L1015,572L1014,570L1009,567L1006,564L1002,563L1000,560L997,560L994,556L982,551L978,548L976,548L972,555L969,554L962,554L963,550L959,551L959,554L962,558L961,560L958,564L956,564L953,561L946,560L941,551L936,553L932,546L931,539L923,535L919,532L915,533L904,531L900,530L896,532L895,527L888,522L886,524L878,520L878,516L875,512L874,509L876,508L875,504L876,498L878,495L877,492L873,490L873,487L875,484L873,483L867,486L865,485L861,486L856,481L852,479L851,477L848,476L844,471L843,468L839,467L836,462L830,461L829,452L828,453L824,445L821,444L820,441L816,438L821,435L819,431L820,428L824,429L832,434L839,435L847,433L852,430L852,430L854,424L862,410L864,408L871,410L869,413L870,415L873,415L873,418L871,420L872,422L879,423L883,424L886,422L892,430L895,433L902,433L911,430L916,432L920,433L930,433L939,430L945,427L957,413L963,408L961,411L965,409L964,407Z","c":[1012,473]},{"code":"IS","d":"M173,9L176,10L179,9L181,9L178,10L176,12L178,15L177,18L175,19L178,20L178,22L176,24L179,23L182,27L180,29L181,31L179,32L180,34L179,35L177,36L176,38L173,40L172,38L169,43L164,44L160,44L155,44L149,47L139,46L138,48L135,49L130,48L126,46L123,42L120,40L118,36L115,30L113,31L104,27L106,23L107,25L111,25L113,24L116,21L113,22L115,18L118,18L118,17L114,17L113,15L115,14L114,12L108,8L103,7L103,5L111,7L113,7L120,10L122,8L119,8L117,6L117,5L123,3L120,1L120,0L117,-3L109,-4L106,-7L108,-8L110,-7L111,-10L112,-9L113,-7L116,-7L114,-9L113,-11L116,-10L115,-13L116,-14L119,-14L121,-12L120,-10L123,-9L122,-7L123,-7L125,-9L122,-13L126,-13L125,-15L122,-16L125,-17L128,-15L131,-5L130,-4L131,-2L128,0L127,-1L128,3L126,4L127,6L127,9L131,4L133,3L134,6L136,4L138,-2L140,-2L141,-1L142,5L143,5L145,1L150,0L150,1L152,7L151,10L153,9L153,4L154,3L156,4L157,8L162,5L163,8L166,7L167,6L168,3L170,2L172,3Z","c":[143,22]},{"code":"HU","d":"M497,364L498,363L500,366L503,368L505,368L507,370L505,373L500,375L497,380L496,387L491,397L491,401L489,404L486,404L484,407L479,408L478,407L470,408L466,411L465,411L463,412L460,413L457,416L449,416L446,414L444,414L438,409L435,406L432,405L429,398L426,398L428,396L431,395L430,388L432,387L432,384L430,384L431,382L434,383L437,382L437,380L438,377L440,377L446,381L457,379L458,375L459,374L466,373L467,370L471,372L476,368L477,364L481,363L484,363L488,362L493,365Z","c":[466,390]},{"code":"GR","d":"M611,562L611,562L611,562ZM500,547L503,552L499,552L498,548ZM505,557L505,560L501,556L502,555ZM501,542L499,543L499,539L501,539ZM502,547L502,547L502,547ZM490,528L488,528L484,524L486,522L489,528ZM539,531L540,533L546,535L549,534L553,542L557,543L557,546L552,544L549,540L545,540L543,538L537,534L531,534L537,530ZM543,527L543,527L543,527ZM545,526L545,526L545,526ZM557,531L554,530L554,528ZM552,498L549,498L551,495ZM543,549L543,549L543,549ZM541,582L540,583L539,579ZM605,584L603,582L604,578ZM597,558L597,558L597,558ZM597,562L598,560L602,558ZM575,562L574,563L572,560L574,558ZM571,561L571,561L571,561ZM576,572L576,572L576,572ZM574,568L574,568L574,568ZM591,543L594,544L592,546L588,545ZM580,550L581,548L585,547ZM581,564L581,564L581,564ZM590,566L590,566L590,566ZM556,554L556,554L556,554ZM558,558L558,558L558,558ZM561,568L561,570L559,571ZM565,554L565,554L565,554ZM565,549L564,550L560,547L561,545L564,546ZM569,551L568,552L565,550ZM563,565L563,565L563,565ZM579,538L578,539L576,537L577,535L574,532L579,532ZM579,517L583,521L580,523L577,523L572,520L576,516ZM566,499L566,499L566,499ZM564,507L563,511L559,511L558,508ZM572,554L572,554L572,554ZM560,562L560,562L560,562ZM613,574L611,574L610,570L612,566L616,563L616,570ZM555,592L561,593L562,594L568,592L573,592L574,593L580,592L584,591L585,595L591,592L592,590L592,595L586,596L571,601L569,598L565,598L556,598L553,598L551,595L553,590ZM570,474L574,475L575,479L572,482L573,488L569,492L566,491L558,491L556,490L552,493L547,492L543,497L538,498L540,501L541,503L546,504L548,507L545,505L540,504L539,506L543,509L543,511L538,507L535,507L536,510L539,512L535,512L534,508L527,506L527,502L523,505L524,513L528,517L530,520L536,525L537,527L534,528L534,526L532,525L530,527L532,530L530,533L527,534L530,535L537,537L539,539L542,539L544,541L548,542L550,544L551,552L550,553L544,548L538,549L536,551L539,556L541,556L544,558L540,561L538,559L533,557L533,558L538,567L540,571L540,574L542,577L539,576L535,572L533,572L532,576L530,578L530,574L525,569L523,570L523,575L517,569L518,564L516,560L512,559L509,556L512,549L516,549L518,546L529,548L534,550L534,548L537,548L537,546L534,546L526,542L523,544L519,544L513,546L510,544L510,546L507,546L505,541L502,539L501,537L506,537L506,534L501,535L496,531L494,530L492,526L489,524L492,524L494,521L492,518L497,515L498,509L501,505L500,501L508,500L511,498L512,495L516,493L520,494L523,492L523,490L525,489L528,489L529,487L535,486L540,484L540,483L546,481L550,484L551,483L557,485L568,480L566,475Z","c":[525,523]},{"code":"DE","d":"M346,387L342,384L338,385L335,382L332,384L332,386L324,385L323,385L322,383L323,376L327,366L330,362L330,360L324,359L322,357L317,357L316,355L314,356L311,351L310,350L312,344L308,341L308,338L311,335L310,330L308,327L309,324L307,323L310,320L309,318L311,314L309,309L311,307L313,308L318,307L318,304L321,302L322,299L318,297L319,294L322,294L324,288L324,282L323,281L324,277L326,275L333,276L336,280L337,277L338,279L339,274L340,273L343,273L346,273L351,278L347,273L344,272L343,271L343,266L341,265L341,263L344,262L344,261L342,256L342,254L344,254L348,256L353,256L355,259L354,262L357,262L363,265L366,264L366,268L363,270L365,271L367,271L370,272L374,269L377,268L382,263L387,264L388,266L391,269L394,268L396,274L400,276L402,284L402,287L399,291L403,295L405,297L404,300L406,305L405,310L407,313L407,315L409,316L410,320L408,327L407,328L404,325L402,325L403,327L398,329L393,331L393,332L388,334L387,336L385,335L381,337L379,340L377,338L378,341L382,345L381,348L383,353L387,355L393,362L394,362L398,365L397,368L396,370L394,369L393,372L386,376L385,378L388,381L387,384L389,385L388,388L386,387L384,385L382,386L379,384L378,386L373,387L367,390L364,390L362,388L357,387L355,391L352,388L349,386ZM394,264L394,266L392,265L390,267L388,265L388,261L391,258L393,261L393,263ZM399,272L400,273L396,273L395,269ZM368,264L366,263L366,262ZM338,256L338,254L341,254ZM340,258L340,258L340,258Z","c":[358,323]},{"code":"GE","d":"M796,413L792,412L791,411L784,409L781,410L781,413L774,415L773,416L768,417L769,412L768,408L766,405L760,397L758,397L754,397L749,394L745,395L736,392L737,389L743,387L750,388L754,387L757,388L763,386L767,383L775,382L777,383L787,384L788,386L791,386L796,379L800,380L800,377L805,377L808,378L813,377L814,382L819,383L826,382L825,386L828,389L834,390L835,393L833,395L829,395L824,397L822,395L816,396L814,400L812,403L805,406L800,410Z","c":[788,395]},{"code":"FR","d":"M342,473L343,484L341,489L341,492L337,498L332,494L334,492L331,491L332,488L330,488L331,485L330,483L330,480L332,477L338,474L340,475L341,469L342,469ZM323,385L320,387L316,386L314,388L315,389L310,395L308,396L307,399L304,401L302,405L302,410L305,408L304,407L307,405L311,405L311,410L313,414L311,416L310,418L315,424L313,427L310,429L307,429L309,432L312,434L312,436L309,440L310,443L316,447L319,447L320,448L317,452L317,454L316,454L315,454L313,456L306,460L303,464L298,465L294,464L289,462L288,459L285,459L285,457L279,458L273,455L272,453L261,459L257,464L257,470L258,473L255,472L251,474L245,471L242,472L238,469L239,467L235,467L234,465L226,461L225,464L216,462L213,459L209,459L207,456L201,453L198,452L200,449L195,447L195,445L197,445L200,443L203,435L206,426L209,424L206,424L209,415L211,409L214,414L214,409L211,406L212,405L212,402L213,395L210,394L206,390L203,384L205,380L203,377L206,375L202,375L200,374L201,371L197,370L198,368L195,368L193,366L185,361L180,361L179,358L177,356L181,354L179,352L182,351L178,350L178,347L181,346L187,346L191,346L194,345L197,345L199,347L202,352L205,351L212,352L218,353L216,350L217,343L215,335L216,334L222,335L223,340L230,342L234,344L241,342L238,341L239,337L244,335L252,334L257,330L256,329L258,321L259,319L262,318L269,317L270,322L272,324L275,323L276,328L280,329L280,332L285,332L286,334L285,339L288,340L291,339L294,337L293,340L293,343L298,345L300,349L304,348L305,350L310,350L311,351L314,356L316,355L317,357L322,357L324,359L330,360L330,362L327,366L323,376L322,383ZM211,402L210,404L209,399Z","c":[258,396]},{"code":"FI","d":"M468,48L466,42L464,42L463,36L464,34L464,30L461,25L460,23L461,20L460,19L458,19L459,15L457,11L458,9L454,4L451,2L445,0L437,-6L437,-8L435,-8L438,-9L437,-12L438,-13L441,-14L446,-7L448,-4L454,-4L456,-5L457,-7L465,-4L467,-10L468,-11L469,-13L468,-17L469,-26L471,-31L475,-32L477,-35L479,-36L484,-32L489,-30L491,-27L489,-21L491,-18L487,-15L490,-15L490,-13L490,-7L492,-2L497,-1L502,4L503,5L504,7L502,12L500,19L501,22L505,27L508,31L510,34L513,39L513,41L511,43L512,44L512,50L513,50L514,52L513,55L515,58L517,58L518,60L518,62L520,65L523,67L524,70L523,75L522,76L526,80L533,83L537,87L538,88L537,94L536,100L532,107L529,116L526,121L520,130L517,138L514,140L512,139L506,142L505,138L505,141L503,143L501,142L502,144L500,146L498,145L494,148L490,151L488,153L482,155L480,155L478,158L476,158L477,155L474,151L474,154L471,155L470,152L471,149L468,149L464,148L464,146L462,147L460,146L459,140L459,134L459,129L459,128L457,123L455,121L456,117L455,115L454,114L453,110L453,107L456,102L455,99L458,98L461,96L461,94L462,90L464,89L467,84L471,77L473,72L475,66L477,64L480,64L479,62L480,61L479,59L479,53L478,51L472,49L472,47L470,48ZM466,150L466,150L466,150ZM452,99L454,98L453,100ZM467,150L469,150L470,153L467,151ZM461,148L459,149L458,147ZM465,154L465,154L465,154ZM463,155L463,155L463,155ZM476,62L474,63L476,61Z","c":[489,69]},{"code":"EE","d":"M524,192L520,191L516,194L514,193L510,189L508,189L503,187L501,187L494,191L495,187L495,182L493,182L491,185L487,183L485,180L484,176L483,174L483,172L482,169L485,167L488,166L490,163L492,163L494,161L499,160L499,158L502,157L510,157L513,159L522,157L523,156L524,158L522,160L522,164L520,169L520,170L522,176L523,179L527,186L525,187ZM476,180L479,180L483,182L478,187L475,188L473,193L472,193L473,189L470,188L471,186L469,184L473,183L473,182ZM478,176L477,177L475,179L473,176L470,175L474,174L474,172L478,173ZM483,181L480,180L483,179Z","c":[506,174]},{"code":"EG","d":"M833,790L736,821L736,817L734,817L733,821L716,826L618,847L593,708L585,689L587,684L588,678L585,673L584,668L587,661L589,663L592,663L599,659L622,659L627,661L632,661L634,662L643,661L651,663L654,663L658,660L665,652L669,651L671,646L679,642L674,646L681,644L681,641L683,641L689,642L694,639L693,644L698,644L700,646L702,642L708,644L715,640L717,641L727,636L731,632L733,634L745,650L753,662L751,667L753,677L752,685L753,691L752,697L749,697L743,694L739,691L731,687L726,678L721,675L718,672L713,664L711,672L716,675L719,682L726,689L733,694L740,698L742,703L746,708L748,708L751,712L754,719L756,720L764,729L770,734L788,753L795,758L801,760L797,762L800,771L806,779L811,782L818,782L822,786L832,789Z","c":[686,741]},{"code":"DK","d":"M382,239L382,241L379,243L378,245L380,248L377,250L377,257L375,257L373,255L372,250L369,249L367,247L368,245L366,240L369,240L371,236L373,237L373,240L374,241L375,237L375,236L378,233L382,234ZM353,256L348,256L344,254L342,254L341,250L342,250L341,245L337,241L338,235L337,232L338,223L342,224L343,225L344,223L347,220L348,222L349,216L346,216L344,221L341,222L339,221L339,219L343,214L349,214L352,212L356,206L359,206L362,204L361,207L362,209L362,213L359,217L359,224L361,226L364,226L365,227L365,230L361,231L359,231L358,237L355,238L356,239L351,244L352,248L350,252L353,253ZM362,242L364,247L363,251L360,252L355,250L354,246L354,244L359,242L361,243ZM369,255L373,257L374,259L370,260L366,257L366,254ZM363,258L362,256L365,252ZM382,254L378,255L379,252ZM383,242L383,242L383,242ZM360,256L360,256L360,256ZM356,255L353,255L353,252L355,253ZM362,239L361,239L361,235L362,237ZM367,212L367,212L367,212ZM408,252L404,251L404,247L408,250Z","c":[350,230]},{"code":"CZ","d":"M456,348L453,349L448,353L448,357L444,361L441,362L437,362L435,366L434,365L429,363L428,364L424,364L415,361L411,361L411,365L409,365L408,368L404,368L400,368L398,365L394,362L393,362L387,355L383,353L381,348L382,345L378,341L377,338L379,340L381,337L385,335L387,336L388,334L393,332L393,331L398,329L403,327L402,325L404,325L407,328L408,327L410,327L410,324L413,325L414,328L418,329L422,331L425,330L426,331L424,334L430,340L433,337L432,334L435,334L438,336L442,335L440,338L444,341L446,340L449,342L452,342L453,344L455,346Z","c":[415,347]},{"code":"CY","d":"M688,569L691,570L695,567L698,566L700,568L705,566L707,565L708,567L703,569L702,572L696,576L694,579L686,578L683,575L686,570Z","c":[694,572]},{"code":"HR","d":"M396,424L400,425L401,424L406,424L408,421L412,424L418,424L417,419L422,417L421,411L429,407L430,404L432,405L435,406L438,409L444,414L446,414L449,416L457,416L460,413L463,412L462,414L465,420L465,422L469,424L470,425L467,425L467,429L466,431L464,431L461,428L452,428L450,429L441,428L439,426L437,428L434,428L431,432L427,429L424,429L424,436L429,441L431,446L438,453L443,458L445,459L446,462L451,466L450,468L444,463L441,460L434,458L428,459L428,456L422,452L417,446L421,445L418,444L413,438L412,431L408,427L405,427L405,430L401,436L400,436L397,431L395,424ZM438,468L444,468L445,469L439,469ZM445,465L438,465L434,464ZM439,463L435,463L435,461L440,461ZM418,449L418,449L418,449ZM412,433L410,434L407,431L409,429ZM412,437L412,437L412,437ZM417,444L414,442L411,438L418,444ZM418,452L418,452L418,452ZM420,451L420,451L420,451ZM408,439L407,439L405,434L406,430L408,433ZM451,471L451,471L451,471ZM462,474L463,476L454,470L450,470L445,467L451,469L454,469Z","c":[432,429]},{"code":"BG","d":"M591,465L585,467L581,465L578,466L572,469L570,474L566,475L568,480L557,485L551,483L550,484L546,481L540,483L540,484L535,486L529,487L528,489L525,489L525,482L522,477L517,475L515,472L517,470L515,466L515,463L518,461L521,455L515,451L512,447L511,442L514,440L514,437L519,440L517,442L518,444L522,443L535,442L538,441L548,442L552,441L556,439L560,433L563,431L571,428L576,430L582,429L584,432L589,432L592,432L592,436L591,438L587,439L585,443L586,451L585,452L582,457L586,459Z","c":[552,458]},{"code":"BA","d":"M471,455L467,456L469,460L466,459L464,461L464,465L462,466L463,472L462,474L454,469L451,469L450,468L451,466L446,462L445,459L443,458L438,453L431,446L429,441L424,436L424,429L427,429L431,432L434,428L437,428L439,426L441,428L450,429L452,428L461,428L464,431L466,431L470,431L470,434L468,437L469,441L475,446L474,447L470,447L474,452L474,454Z","c":[451,445]},{"code":"BE","d":"M289,314L291,314L292,312L295,312L296,314L298,313L299,315L301,317L303,317L306,320L304,325L304,326L308,327L310,330L311,335L308,338L307,337L304,342L303,344L305,347L304,348L300,349L298,345L293,343L293,340L294,337L291,339L288,340L285,339L286,334L285,332L280,332L280,329L276,328L275,323L272,324L270,322L269,317L275,314L279,313L280,315L281,315L285,316L288,315Z","c":[292,327]},{"code":"BY","d":"M592,276L587,277L584,279L581,284L581,288L583,292L582,294L580,294L577,292L571,294L569,295L566,292L563,294L562,296L560,294L555,294L552,295L551,298L549,296L545,296L543,294L539,295L530,294L522,295L513,298L511,302L509,304L506,303L505,306L504,304L504,296L502,294L499,293L500,288L505,285L505,283L504,278L499,269L497,263L500,263L505,261L506,262L511,260L511,257L513,257L517,253L518,255L520,255L519,253L517,252L519,248L518,245L519,241L522,239L522,236L525,236L526,233L523,232L523,226L526,225L527,223L533,222L533,220L535,216L537,215L539,216L541,215L544,217L547,215L550,216L550,218L552,220L556,216L559,215L561,216L563,217L567,218L567,224L570,227L569,232L574,234L573,237L575,237L578,241L583,242L583,246L588,246L591,247L592,249L595,250L596,252L591,258L588,258L586,257L583,258L582,262L586,265L589,273Z","c":[546,261]},{"code":"AZ","d":"M824,429L823,428L826,425L834,427L837,424L838,427L842,428L843,429L847,433L839,435L832,434ZM886,422L883,424L879,423L872,422L871,420L873,418L873,415L870,415L869,413L871,410L864,408L862,410L854,424L852,430L852,430L848,426L850,425L846,423L846,420L842,421L835,419L831,419L834,416L834,412L828,411L823,409L824,404L820,403L816,403L817,402L814,400L816,396L822,395L824,397L829,395L833,395L835,393L834,390L828,389L825,386L826,382L829,383L831,381L839,384L841,386L845,386L849,384L849,379L852,374L852,369L857,371L863,374L867,378L874,381L878,381L881,380L886,380L888,382L882,385L879,389L879,391L881,400L884,404L884,409L881,410L882,416ZM826,408L826,408L826,408ZM816,405L816,405L816,405Z","c":[854,399]},{"code":"AT","d":"M346,392L347,388L346,387L349,386L352,388L355,391L357,387L362,388L364,390L367,390L373,387L378,386L379,384L382,386L384,385L386,387L388,388L389,385L387,384L388,381L385,378L386,376L393,372L394,369L396,370L397,368L398,365L400,368L404,368L408,368L409,365L411,365L411,361L415,361L424,364L428,364L429,363L434,365L435,366L434,370L438,377L437,380L437,382L434,383L431,382L430,384L432,384L432,387L430,388L431,395L428,396L426,398L425,402L421,402L419,403L413,403L407,407L397,406L390,405L381,403L378,398L378,396L373,397L370,397L365,398L364,401L361,401L357,399L356,397L354,399L351,399L349,397L346,396Z","c":[402,386]},{"code":"AM","d":"M823,428L819,426L814,425L811,428L806,428L806,427L802,422L802,417L799,415L796,413L800,410L805,406L812,403L814,400L817,402L816,403L820,403L824,404L823,409L828,411L834,412L834,416L831,419L835,419L842,421L846,420L846,423L850,425L848,426L852,430L847,433L843,429L842,428L838,427L837,424L834,427L826,425ZM816,405L816,405L816,405ZM826,408L826,408L826,408Z","c":[820,417]},{"code":"DZ","d":"M325,580L326,582L323,583L319,588L321,590L319,599L320,603L320,608L321,612L320,614L318,620L316,623L312,626L310,629L306,632L306,637L309,647L314,651L316,654L318,661L329,671L335,706L331,708L337,718L338,723L340,731L339,739L339,749L340,754L337,762L338,770L339,772L339,778L332,782L331,787L340,802L341,807L342,812L345,816L348,819L352,817L367,822L375,838L290,889L280,896L256,915L255,916L224,919L208,920L205,919L203,916L206,911L206,903L200,899L192,896L189,892L183,890L179,888L178,884L170,877L171,872L82,779L77,774L67,763L23,714L25,707L30,689L31,687L50,680L53,680L61,677L68,680L71,676L83,678L89,678L94,675L99,670L110,668L117,665L121,666L123,664L120,661L122,658L122,652L129,653L136,652L138,648L146,648L164,652L166,648L169,646L163,637L162,628L164,624L163,621L165,612L164,609L165,607L164,604L165,602L161,597L160,594L165,595L174,592L179,588L189,585L193,586L197,585L199,583L205,580L212,578L216,577L233,577L236,578L242,575L250,576L254,575L269,576L275,581L278,581L283,579L291,577L295,575L296,577L301,578L306,578L305,576L311,578L315,581L319,580Z","c":[216,737]},{"code":"AL","d":"M475,485L475,482L474,480L478,471L480,474L484,472L487,475L490,477L492,483L491,490L492,494L496,501L500,501L501,505L498,509L497,515L492,518L494,521L492,524L489,524L486,518L481,515L478,512L480,512L478,507L479,502L479,497L478,493L479,489L479,486Z","c":[486,498]}]</script>
 
+<!-- Générateur de QR code (qrcode-generator, Kazuhiko Arase, licence MIT) -->
+<script>
+//---------------------------------------------------------------------
+//
+// QR Code Generator for JavaScript
+//
+// Copyright (c) 2009 Kazuhiko Arase
+//
+// URL: http://www.d-project.com/
+//
+// Licensed under the MIT license:
+//  http://www.opensource.org/licenses/mit-license.php
+//
+// The word 'QR Code' is registered trademark of
+// DENSO WAVE INCORPORATED
+//  http://www.denso-wave.com/qrcode/faqpatent-e.html
+//
+//---------------------------------------------------------------------
+
+var qrcode = function() {
+
+  //---------------------------------------------------------------------
+  // qrcode
+  //---------------------------------------------------------------------
+
+  /**
+   * qrcode
+   * @param typeNumber 1 to 40
+   * @param errorCorrectionLevel 'L','M','Q','H'
+   */
+  var qrcode = function(typeNumber, errorCorrectionLevel) {
+
+    var PAD0 = 0xEC;
+    var PAD1 = 0x11;
+
+    var _typeNumber = typeNumber;
+    var _errorCorrectionLevel = QRErrorCorrectionLevel[errorCorrectionLevel];
+    var _modules = null;
+    var _moduleCount = 0;
+    var _dataCache = null;
+    var _dataList = [];
+
+    var _this = {};
+
+    var makeImpl = function(test, maskPattern) {
+
+      _moduleCount = _typeNumber * 4 + 17;
+      _modules = function(moduleCount) {
+        var modules = new Array(moduleCount);
+        for (var row = 0; row < moduleCount; row += 1) {
+          modules[row] = new Array(moduleCount);
+          for (var col = 0; col < moduleCount; col += 1) {
+            modules[row][col] = null;
+          }
+        }
+        return modules;
+      }(_moduleCount);
+
+      setupPositionProbePattern(0, 0);
+      setupPositionProbePattern(_moduleCount - 7, 0);
+      setupPositionProbePattern(0, _moduleCount - 7);
+      setupPositionAdjustPattern();
+      setupTimingPattern();
+      setupTypeInfo(test, maskPattern);
+
+      if (_typeNumber >= 7) {
+        setupTypeNumber(test);
+      }
+
+      if (_dataCache == null) {
+        _dataCache = createData(_typeNumber, _errorCorrectionLevel, _dataList);
+      }
+
+      mapData(_dataCache, maskPattern);
+    };
+
+    var setupPositionProbePattern = function(row, col) {
+
+      for (var r = -1; r <= 7; r += 1) {
+
+        if (row + r <= -1 || _moduleCount <= row + r) continue;
+
+        for (var c = -1; c <= 7; c += 1) {
+
+          if (col + c <= -1 || _moduleCount <= col + c) continue;
+
+          if ( (0 <= r && r <= 6 && (c == 0 || c == 6) )
+              || (0 <= c && c <= 6 && (r == 0 || r == 6) )
+              || (2 <= r && r <= 4 && 2 <= c && c <= 4) ) {
+            _modules[row + r][col + c] = true;
+          } else {
+            _modules[row + r][col + c] = false;
+          }
+        }
+      }
+    };
+
+    var getBestMaskPattern = function() {
+
+      var minLostPoint = 0;
+      var pattern = 0;
+
+      for (var i = 0; i < 8; i += 1) {
+
+        makeImpl(true, i);
+
+        var lostPoint = QRUtil.getLostPoint(_this);
+
+        if (i == 0 || minLostPoint > lostPoint) {
+          minLostPoint = lostPoint;
+          pattern = i;
+        }
+      }
+
+      return pattern;
+    };
+
+    var setupTimingPattern = function() {
+
+      for (var r = 8; r < _moduleCount - 8; r += 1) {
+        if (_modules[r][6] != null) {
+          continue;
+        }
+        _modules[r][6] = (r % 2 == 0);
+      }
+
+      for (var c = 8; c < _moduleCount - 8; c += 1) {
+        if (_modules[6][c] != null) {
+          continue;
+        }
+        _modules[6][c] = (c % 2 == 0);
+      }
+    };
+
+    var setupPositionAdjustPattern = function() {
+
+      var pos = QRUtil.getPatternPosition(_typeNumber);
+
+      for (var i = 0; i < pos.length; i += 1) {
+
+        for (var j = 0; j < pos.length; j += 1) {
+
+          var row = pos[i];
+          var col = pos[j];
+
+          if (_modules[row][col] != null) {
+            continue;
+          }
+
+          for (var r = -2; r <= 2; r += 1) {
+
+            for (var c = -2; c <= 2; c += 1) {
+
+              if (r == -2 || r == 2 || c == -2 || c == 2
+                  || (r == 0 && c == 0) ) {
+                _modules[row + r][col + c] = true;
+              } else {
+                _modules[row + r][col + c] = false;
+              }
+            }
+          }
+        }
+      }
+    };
+
+    var setupTypeNumber = function(test) {
+
+      var bits = QRUtil.getBCHTypeNumber(_typeNumber);
+
+      for (var i = 0; i < 18; i += 1) {
+        var mod = (!test && ( (bits >> i) & 1) == 1);
+        _modules[Math.floor(i / 3)][i % 3 + _moduleCount - 8 - 3] = mod;
+      }
+
+      for (var i = 0; i < 18; i += 1) {
+        var mod = (!test && ( (bits >> i) & 1) == 1);
+        _modules[i % 3 + _moduleCount - 8 - 3][Math.floor(i / 3)] = mod;
+      }
+    };
+
+    var setupTypeInfo = function(test, maskPattern) {
+
+      var data = (_errorCorrectionLevel << 3) | maskPattern;
+      var bits = QRUtil.getBCHTypeInfo(data);
+
+      // vertical
+      for (var i = 0; i < 15; i += 1) {
+
+        var mod = (!test && ( (bits >> i) & 1) == 1);
+
+        if (i < 6) {
+          _modules[i][8] = mod;
+        } else if (i < 8) {
+          _modules[i + 1][8] = mod;
+        } else {
+          _modules[_moduleCount - 15 + i][8] = mod;
+        }
+      }
+
+      // horizontal
+      for (var i = 0; i < 15; i += 1) {
+
+        var mod = (!test && ( (bits >> i) & 1) == 1);
+
+        if (i < 8) {
+          _modules[8][_moduleCount - i - 1] = mod;
+        } else if (i < 9) {
+          _modules[8][15 - i - 1 + 1] = mod;
+        } else {
+          _modules[8][15 - i - 1] = mod;
+        }
+      }
+
+      // fixed module
+      _modules[_moduleCount - 8][8] = (!test);
+    };
+
+    var mapData = function(data, maskPattern) {
+
+      var inc = -1;
+      var row = _moduleCount - 1;
+      var bitIndex = 7;
+      var byteIndex = 0;
+      var maskFunc = QRUtil.getMaskFunction(maskPattern);
+
+      for (var col = _moduleCount - 1; col > 0; col -= 2) {
+
+        if (col == 6) col -= 1;
+
+        while (true) {
+
+          for (var c = 0; c < 2; c += 1) {
+
+            if (_modules[row][col - c] == null) {
+
+              var dark = false;
+
+              if (byteIndex < data.length) {
+                dark = ( ( (data[byteIndex] >>> bitIndex) & 1) == 1);
+              }
+
+              var mask = maskFunc(row, col - c);
+
+              if (mask) {
+                dark = !dark;
+              }
+
+              _modules[row][col - c] = dark;
+              bitIndex -= 1;
+
+              if (bitIndex == -1) {
+                byteIndex += 1;
+                bitIndex = 7;
+              }
+            }
+          }
+
+          row += inc;
+
+          if (row < 0 || _moduleCount <= row) {
+            row -= inc;
+            inc = -inc;
+            break;
+          }
+        }
+      }
+    };
+
+    var createBytes = function(buffer, rsBlocks) {
+
+      var offset = 0;
+
+      var maxDcCount = 0;
+      var maxEcCount = 0;
+
+      var dcdata = new Array(rsBlocks.length);
+      var ecdata = new Array(rsBlocks.length);
+
+      for (var r = 0; r < rsBlocks.length; r += 1) {
+
+        var dcCount = rsBlocks[r].dataCount;
+        var ecCount = rsBlocks[r].totalCount - dcCount;
+
+        maxDcCount = Math.max(maxDcCount, dcCount);
+        maxEcCount = Math.max(maxEcCount, ecCount);
+
+        dcdata[r] = new Array(dcCount);
+
+        for (var i = 0; i < dcdata[r].length; i += 1) {
+          dcdata[r][i] = 0xff & buffer.getBuffer()[i + offset];
+        }
+        offset += dcCount;
+
+        var rsPoly = QRUtil.getErrorCorrectPolynomial(ecCount);
+        var rawPoly = qrPolynomial(dcdata[r], rsPoly.getLength() - 1);
+
+        var modPoly = rawPoly.mod(rsPoly);
+        ecdata[r] = new Array(rsPoly.getLength() - 1);
+        for (var i = 0; i < ecdata[r].length; i += 1) {
+          var modIndex = i + modPoly.getLength() - ecdata[r].length;
+          ecdata[r][i] = (modIndex >= 0)? modPoly.getAt(modIndex) : 0;
+        }
+      }
+
+      var totalCodeCount = 0;
+      for (var i = 0; i < rsBlocks.length; i += 1) {
+        totalCodeCount += rsBlocks[i].totalCount;
+      }
+
+      var data = new Array(totalCodeCount);
+      var index = 0;
+
+      for (var i = 0; i < maxDcCount; i += 1) {
+        for (var r = 0; r < rsBlocks.length; r += 1) {
+          if (i < dcdata[r].length) {
+            data[index] = dcdata[r][i];
+            index += 1;
+          }
+        }
+      }
+
+      for (var i = 0; i < maxEcCount; i += 1) {
+        for (var r = 0; r < rsBlocks.length; r += 1) {
+          if (i < ecdata[r].length) {
+            data[index] = ecdata[r][i];
+            index += 1;
+          }
+        }
+      }
+
+      return data;
+    };
+
+    var createData = function(typeNumber, errorCorrectionLevel, dataList) {
+
+      var rsBlocks = QRRSBlock.getRSBlocks(typeNumber, errorCorrectionLevel);
+
+      var buffer = qrBitBuffer();
+
+      for (var i = 0; i < dataList.length; i += 1) {
+        var data = dataList[i];
+        buffer.put(data.getMode(), 4);
+        buffer.put(data.getLength(), QRUtil.getLengthInBits(data.getMode(), typeNumber) );
+        data.write(buffer);
+      }
+
+      // calc num max data.
+      var totalDataCount = 0;
+      for (var i = 0; i < rsBlocks.length; i += 1) {
+        totalDataCount += rsBlocks[i].dataCount;
+      }
+
+      if (buffer.getLengthInBits() > totalDataCount * 8) {
+        throw 'code length overflow. ('
+          + buffer.getLengthInBits()
+          + '>'
+          + totalDataCount * 8
+          + ')';
+      }
+
+      // end code
+      if (buffer.getLengthInBits() + 4 <= totalDataCount * 8) {
+        buffer.put(0, 4);
+      }
+
+      // padding
+      while (buffer.getLengthInBits() % 8 != 0) {
+        buffer.putBit(false);
+      }
+
+      // padding
+      while (true) {
+
+        if (buffer.getLengthInBits() >= totalDataCount * 8) {
+          break;
+        }
+        buffer.put(PAD0, 8);
+
+        if (buffer.getLengthInBits() >= totalDataCount * 8) {
+          break;
+        }
+        buffer.put(PAD1, 8);
+      }
+
+      return createBytes(buffer, rsBlocks);
+    };
+
+    _this.addData = function(data, mode) {
+
+      mode = mode || 'Byte';
+
+      var newData = null;
+
+      switch(mode) {
+      case 'Numeric' :
+        newData = qrNumber(data);
+        break;
+      case 'Alphanumeric' :
+        newData = qrAlphaNum(data);
+        break;
+      case 'Byte' :
+        newData = qr8BitByte(data);
+        break;
+      case 'Kanji' :
+        newData = qrKanji(data);
+        break;
+      default :
+        throw 'mode:' + mode;
+      }
+
+      _dataList.push(newData);
+      _dataCache = null;
+    };
+
+    _this.isDark = function(row, col) {
+      if (row < 0 || _moduleCount <= row || col < 0 || _moduleCount <= col) {
+        throw row + ',' + col;
+      }
+      return _modules[row][col];
+    };
+
+    _this.getModuleCount = function() {
+      return _moduleCount;
+    };
+
+    _this.make = function() {
+      if (_typeNumber < 1) {
+        var typeNumber = 1;
+
+        for (; typeNumber < 40; typeNumber++) {
+          var rsBlocks = QRRSBlock.getRSBlocks(typeNumber, _errorCorrectionLevel);
+          var buffer = qrBitBuffer();
+
+          for (var i = 0; i < _dataList.length; i++) {
+            var data = _dataList[i];
+            buffer.put(data.getMode(), 4);
+            buffer.put(data.getLength(), QRUtil.getLengthInBits(data.getMode(), typeNumber) );
+            data.write(buffer);
+          }
+
+          var totalDataCount = 0;
+          for (var i = 0; i < rsBlocks.length; i++) {
+            totalDataCount += rsBlocks[i].dataCount;
+          }
+
+          if (buffer.getLengthInBits() <= totalDataCount * 8) {
+            break;
+          }
+        }
+
+        _typeNumber = typeNumber;
+      }
+
+      makeImpl(false, getBestMaskPattern() );
+    };
+
+    _this.createTableTag = function(cellSize, margin) {
+
+      cellSize = cellSize || 2;
+      margin = (typeof margin == 'undefined')? cellSize * 4 : margin;
+
+      var qrHtml = '';
+
+      qrHtml += '<table style="';
+      qrHtml += ' border-width: 0px; border-style: none;';
+      qrHtml += ' border-collapse: collapse;';
+      qrHtml += ' padding: 0px; margin: ' + margin + 'px;';
+      qrHtml += '">';
+      qrHtml += '<tbody>';
+
+      for (var r = 0; r < _this.getModuleCount(); r += 1) {
+
+        qrHtml += '<tr>';
+
+        for (var c = 0; c < _this.getModuleCount(); c += 1) {
+          qrHtml += '<td style="';
+          qrHtml += ' border-width: 0px; border-style: none;';
+          qrHtml += ' border-collapse: collapse;';
+          qrHtml += ' padding: 0px; margin: 0px;';
+          qrHtml += ' width: ' + cellSize + 'px;';
+          qrHtml += ' height: ' + cellSize + 'px;';
+          qrHtml += ' background-color: ';
+          qrHtml += _this.isDark(r, c)? '#000000' : '#ffffff';
+          qrHtml += ';';
+          qrHtml += '"/>';
+        }
+
+        qrHtml += '</tr>';
+      }
+
+      qrHtml += '</tbody>';
+      qrHtml += '</table>';
+
+      return qrHtml;
+    };
+
+    _this.createSvgTag = function(cellSize, margin, alt, title) {
+
+      var opts = {};
+      if (typeof arguments[0] == 'object') {
+        // Called by options.
+        opts = arguments[0];
+        // overwrite cellSize and margin.
+        cellSize = opts.cellSize;
+        margin = opts.margin;
+        alt = opts.alt;
+        title = opts.title;
+      }
+
+      cellSize = cellSize || 2;
+      margin = (typeof margin == 'undefined')? cellSize * 4 : margin;
+
+      // Compose alt property surrogate
+      alt = (typeof alt === 'string') ? {text: alt} : alt || {};
+      alt.text = alt.text || null;
+      alt.id = (alt.text) ? alt.id || 'qrcode-description' : null;
+
+      // Compose title property surrogate
+      title = (typeof title === 'string') ? {text: title} : title || {};
+      title.text = title.text || null;
+      title.id = (title.text) ? title.id || 'qrcode-title' : null;
+
+      var size = _this.getModuleCount() * cellSize + margin * 2;
+      var c, mc, r, mr, qrSvg='', rect;
+
+      rect = 'l' + cellSize + ',0 0,' + cellSize +
+        ' -' + cellSize + ',0 0,-' + cellSize + 'z ';
+
+      qrSvg += '<svg version="1.1" xmlns="http://www.w3.org/2000/svg"';
+      qrSvg += !opts.scalable ? ' width="' + size + 'px" height="' + size + 'px"' : '';
+      qrSvg += ' viewBox="0 0 ' + size + ' ' + size + '" ';
+      qrSvg += ' preserveAspectRatio="xMinYMin meet"';
+      qrSvg += (title.text || alt.text) ? ' role="img" aria-labelledby="' +
+          escapeXml([title.id, alt.id].join(' ').trim() ) + '"' : '';
+      qrSvg += '>';
+      qrSvg += (title.text) ? '<title id="' + escapeXml(title.id) + '">' +
+          escapeXml(title.text) + '</title>' : '';
+      qrSvg += (alt.text) ? '<description id="' + escapeXml(alt.id) + '">' +
+          escapeXml(alt.text) + '</description>' : '';
+      qrSvg += '<rect width="100%" height="100%" fill="white" cx="0" cy="0"/>';
+      qrSvg += '<path d="';
+
+      for (r = 0; r < _this.getModuleCount(); r += 1) {
+        mr = r * cellSize + margin;
+        for (c = 0; c < _this.getModuleCount(); c += 1) {
+          if (_this.isDark(r, c) ) {
+            mc = c*cellSize+margin;
+            qrSvg += 'M' + mc + ',' + mr + rect;
+          }
+        }
+      }
+
+      qrSvg += '" stroke="transparent" fill="black"/>';
+      qrSvg += '</svg>';
+
+      return qrSvg;
+    };
+
+    _this.createDataURL = function(cellSize, margin) {
+
+      cellSize = cellSize || 2;
+      margin = (typeof margin == 'undefined')? cellSize * 4 : margin;
+
+      var size = _this.getModuleCount() * cellSize + margin * 2;
+      var min = margin;
+      var max = size - margin;
+
+      return createDataURL(size, size, function(x, y) {
+        if (min <= x && x < max && min <= y && y < max) {
+          var c = Math.floor( (x - min) / cellSize);
+          var r = Math.floor( (y - min) / cellSize);
+          return _this.isDark(r, c)? 0 : 1;
+        } else {
+          return 1;
+        }
+      } );
+    };
+
+    _this.createImgTag = function(cellSize, margin, alt) {
+
+      cellSize = cellSize || 2;
+      margin = (typeof margin == 'undefined')? cellSize * 4 : margin;
+
+      var size = _this.getModuleCount() * cellSize + margin * 2;
+
+      var img = '';
+      img += '<img';
+      img += '\u0020src="';
+      img += _this.createDataURL(cellSize, margin);
+      img += '"';
+      img += '\u0020width="';
+      img += size;
+      img += '"';
+      img += '\u0020height="';
+      img += size;
+      img += '"';
+      if (alt) {
+        img += '\u0020alt="';
+        img += escapeXml(alt);
+        img += '"';
+      }
+      img += '/>';
+
+      return img;
+    };
+
+    var escapeXml = function(s) {
+      var escaped = '';
+      for (var i = 0; i < s.length; i += 1) {
+        var c = s.charAt(i);
+        switch(c) {
+        case '<': escaped += '&lt;'; break;
+        case '>': escaped += '&gt;'; break;
+        case '&': escaped += '&amp;'; break;
+        case '"': escaped += '&quot;'; break;
+        default : escaped += c; break;
+        }
+      }
+      return escaped;
+    };
+
+    var _createHalfASCII = function(margin) {
+      var cellSize = 1;
+      margin = (typeof margin == 'undefined')? cellSize * 2 : margin;
+
+      var size = _this.getModuleCount() * cellSize + margin * 2;
+      var min = margin;
+      var max = size - margin;
+
+      var y, x, r1, r2, p;
+
+      var blocks = {
+        '██': '█',
+        '█ ': '▀',
+        ' █': '▄',
+        '  ': ' '
+      };
+
+      var blocksLastLineNoMargin = {
+        '██': '▀',
+        '█ ': '▀',
+        ' █': ' ',
+        '  ': ' '
+      };
+
+      var ascii = '';
+      for (y = 0; y < size; y += 2) {
+        r1 = Math.floor((y - min) / cellSize);
+        r2 = Math.floor((y + 1 - min) / cellSize);
+        for (x = 0; x < size; x += 1) {
+          p = '█';
+
+          if (min <= x && x < max && min <= y && y < max && _this.isDark(r1, Math.floor((x - min) / cellSize))) {
+            p = ' ';
+          }
+
+          if (min <= x && x < max && min <= y+1 && y+1 < max && _this.isDark(r2, Math.floor((x - min) / cellSize))) {
+            p += ' ';
+          }
+          else {
+            p += '█';
+          }
+
+          // Output 2 characters per pixel, to create full square. 1 character per pixels gives only half width of square.
+          ascii += (margin < 1 && y+1 >= max) ? blocksLastLineNoMargin[p] : blocks[p];
+        }
+
+        ascii += '\n';
+      }
+
+      if (size % 2 && margin > 0) {
+        return ascii.substring(0, ascii.length - size - 1) + Array(size+1).join('▀');
+      }
+
+      return ascii.substring(0, ascii.length-1);
+    };
+
+    _this.createASCII = function(cellSize, margin) {
+      cellSize = cellSize || 1;
+
+      if (cellSize < 2) {
+        return _createHalfASCII(margin);
+      }
+
+      cellSize -= 1;
+      margin = (typeof margin == 'undefined')? cellSize * 2 : margin;
+
+      var size = _this.getModuleCount() * cellSize + margin * 2;
+      var min = margin;
+      var max = size - margin;
+
+      var y, x, r, p;
+
+      var white = Array(cellSize+1).join('██');
+      var black = Array(cellSize+1).join('  ');
+
+      var ascii = '';
+      var line = '';
+      for (y = 0; y < size; y += 1) {
+        r = Math.floor( (y - min) / cellSize);
+        line = '';
+        for (x = 0; x < size; x += 1) {
+          p = 1;
+
+          if (min <= x && x < max && min <= y && y < max && _this.isDark(r, Math.floor((x - min) / cellSize))) {
+            p = 0;
+          }
+
+          // Output 2 characters per pixel, to create full square. 1 character per pixels gives only half width of square.
+          line += p ? white : black;
+        }
+
+        for (r = 0; r < cellSize; r += 1) {
+          ascii += line + '\n';
+        }
+      }
+
+      return ascii.substring(0, ascii.length-1);
+    };
+
+    _this.renderTo2dContext = function(context, cellSize) {
+      cellSize = cellSize || 2;
+      var length = _this.getModuleCount();
+      for (var row = 0; row < length; row++) {
+        for (var col = 0; col < length; col++) {
+          context.fillStyle = _this.isDark(row, col) ? 'black' : 'white';
+          context.fillRect(row * cellSize, col * cellSize, cellSize, cellSize);
+        }
+      }
+    }
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // qrcode.stringToBytes
+  //---------------------------------------------------------------------
+
+  qrcode.stringToBytesFuncs = {
+    'default' : function(s) {
+      var bytes = [];
+      for (var i = 0; i < s.length; i += 1) {
+        var c = s.charCodeAt(i);
+        bytes.push(c & 0xff);
+      }
+      return bytes;
+    }
+  };
+
+  qrcode.stringToBytes = qrcode.stringToBytesFuncs['default'];
+
+  //---------------------------------------------------------------------
+  // qrcode.createStringToBytes
+  //---------------------------------------------------------------------
+
+  /**
+   * @param unicodeData base64 string of byte array.
+   * [16bit Unicode],[16bit Bytes], ...
+   * @param numChars
+   */
+  qrcode.createStringToBytes = function(unicodeData, numChars) {
+
+    // create conversion map.
+
+    var unicodeMap = function() {
+
+      var bin = base64DecodeInputStream(unicodeData);
+      var read = function() {
+        var b = bin.read();
+        if (b == -1) throw 'eof';
+        return b;
+      };
+
+      var count = 0;
+      var unicodeMap = {};
+      while (true) {
+        var b0 = bin.read();
+        if (b0 == -1) break;
+        var b1 = read();
+        var b2 = read();
+        var b3 = read();
+        var k = String.fromCharCode( (b0 << 8) | b1);
+        var v = (b2 << 8) | b3;
+        unicodeMap[k] = v;
+        count += 1;
+      }
+      if (count != numChars) {
+        throw count + ' != ' + numChars;
+      }
+
+      return unicodeMap;
+    }();
+
+    var unknownChar = '?'.charCodeAt(0);
+
+    return function(s) {
+      var bytes = [];
+      for (var i = 0; i < s.length; i += 1) {
+        var c = s.charCodeAt(i);
+        if (c < 128) {
+          bytes.push(c);
+        } else {
+          var b = unicodeMap[s.charAt(i)];
+          if (typeof b == 'number') {
+            if ( (b & 0xff) == b) {
+              // 1byte
+              bytes.push(b);
+            } else {
+              // 2bytes
+              bytes.push(b >>> 8);
+              bytes.push(b & 0xff);
+            }
+          } else {
+            bytes.push(unknownChar);
+          }
+        }
+      }
+      return bytes;
+    };
+  };
+
+  //---------------------------------------------------------------------
+  // QRMode
+  //---------------------------------------------------------------------
+
+  var QRMode = {
+    MODE_NUMBER :    1 << 0,
+    MODE_ALPHA_NUM : 1 << 1,
+    MODE_8BIT_BYTE : 1 << 2,
+    MODE_KANJI :     1 << 3
+  };
+
+  //---------------------------------------------------------------------
+  // QRErrorCorrectionLevel
+  //---------------------------------------------------------------------
+
+  var QRErrorCorrectionLevel = {
+    L : 1,
+    M : 0,
+    Q : 3,
+    H : 2
+  };
+
+  //---------------------------------------------------------------------
+  // QRMaskPattern
+  //---------------------------------------------------------------------
+
+  var QRMaskPattern = {
+    PATTERN000 : 0,
+    PATTERN001 : 1,
+    PATTERN010 : 2,
+    PATTERN011 : 3,
+    PATTERN100 : 4,
+    PATTERN101 : 5,
+    PATTERN110 : 6,
+    PATTERN111 : 7
+  };
+
+  //---------------------------------------------------------------------
+  // QRUtil
+  //---------------------------------------------------------------------
+
+  var QRUtil = function() {
+
+    var PATTERN_POSITION_TABLE = [
+      [],
+      [6, 18],
+      [6, 22],
+      [6, 26],
+      [6, 30],
+      [6, 34],
+      [6, 22, 38],
+      [6, 24, 42],
+      [6, 26, 46],
+      [6, 28, 50],
+      [6, 30, 54],
+      [6, 32, 58],
+      [6, 34, 62],
+      [6, 26, 46, 66],
+      [6, 26, 48, 70],
+      [6, 26, 50, 74],
+      [6, 30, 54, 78],
+      [6, 30, 56, 82],
+      [6, 30, 58, 86],
+      [6, 34, 62, 90],
+      [6, 28, 50, 72, 94],
+      [6, 26, 50, 74, 98],
+      [6, 30, 54, 78, 102],
+      [6, 28, 54, 80, 106],
+      [6, 32, 58, 84, 110],
+      [6, 30, 58, 86, 114],
+      [6, 34, 62, 90, 118],
+      [6, 26, 50, 74, 98, 122],
+      [6, 30, 54, 78, 102, 126],
+      [6, 26, 52, 78, 104, 130],
+      [6, 30, 56, 82, 108, 134],
+      [6, 34, 60, 86, 112, 138],
+      [6, 30, 58, 86, 114, 142],
+      [6, 34, 62, 90, 118, 146],
+      [6, 30, 54, 78, 102, 126, 150],
+      [6, 24, 50, 76, 102, 128, 154],
+      [6, 28, 54, 80, 106, 132, 158],
+      [6, 32, 58, 84, 110, 136, 162],
+      [6, 26, 54, 82, 110, 138, 166],
+      [6, 30, 58, 86, 114, 142, 170]
+    ];
+    var G15 = (1 << 10) | (1 << 8) | (1 << 5) | (1 << 4) | (1 << 2) | (1 << 1) | (1 << 0);
+    var G18 = (1 << 12) | (1 << 11) | (1 << 10) | (1 << 9) | (1 << 8) | (1 << 5) | (1 << 2) | (1 << 0);
+    var G15_MASK = (1 << 14) | (1 << 12) | (1 << 10) | (1 << 4) | (1 << 1);
+
+    var _this = {};
+
+    var getBCHDigit = function(data) {
+      var digit = 0;
+      while (data != 0) {
+        digit += 1;
+        data >>>= 1;
+      }
+      return digit;
+    };
+
+    _this.getBCHTypeInfo = function(data) {
+      var d = data << 10;
+      while (getBCHDigit(d) - getBCHDigit(G15) >= 0) {
+        d ^= (G15 << (getBCHDigit(d) - getBCHDigit(G15) ) );
+      }
+      return ( (data << 10) | d) ^ G15_MASK;
+    };
+
+    _this.getBCHTypeNumber = function(data) {
+      var d = data << 12;
+      while (getBCHDigit(d) - getBCHDigit(G18) >= 0) {
+        d ^= (G18 << (getBCHDigit(d) - getBCHDigit(G18) ) );
+      }
+      return (data << 12) | d;
+    };
+
+    _this.getPatternPosition = function(typeNumber) {
+      return PATTERN_POSITION_TABLE[typeNumber - 1];
+    };
+
+    _this.getMaskFunction = function(maskPattern) {
+
+      switch (maskPattern) {
+
+      case QRMaskPattern.PATTERN000 :
+        return function(i, j) { return (i + j) % 2 == 0; };
+      case QRMaskPattern.PATTERN001 :
+        return function(i, j) { return i % 2 == 0; };
+      case QRMaskPattern.PATTERN010 :
+        return function(i, j) { return j % 3 == 0; };
+      case QRMaskPattern.PATTERN011 :
+        return function(i, j) { return (i + j) % 3 == 0; };
+      case QRMaskPattern.PATTERN100 :
+        return function(i, j) { return (Math.floor(i / 2) + Math.floor(j / 3) ) % 2 == 0; };
+      case QRMaskPattern.PATTERN101 :
+        return function(i, j) { return (i * j) % 2 + (i * j) % 3 == 0; };
+      case QRMaskPattern.PATTERN110 :
+        return function(i, j) { return ( (i * j) % 2 + (i * j) % 3) % 2 == 0; };
+      case QRMaskPattern.PATTERN111 :
+        return function(i, j) { return ( (i * j) % 3 + (i + j) % 2) % 2 == 0; };
+
+      default :
+        throw 'bad maskPattern:' + maskPattern;
+      }
+    };
+
+    _this.getErrorCorrectPolynomial = function(errorCorrectLength) {
+      var a = qrPolynomial([1], 0);
+      for (var i = 0; i < errorCorrectLength; i += 1) {
+        a = a.multiply(qrPolynomial([1, QRMath.gexp(i)], 0) );
+      }
+      return a;
+    };
+
+    _this.getLengthInBits = function(mode, type) {
+
+      if (1 <= type && type < 10) {
+
+        // 1 - 9
+
+        switch(mode) {
+        case QRMode.MODE_NUMBER    : return 10;
+        case QRMode.MODE_ALPHA_NUM : return 9;
+        case QRMode.MODE_8BIT_BYTE : return 8;
+        case QRMode.MODE_KANJI     : return 8;
+        default :
+          throw 'mode:' + mode;
+        }
+
+      } else if (type < 27) {
+
+        // 10 - 26
+
+        switch(mode) {
+        case QRMode.MODE_NUMBER    : return 12;
+        case QRMode.MODE_ALPHA_NUM : return 11;
+        case QRMode.MODE_8BIT_BYTE : return 16;
+        case QRMode.MODE_KANJI     : return 10;
+        default :
+          throw 'mode:' + mode;
+        }
+
+      } else if (type < 41) {
+
+        // 27 - 40
+
+        switch(mode) {
+        case QRMode.MODE_NUMBER    : return 14;
+        case QRMode.MODE_ALPHA_NUM : return 13;
+        case QRMode.MODE_8BIT_BYTE : return 16;
+        case QRMode.MODE_KANJI     : return 12;
+        default :
+          throw 'mode:' + mode;
+        }
+
+      } else {
+        throw 'type:' + type;
+      }
+    };
+
+    _this.getLostPoint = function(qrcode) {
+
+      var moduleCount = qrcode.getModuleCount();
+
+      var lostPoint = 0;
+
+      // LEVEL1
+
+      for (var row = 0; row < moduleCount; row += 1) {
+        for (var col = 0; col < moduleCount; col += 1) {
+
+          var sameCount = 0;
+          var dark = qrcode.isDark(row, col);
+
+          for (var r = -1; r <= 1; r += 1) {
+
+            if (row + r < 0 || moduleCount <= row + r) {
+              continue;
+            }
+
+            for (var c = -1; c <= 1; c += 1) {
+
+              if (col + c < 0 || moduleCount <= col + c) {
+                continue;
+              }
+
+              if (r == 0 && c == 0) {
+                continue;
+              }
+
+              if (dark == qrcode.isDark(row + r, col + c) ) {
+                sameCount += 1;
+              }
+            }
+          }
+
+          if (sameCount > 5) {
+            lostPoint += (3 + sameCount - 5);
+          }
+        }
+      };
+
+      // LEVEL2
+
+      for (var row = 0; row < moduleCount - 1; row += 1) {
+        for (var col = 0; col < moduleCount - 1; col += 1) {
+          var count = 0;
+          if (qrcode.isDark(row, col) ) count += 1;
+          if (qrcode.isDark(row + 1, col) ) count += 1;
+          if (qrcode.isDark(row, col + 1) ) count += 1;
+          if (qrcode.isDark(row + 1, col + 1) ) count += 1;
+          if (count == 0 || count == 4) {
+            lostPoint += 3;
+          }
+        }
+      }
+
+      // LEVEL3
+
+      for (var row = 0; row < moduleCount; row += 1) {
+        for (var col = 0; col < moduleCount - 6; col += 1) {
+          if (qrcode.isDark(row, col)
+              && !qrcode.isDark(row, col + 1)
+              &&  qrcode.isDark(row, col + 2)
+              &&  qrcode.isDark(row, col + 3)
+              &&  qrcode.isDark(row, col + 4)
+              && !qrcode.isDark(row, col + 5)
+              &&  qrcode.isDark(row, col + 6) ) {
+            lostPoint += 40;
+          }
+        }
+      }
+
+      for (var col = 0; col < moduleCount; col += 1) {
+        for (var row = 0; row < moduleCount - 6; row += 1) {
+          if (qrcode.isDark(row, col)
+              && !qrcode.isDark(row + 1, col)
+              &&  qrcode.isDark(row + 2, col)
+              &&  qrcode.isDark(row + 3, col)
+              &&  qrcode.isDark(row + 4, col)
+              && !qrcode.isDark(row + 5, col)
+              &&  qrcode.isDark(row + 6, col) ) {
+            lostPoint += 40;
+          }
+        }
+      }
+
+      // LEVEL4
+
+      var darkCount = 0;
+
+      for (var col = 0; col < moduleCount; col += 1) {
+        for (var row = 0; row < moduleCount; row += 1) {
+          if (qrcode.isDark(row, col) ) {
+            darkCount += 1;
+          }
+        }
+      }
+
+      var ratio = Math.abs(100 * darkCount / moduleCount / moduleCount - 50) / 5;
+      lostPoint += ratio * 10;
+
+      return lostPoint;
+    };
+
+    return _this;
+  }();
+
+  //---------------------------------------------------------------------
+  // QRMath
+  //---------------------------------------------------------------------
+
+  var QRMath = function() {
+
+    var EXP_TABLE = new Array(256);
+    var LOG_TABLE = new Array(256);
+
+    // initialize tables
+    for (var i = 0; i < 8; i += 1) {
+      EXP_TABLE[i] = 1 << i;
+    }
+    for (var i = 8; i < 256; i += 1) {
+      EXP_TABLE[i] = EXP_TABLE[i - 4]
+        ^ EXP_TABLE[i - 5]
+        ^ EXP_TABLE[i - 6]
+        ^ EXP_TABLE[i - 8];
+    }
+    for (var i = 0; i < 255; i += 1) {
+      LOG_TABLE[EXP_TABLE[i] ] = i;
+    }
+
+    var _this = {};
+
+    _this.glog = function(n) {
+
+      if (n < 1) {
+        throw 'glog(' + n + ')';
+      }
+
+      return LOG_TABLE[n];
+    };
+
+    _this.gexp = function(n) {
+
+      while (n < 0) {
+        n += 255;
+      }
+
+      while (n >= 256) {
+        n -= 255;
+      }
+
+      return EXP_TABLE[n];
+    };
+
+    return _this;
+  }();
+
+  //---------------------------------------------------------------------
+  // qrPolynomial
+  //---------------------------------------------------------------------
+
+  function qrPolynomial(num, shift) {
+
+    if (typeof num.length == 'undefined') {
+      throw num.length + '/' + shift;
+    }
+
+    var _num = function() {
+      var offset = 0;
+      while (offset < num.length && num[offset] == 0) {
+        offset += 1;
+      }
+      var _num = new Array(num.length - offset + shift);
+      for (var i = 0; i < num.length - offset; i += 1) {
+        _num[i] = num[i + offset];
+      }
+      return _num;
+    }();
+
+    var _this = {};
+
+    _this.getAt = function(index) {
+      return _num[index];
+    };
+
+    _this.getLength = function() {
+      return _num.length;
+    };
+
+    _this.multiply = function(e) {
+
+      var num = new Array(_this.getLength() + e.getLength() - 1);
+
+      for (var i = 0; i < _this.getLength(); i += 1) {
+        for (var j = 0; j < e.getLength(); j += 1) {
+          num[i + j] ^= QRMath.gexp(QRMath.glog(_this.getAt(i) ) + QRMath.glog(e.getAt(j) ) );
+        }
+      }
+
+      return qrPolynomial(num, 0);
+    };
+
+    _this.mod = function(e) {
+
+      if (_this.getLength() - e.getLength() < 0) {
+        return _this;
+      }
+
+      var ratio = QRMath.glog(_this.getAt(0) ) - QRMath.glog(e.getAt(0) );
+
+      var num = new Array(_this.getLength() );
+      for (var i = 0; i < _this.getLength(); i += 1) {
+        num[i] = _this.getAt(i);
+      }
+
+      for (var i = 0; i < e.getLength(); i += 1) {
+        num[i] ^= QRMath.gexp(QRMath.glog(e.getAt(i) ) + ratio);
+      }
+
+      // recursive call
+      return qrPolynomial(num, 0).mod(e);
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // QRRSBlock
+  //---------------------------------------------------------------------
+
+  var QRRSBlock = function() {
+
+    var RS_BLOCK_TABLE = [
+
+      // L
+      // M
+      // Q
+      // H
+
+      // 1
+      [1, 26, 19],
+      [1, 26, 16],
+      [1, 26, 13],
+      [1, 26, 9],
+
+      // 2
+      [1, 44, 34],
+      [1, 44, 28],
+      [1, 44, 22],
+      [1, 44, 16],
+
+      // 3
+      [1, 70, 55],
+      [1, 70, 44],
+      [2, 35, 17],
+      [2, 35, 13],
+
+      // 4
+      [1, 100, 80],
+      [2, 50, 32],
+      [2, 50, 24],
+      [4, 25, 9],
+
+      // 5
+      [1, 134, 108],
+      [2, 67, 43],
+      [2, 33, 15, 2, 34, 16],
+      [2, 33, 11, 2, 34, 12],
+
+      // 6
+      [2, 86, 68],
+      [4, 43, 27],
+      [4, 43, 19],
+      [4, 43, 15],
+
+      // 7
+      [2, 98, 78],
+      [4, 49, 31],
+      [2, 32, 14, 4, 33, 15],
+      [4, 39, 13, 1, 40, 14],
+
+      // 8
+      [2, 121, 97],
+      [2, 60, 38, 2, 61, 39],
+      [4, 40, 18, 2, 41, 19],
+      [4, 40, 14, 2, 41, 15],
+
+      // 9
+      [2, 146, 116],
+      [3, 58, 36, 2, 59, 37],
+      [4, 36, 16, 4, 37, 17],
+      [4, 36, 12, 4, 37, 13],
+
+      // 10
+      [2, 86, 68, 2, 87, 69],
+      [4, 69, 43, 1, 70, 44],
+      [6, 43, 19, 2, 44, 20],
+      [6, 43, 15, 2, 44, 16],
+
+      // 11
+      [4, 101, 81],
+      [1, 80, 50, 4, 81, 51],
+      [4, 50, 22, 4, 51, 23],
+      [3, 36, 12, 8, 37, 13],
+
+      // 12
+      [2, 116, 92, 2, 117, 93],
+      [6, 58, 36, 2, 59, 37],
+      [4, 46, 20, 6, 47, 21],
+      [7, 42, 14, 4, 43, 15],
+
+      // 13
+      [4, 133, 107],
+      [8, 59, 37, 1, 60, 38],
+      [8, 44, 20, 4, 45, 21],
+      [12, 33, 11, 4, 34, 12],
+
+      // 14
+      [3, 145, 115, 1, 146, 116],
+      [4, 64, 40, 5, 65, 41],
+      [11, 36, 16, 5, 37, 17],
+      [11, 36, 12, 5, 37, 13],
+
+      // 15
+      [5, 109, 87, 1, 110, 88],
+      [5, 65, 41, 5, 66, 42],
+      [5, 54, 24, 7, 55, 25],
+      [11, 36, 12, 7, 37, 13],
+
+      // 16
+      [5, 122, 98, 1, 123, 99],
+      [7, 73, 45, 3, 74, 46],
+      [15, 43, 19, 2, 44, 20],
+      [3, 45, 15, 13, 46, 16],
+
+      // 17
+      [1, 135, 107, 5, 136, 108],
+      [10, 74, 46, 1, 75, 47],
+      [1, 50, 22, 15, 51, 23],
+      [2, 42, 14, 17, 43, 15],
+
+      // 18
+      [5, 150, 120, 1, 151, 121],
+      [9, 69, 43, 4, 70, 44],
+      [17, 50, 22, 1, 51, 23],
+      [2, 42, 14, 19, 43, 15],
+
+      // 19
+      [3, 141, 113, 4, 142, 114],
+      [3, 70, 44, 11, 71, 45],
+      [17, 47, 21, 4, 48, 22],
+      [9, 39, 13, 16, 40, 14],
+
+      // 20
+      [3, 135, 107, 5, 136, 108],
+      [3, 67, 41, 13, 68, 42],
+      [15, 54, 24, 5, 55, 25],
+      [15, 43, 15, 10, 44, 16],
+
+      // 21
+      [4, 144, 116, 4, 145, 117],
+      [17, 68, 42],
+      [17, 50, 22, 6, 51, 23],
+      [19, 46, 16, 6, 47, 17],
+
+      // 22
+      [2, 139, 111, 7, 140, 112],
+      [17, 74, 46],
+      [7, 54, 24, 16, 55, 25],
+      [34, 37, 13],
+
+      // 23
+      [4, 151, 121, 5, 152, 122],
+      [4, 75, 47, 14, 76, 48],
+      [11, 54, 24, 14, 55, 25],
+      [16, 45, 15, 14, 46, 16],
+
+      // 24
+      [6, 147, 117, 4, 148, 118],
+      [6, 73, 45, 14, 74, 46],
+      [11, 54, 24, 16, 55, 25],
+      [30, 46, 16, 2, 47, 17],
+
+      // 25
+      [8, 132, 106, 4, 133, 107],
+      [8, 75, 47, 13, 76, 48],
+      [7, 54, 24, 22, 55, 25],
+      [22, 45, 15, 13, 46, 16],
+
+      // 26
+      [10, 142, 114, 2, 143, 115],
+      [19, 74, 46, 4, 75, 47],
+      [28, 50, 22, 6, 51, 23],
+      [33, 46, 16, 4, 47, 17],
+
+      // 27
+      [8, 152, 122, 4, 153, 123],
+      [22, 73, 45, 3, 74, 46],
+      [8, 53, 23, 26, 54, 24],
+      [12, 45, 15, 28, 46, 16],
+
+      // 28
+      [3, 147, 117, 10, 148, 118],
+      [3, 73, 45, 23, 74, 46],
+      [4, 54, 24, 31, 55, 25],
+      [11, 45, 15, 31, 46, 16],
+
+      // 29
+      [7, 146, 116, 7, 147, 117],
+      [21, 73, 45, 7, 74, 46],
+      [1, 53, 23, 37, 54, 24],
+      [19, 45, 15, 26, 46, 16],
+
+      // 30
+      [5, 145, 115, 10, 146, 116],
+      [19, 75, 47, 10, 76, 48],
+      [15, 54, 24, 25, 55, 25],
+      [23, 45, 15, 25, 46, 16],
+
+      // 31
+      [13, 145, 115, 3, 146, 116],
+      [2, 74, 46, 29, 75, 47],
+      [42, 54, 24, 1, 55, 25],
+      [23, 45, 15, 28, 46, 16],
+
+      // 32
+      [17, 145, 115],
+      [10, 74, 46, 23, 75, 47],
+      [10, 54, 24, 35, 55, 25],
+      [19, 45, 15, 35, 46, 16],
+
+      // 33
+      [17, 145, 115, 1, 146, 116],
+      [14, 74, 46, 21, 75, 47],
+      [29, 54, 24, 19, 55, 25],
+      [11, 45, 15, 46, 46, 16],
+
+      // 34
+      [13, 145, 115, 6, 146, 116],
+      [14, 74, 46, 23, 75, 47],
+      [44, 54, 24, 7, 55, 25],
+      [59, 46, 16, 1, 47, 17],
+
+      // 35
+      [12, 151, 121, 7, 152, 122],
+      [12, 75, 47, 26, 76, 48],
+      [39, 54, 24, 14, 55, 25],
+      [22, 45, 15, 41, 46, 16],
+
+      // 36
+      [6, 151, 121, 14, 152, 122],
+      [6, 75, 47, 34, 76, 48],
+      [46, 54, 24, 10, 55, 25],
+      [2, 45, 15, 64, 46, 16],
+
+      // 37
+      [17, 152, 122, 4, 153, 123],
+      [29, 74, 46, 14, 75, 47],
+      [49, 54, 24, 10, 55, 25],
+      [24, 45, 15, 46, 46, 16],
+
+      // 38
+      [4, 152, 122, 18, 153, 123],
+      [13, 74, 46, 32, 75, 47],
+      [48, 54, 24, 14, 55, 25],
+      [42, 45, 15, 32, 46, 16],
+
+      // 39
+      [20, 147, 117, 4, 148, 118],
+      [40, 75, 47, 7, 76, 48],
+      [43, 54, 24, 22, 55, 25],
+      [10, 45, 15, 67, 46, 16],
+
+      // 40
+      [19, 148, 118, 6, 149, 119],
+      [18, 75, 47, 31, 76, 48],
+      [34, 54, 24, 34, 55, 25],
+      [20, 45, 15, 61, 46, 16]
+    ];
+
+    var qrRSBlock = function(totalCount, dataCount) {
+      var _this = {};
+      _this.totalCount = totalCount;
+      _this.dataCount = dataCount;
+      return _this;
+    };
+
+    var _this = {};
+
+    var getRsBlockTable = function(typeNumber, errorCorrectionLevel) {
+
+      switch(errorCorrectionLevel) {
+      case QRErrorCorrectionLevel.L :
+        return RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 0];
+      case QRErrorCorrectionLevel.M :
+        return RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 1];
+      case QRErrorCorrectionLevel.Q :
+        return RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 2];
+      case QRErrorCorrectionLevel.H :
+        return RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 3];
+      default :
+        return undefined;
+      }
+    };
+
+    _this.getRSBlocks = function(typeNumber, errorCorrectionLevel) {
+
+      var rsBlock = getRsBlockTable(typeNumber, errorCorrectionLevel);
+
+      if (typeof rsBlock == 'undefined') {
+        throw 'bad rs block @ typeNumber:' + typeNumber +
+            '/errorCorrectionLevel:' + errorCorrectionLevel;
+      }
+
+      var length = rsBlock.length / 3;
+
+      var list = [];
+
+      for (var i = 0; i < length; i += 1) {
+
+        var count = rsBlock[i * 3 + 0];
+        var totalCount = rsBlock[i * 3 + 1];
+        var dataCount = rsBlock[i * 3 + 2];
+
+        for (var j = 0; j < count; j += 1) {
+          list.push(qrRSBlock(totalCount, dataCount) );
+        }
+      }
+
+      return list;
+    };
+
+    return _this;
+  }();
+
+  //---------------------------------------------------------------------
+  // qrBitBuffer
+  //---------------------------------------------------------------------
+
+  var qrBitBuffer = function() {
+
+    var _buffer = [];
+    var _length = 0;
+
+    var _this = {};
+
+    _this.getBuffer = function() {
+      return _buffer;
+    };
+
+    _this.getAt = function(index) {
+      var bufIndex = Math.floor(index / 8);
+      return ( (_buffer[bufIndex] >>> (7 - index % 8) ) & 1) == 1;
+    };
+
+    _this.put = function(num, length) {
+      for (var i = 0; i < length; i += 1) {
+        _this.putBit( ( (num >>> (length - i - 1) ) & 1) == 1);
+      }
+    };
+
+    _this.getLengthInBits = function() {
+      return _length;
+    };
+
+    _this.putBit = function(bit) {
+
+      var bufIndex = Math.floor(_length / 8);
+      if (_buffer.length <= bufIndex) {
+        _buffer.push(0);
+      }
+
+      if (bit) {
+        _buffer[bufIndex] |= (0x80 >>> (_length % 8) );
+      }
+
+      _length += 1;
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // qrNumber
+  //---------------------------------------------------------------------
+
+  var qrNumber = function(data) {
+
+    var _mode = QRMode.MODE_NUMBER;
+    var _data = data;
+
+    var _this = {};
+
+    _this.getMode = function() {
+      return _mode;
+    };
+
+    _this.getLength = function(buffer) {
+      return _data.length;
+    };
+
+    _this.write = function(buffer) {
+
+      var data = _data;
+
+      var i = 0;
+
+      while (i + 2 < data.length) {
+        buffer.put(strToNum(data.substring(i, i + 3) ), 10);
+        i += 3;
+      }
+
+      if (i < data.length) {
+        if (data.length - i == 1) {
+          buffer.put(strToNum(data.substring(i, i + 1) ), 4);
+        } else if (data.length - i == 2) {
+          buffer.put(strToNum(data.substring(i, i + 2) ), 7);
+        }
+      }
+    };
+
+    var strToNum = function(s) {
+      var num = 0;
+      for (var i = 0; i < s.length; i += 1) {
+        num = num * 10 + chatToNum(s.charAt(i) );
+      }
+      return num;
+    };
+
+    var chatToNum = function(c) {
+      if ('0' <= c && c <= '9') {
+        return c.charCodeAt(0) - '0'.charCodeAt(0);
+      }
+      throw 'illegal char :' + c;
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // qrAlphaNum
+  //---------------------------------------------------------------------
+
+  var qrAlphaNum = function(data) {
+
+    var _mode = QRMode.MODE_ALPHA_NUM;
+    var _data = data;
+
+    var _this = {};
+
+    _this.getMode = function() {
+      return _mode;
+    };
+
+    _this.getLength = function(buffer) {
+      return _data.length;
+    };
+
+    _this.write = function(buffer) {
+
+      var s = _data;
+
+      var i = 0;
+
+      while (i + 1 < s.length) {
+        buffer.put(
+          getCode(s.charAt(i) ) * 45 +
+          getCode(s.charAt(i + 1) ), 11);
+        i += 2;
+      }
+
+      if (i < s.length) {
+        buffer.put(getCode(s.charAt(i) ), 6);
+      }
+    };
+
+    var getCode = function(c) {
+
+      if ('0' <= c && c <= '9') {
+        return c.charCodeAt(0) - '0'.charCodeAt(0);
+      } else if ('A' <= c && c <= 'Z') {
+        return c.charCodeAt(0) - 'A'.charCodeAt(0) + 10;
+      } else {
+        switch (c) {
+        case ' ' : return 36;
+        case '$' : return 37;
+        case '%' : return 38;
+        case '*' : return 39;
+        case '+' : return 40;
+        case '-' : return 41;
+        case '.' : return 42;
+        case '/' : return 43;
+        case ':' : return 44;
+        default :
+          throw 'illegal char :' + c;
+        }
+      }
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // qr8BitByte
+  //---------------------------------------------------------------------
+
+  var qr8BitByte = function(data) {
+
+    var _mode = QRMode.MODE_8BIT_BYTE;
+    var _data = data;
+    var _bytes = qrcode.stringToBytes(data);
+
+    var _this = {};
+
+    _this.getMode = function() {
+      return _mode;
+    };
+
+    _this.getLength = function(buffer) {
+      return _bytes.length;
+    };
+
+    _this.write = function(buffer) {
+      for (var i = 0; i < _bytes.length; i += 1) {
+        buffer.put(_bytes[i], 8);
+      }
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // qrKanji
+  //---------------------------------------------------------------------
+
+  var qrKanji = function(data) {
+
+    var _mode = QRMode.MODE_KANJI;
+    var _data = data;
+
+    var stringToBytes = qrcode.stringToBytesFuncs['SJIS'];
+    if (!stringToBytes) {
+      throw 'sjis not supported.';
+    }
+    !function(c, code) {
+      // self test for sjis support.
+      var test = stringToBytes(c);
+      if (test.length != 2 || ( (test[0] << 8) | test[1]) != code) {
+        throw 'sjis not supported.';
+      }
+    }('\u53cb', 0x9746);
+
+    var _bytes = stringToBytes(data);
+
+    var _this = {};
+
+    _this.getMode = function() {
+      return _mode;
+    };
+
+    _this.getLength = function(buffer) {
+      return ~~(_bytes.length / 2);
+    };
+
+    _this.write = function(buffer) {
+
+      var data = _bytes;
+
+      var i = 0;
+
+      while (i + 1 < data.length) {
+
+        var c = ( (0xff & data[i]) << 8) | (0xff & data[i + 1]);
+
+        if (0x8140 <= c && c <= 0x9FFC) {
+          c -= 0x8140;
+        } else if (0xE040 <= c && c <= 0xEBBF) {
+          c -= 0xC140;
+        } else {
+          throw 'illegal char at ' + (i + 1) + '/' + c;
+        }
+
+        c = ( (c >>> 8) & 0xff) * 0xC0 + (c & 0xff);
+
+        buffer.put(c, 13);
+
+        i += 2;
+      }
+
+      if (i < data.length) {
+        throw 'illegal char at ' + (i + 1);
+      }
+    };
+
+    return _this;
+  };
+
+  //=====================================================================
+  // GIF Support etc.
+  //
+
+  //---------------------------------------------------------------------
+  // byteArrayOutputStream
+  //---------------------------------------------------------------------
+
+  var byteArrayOutputStream = function() {
+
+    var _bytes = [];
+
+    var _this = {};
+
+    _this.writeByte = function(b) {
+      _bytes.push(b & 0xff);
+    };
+
+    _this.writeShort = function(i) {
+      _this.writeByte(i);
+      _this.writeByte(i >>> 8);
+    };
+
+    _this.writeBytes = function(b, off, len) {
+      off = off || 0;
+      len = len || b.length;
+      for (var i = 0; i < len; i += 1) {
+        _this.writeByte(b[i + off]);
+      }
+    };
+
+    _this.writeString = function(s) {
+      for (var i = 0; i < s.length; i += 1) {
+        _this.writeByte(s.charCodeAt(i) );
+      }
+    };
+
+    _this.toByteArray = function() {
+      return _bytes;
+    };
+
+    _this.toString = function() {
+      var s = '';
+      s += '[';
+      for (var i = 0; i < _bytes.length; i += 1) {
+        if (i > 0) {
+          s += ',';
+        }
+        s += _bytes[i];
+      }
+      s += ']';
+      return s;
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // base64EncodeOutputStream
+  //---------------------------------------------------------------------
+
+  var base64EncodeOutputStream = function() {
+
+    var _buffer = 0;
+    var _buflen = 0;
+    var _length = 0;
+    var _base64 = '';
+
+    var _this = {};
+
+    var writeEncoded = function(b) {
+      _base64 += String.fromCharCode(encode(b & 0x3f) );
+    };
+
+    var encode = function(n) {
+      if (n < 0) {
+        // error.
+      } else if (n < 26) {
+        return 0x41 + n;
+      } else if (n < 52) {
+        return 0x61 + (n - 26);
+      } else if (n < 62) {
+        return 0x30 + (n - 52);
+      } else if (n == 62) {
+        return 0x2b;
+      } else if (n == 63) {
+        return 0x2f;
+      }
+      throw 'n:' + n;
+    };
+
+    _this.writeByte = function(n) {
+
+      _buffer = (_buffer << 8) | (n & 0xff);
+      _buflen += 8;
+      _length += 1;
+
+      while (_buflen >= 6) {
+        writeEncoded(_buffer >>> (_buflen - 6) );
+        _buflen -= 6;
+      }
+    };
+
+    _this.flush = function() {
+
+      if (_buflen > 0) {
+        writeEncoded(_buffer << (6 - _buflen) );
+        _buffer = 0;
+        _buflen = 0;
+      }
+
+      if (_length % 3 != 0) {
+        // padding
+        var padlen = 3 - _length % 3;
+        for (var i = 0; i < padlen; i += 1) {
+          _base64 += '=';
+        }
+      }
+    };
+
+    _this.toString = function() {
+      return _base64;
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // base64DecodeInputStream
+  //---------------------------------------------------------------------
+
+  var base64DecodeInputStream = function(str) {
+
+    var _str = str;
+    var _pos = 0;
+    var _buffer = 0;
+    var _buflen = 0;
+
+    var _this = {};
+
+    _this.read = function() {
+
+      while (_buflen < 8) {
+
+        if (_pos >= _str.length) {
+          if (_buflen == 0) {
+            return -1;
+          }
+          throw 'unexpected end of file./' + _buflen;
+        }
+
+        var c = _str.charAt(_pos);
+        _pos += 1;
+
+        if (c == '=') {
+          _buflen = 0;
+          return -1;
+        } else if (c.match(/^\s$/) ) {
+          // ignore if whitespace.
+          continue;
+        }
+
+        _buffer = (_buffer << 6) | decode(c.charCodeAt(0) );
+        _buflen += 6;
+      }
+
+      var n = (_buffer >>> (_buflen - 8) ) & 0xff;
+      _buflen -= 8;
+      return n;
+    };
+
+    var decode = function(c) {
+      if (0x41 <= c && c <= 0x5a) {
+        return c - 0x41;
+      } else if (0x61 <= c && c <= 0x7a) {
+        return c - 0x61 + 26;
+      } else if (0x30 <= c && c <= 0x39) {
+        return c - 0x30 + 52;
+      } else if (c == 0x2b) {
+        return 62;
+      } else if (c == 0x2f) {
+        return 63;
+      } else {
+        throw 'c:' + c;
+      }
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // gifImage (B/W)
+  //---------------------------------------------------------------------
+
+  var gifImage = function(width, height) {
+
+    var _width = width;
+    var _height = height;
+    var _data = new Array(width * height);
+
+    var _this = {};
+
+    _this.setPixel = function(x, y, pixel) {
+      _data[y * _width + x] = pixel;
+    };
+
+    _this.write = function(out) {
+
+      //---------------------------------
+      // GIF Signature
+
+      out.writeString('GIF87a');
+
+      //---------------------------------
+      // Screen Descriptor
+
+      out.writeShort(_width);
+      out.writeShort(_height);
+
+      out.writeByte(0x80); // 2bit
+      out.writeByte(0);
+      out.writeByte(0);
+
+      //---------------------------------
+      // Global Color Map
+
+      // black
+      out.writeByte(0x00);
+      out.writeByte(0x00);
+      out.writeByte(0x00);
+
+      // white
+      out.writeByte(0xff);
+      out.writeByte(0xff);
+      out.writeByte(0xff);
+
+      //---------------------------------
+      // Image Descriptor
+
+      out.writeString(',');
+      out.writeShort(0);
+      out.writeShort(0);
+      out.writeShort(_width);
+      out.writeShort(_height);
+      out.writeByte(0);
+
+      //---------------------------------
+      // Local Color Map
+
+      //---------------------------------
+      // Raster Data
+
+      var lzwMinCodeSize = 2;
+      var raster = getLZWRaster(lzwMinCodeSize);
+
+      out.writeByte(lzwMinCodeSize);
+
+      var offset = 0;
+
+      while (raster.length - offset > 255) {
+        out.writeByte(255);
+        out.writeBytes(raster, offset, 255);
+        offset += 255;
+      }
+
+      out.writeByte(raster.length - offset);
+      out.writeBytes(raster, offset, raster.length - offset);
+      out.writeByte(0x00);
+
+      //---------------------------------
+      // GIF Terminator
+      out.writeString(';');
+    };
+
+    var bitOutputStream = function(out) {
+
+      var _out = out;
+      var _bitLength = 0;
+      var _bitBuffer = 0;
+
+      var _this = {};
+
+      _this.write = function(data, length) {
+
+        if ( (data >>> length) != 0) {
+          throw 'length over';
+        }
+
+        while (_bitLength + length >= 8) {
+          _out.writeByte(0xff & ( (data << _bitLength) | _bitBuffer) );
+          length -= (8 - _bitLength);
+          data >>>= (8 - _bitLength);
+          _bitBuffer = 0;
+          _bitLength = 0;
+        }
+
+        _bitBuffer = (data << _bitLength) | _bitBuffer;
+        _bitLength = _bitLength + length;
+      };
+
+      _this.flush = function() {
+        if (_bitLength > 0) {
+          _out.writeByte(_bitBuffer);
+        }
+      };
+
+      return _this;
+    };
+
+    var getLZWRaster = function(lzwMinCodeSize) {
+
+      var clearCode = 1 << lzwMinCodeSize;
+      var endCode = (1 << lzwMinCodeSize) + 1;
+      var bitLength = lzwMinCodeSize + 1;
+
+      // Setup LZWTable
+      var table = lzwTable();
+
+      for (var i = 0; i < clearCode; i += 1) {
+        table.add(String.fromCharCode(i) );
+      }
+      table.add(String.fromCharCode(clearCode) );
+      table.add(String.fromCharCode(endCode) );
+
+      var byteOut = byteArrayOutputStream();
+      var bitOut = bitOutputStream(byteOut);
+
+      // clear code
+      bitOut.write(clearCode, bitLength);
+
+      var dataIndex = 0;
+
+      var s = String.fromCharCode(_data[dataIndex]);
+      dataIndex += 1;
+
+      while (dataIndex < _data.length) {
+
+        var c = String.fromCharCode(_data[dataIndex]);
+        dataIndex += 1;
+
+        if (table.contains(s + c) ) {
+
+          s = s + c;
+
+        } else {
+
+          bitOut.write(table.indexOf(s), bitLength);
+
+          if (table.size() < 0xfff) {
+
+            if (table.size() == (1 << bitLength) ) {
+              bitLength += 1;
+            }
+
+            table.add(s + c);
+          }
+
+          s = c;
+        }
+      }
+
+      bitOut.write(table.indexOf(s), bitLength);
+
+      // end code
+      bitOut.write(endCode, bitLength);
+
+      bitOut.flush();
+
+      return byteOut.toByteArray();
+    };
+
+    var lzwTable = function() {
+
+      var _map = {};
+      var _size = 0;
+
+      var _this = {};
+
+      _this.add = function(key) {
+        if (_this.contains(key) ) {
+          throw 'dup key:' + key;
+        }
+        _map[key] = _size;
+        _size += 1;
+      };
+
+      _this.size = function() {
+        return _size;
+      };
+
+      _this.indexOf = function(key) {
+        return _map[key];
+      };
+
+      _this.contains = function(key) {
+        return typeof _map[key] != 'undefined';
+      };
+
+      return _this;
+    };
+
+    return _this;
+  };
+
+  var createDataURL = function(width, height, getPixel) {
+    var gif = gifImage(width, height);
+    for (var y = 0; y < height; y += 1) {
+      for (var x = 0; x < width; x += 1) {
+        gif.setPixel(x, y, getPixel(x, y) );
+      }
+    }
+
+    var b = byteArrayOutputStream();
+    gif.write(b);
+
+    var base64 = base64EncodeOutputStream();
+    var bytes = b.toByteArray();
+    for (var i = 0; i < bytes.length; i += 1) {
+      base64.writeByte(bytes[i]);
+    }
+    base64.flush();
+
+    return 'data:image/gif;base64,' + base64;
+  };
+
+  //---------------------------------------------------------------------
+  // returns qrcode function.
+
+  return qrcode;
+}();
+
+// multibyte support
+!function() {
+
+  qrcode.stringToBytesFuncs['UTF-8'] = function(s) {
+    // http://stackoverflow.com/questions/18729405/how-to-convert-utf8-string-to-byte-array
+    function toUTF8Array(str) {
+      var utf8 = [];
+      for (var i=0; i < str.length; i++) {
+        var charcode = str.charCodeAt(i);
+        if (charcode < 0x80) utf8.push(charcode);
+        else if (charcode < 0x800) {
+          utf8.push(0xc0 | (charcode >> 6),
+              0x80 | (charcode & 0x3f));
+        }
+        else if (charcode < 0xd800 || charcode >= 0xe000) {
+          utf8.push(0xe0 | (charcode >> 12),
+              0x80 | ((charcode>>6) & 0x3f),
+              0x80 | (charcode & 0x3f));
+        }
+        // surrogate pair
+        else {
+          i++;
+          // UTF-16 encodes 0x10000-0x10FFFF by
+          // subtracting 0x10000 and splitting the
+          // 20 bits of 0x0-0xFFFFF into two halves
+          charcode = 0x10000 + (((charcode & 0x3ff)<<10)
+            | (str.charCodeAt(i) & 0x3ff));
+          utf8.push(0xf0 | (charcode >>18),
+              0x80 | ((charcode>>12) & 0x3f),
+              0x80 | ((charcode>>6) & 0x3f),
+              0x80 | (charcode & 0x3f));
+        }
+      }
+      return utf8;
+    }
+    return toUTF8Array(s);
+  };
+
+}();
+
+(function (factory) {
+  if (typeof define === 'function' && define.amd) {
+      define([], factory);
+  } else if (typeof exports === 'object') {
+      module.exports = factory();
+  }
+}(function () {
+    return qrcode;
+}));
+
+</script>
 <script>
 /* =====================================================================
    SCRIPT
@@ -1247,16 +3661,16 @@ svg [data-reveal]{transform-box:fill-box;transform-origin:center}
     }
     return d + 'Z';
   }
-  function buildStars(g, ringR, size, animated = true) {
+  function buildStars(g, ringR, size, animated = true, cx = 200, cy = 200) {
     for (let k = 0; k < 12; k++) {
       const a = k * Math.PI / 6, p = document.createElementNS(NS, 'path');
-      p.setAttribute('d', starPath(200 + ringR * Math.cos(a), 200 + ringR * Math.sin(a), size, size * .4));
+      p.setAttribute('d', starPath(cx + ringR * Math.cos(a), cy + ringR * Math.sin(a), size, size * .4));
       p.setAttribute('fill', '#FFCC00');
       if (animated) { p.setAttribute('class', 'star'); p.style.setProperty('--i', k); }
       g.appendChild(p);
     }
   }
-  buildStars(document.getElementById('starRing'), 150, 22);
+  buildStars(document.getElementById('starRing'), 215, 17, true, 320, 345);
   buildStars(document.getElementById('starRing2'), 150, 26);
   document.querySelectorAll('svg[data-stars]').forEach(svg => {
     const [r, s] = svg.dataset.stars.split(',').map(Number);
@@ -1281,6 +3695,58 @@ svg [data-reveal]{transform-box:fill-box;transform-origin:center}
     });
   });
 
+  /* ---------- 2 bis. Page de titre : échanges entre capitales ---------- */
+  const CAPS = { Bruxelles:[289,323], Paris:[262,356], Berlin:[391,298], Rome:[383,490], Madrid:[159,494], Varsovie:[475,297],
+    Vienne:[428,374], Lisbonne:[77,504], Amsterdam:[298,297], Prague:[404,341], Budapest:[462,384], Stockholm:[432,173],
+    Athenes:[546,548], Bucarest:[557,426], Dublin:[182,259], Copenhague:[382,241], Helsinki:[493,149], Vilnius:[514,246],
+    Sofia:[527,463], Zagreb:[426,417] };
+  const LINKS = 'Bruxelles-Berlin Bruxelles-Paris Berlin-Varsovie Berlin-Prague Prague-Vienne Vienne-Budapest Budapest-Bucarest Paris-Madrid Madrid-Lisbonne Paris-Rome Rome-Athenes Bruxelles-Amsterdam Amsterdam-Copenhague Copenhague-Stockholm Stockholm-Helsinki Varsovie-Vilnius Dublin-Paris Bucarest-Sofia Sofia-Athenes Vienne-Zagreb Berlin-Copenhague Paris-Berlin Rome-Vienne Bruxelles-Madrid'.split(' ');
+  (() => {
+    const arcs = document.getElementById('heroArcs'), nodes = document.getElementById('heroNodes');
+    if (!arcs) return;
+    LINKS.forEach((l, k) => {
+      const [a, b] = l.split('-').map(n => CAPS[n]);
+      const mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2, dx = b[0] - a[0], dy = b[1] - a[1];
+      const cx = mx - dy * .22, cy = my + dx * .22 - Math.hypot(dx, dy) * .08;
+      const p = document.createElementNS(NS, 'path');
+      p.setAttribute('d', `M${a[0]} ${a[1]} Q${cx.toFixed(1)} ${cy.toFixed(1)} ${b[0]} ${b[1]}`);
+      p.setAttribute('class', 'arc draw'); p.setAttribute('pathLength', '1'); p.id = 'arc' + k;
+      p.style.setProperty('--i', 6 + k * .6);
+      arcs.appendChild(p);
+      if (k % 3 === 0) {               // petites « marchandises » qui circulent
+        const c = document.createElementNS(NS, 'circle');
+        c.setAttribute('r', '2.2'); c.setAttribute('class', 'spark');
+        c.innerHTML = `<animateMotion dur="${(3 + (k % 4)).toFixed(1)}s" begin="${(3 + k * .25).toFixed(2)}s" repeatCount="indefinite" keyPoints="${k % 2 ? '0;1' : '1;0'}" keyTimes="0;1" calcMode="linear"><mpath href="#arc${k}"/></animateMotion>`;
+        arcs.appendChild(c);
+      }
+    });
+    Object.entries(CAPS).forEach(([name, [x, y]], k) => {
+      const big = name === 'Bruxelles';
+      nodes.insertAdjacentHTML('beforeend',
+        `<circle class="halo" cx="${x}" cy="${y}" r="${big ? 11 : 7}" style="--d:${(k * .17).toFixed(2)}s"/><circle class="node" cx="${x}" cy="${y}" r="${big ? 3.6 : 2.4}"/>`);
+    });
+  })();
+
+  /* ---------- 2 ter. Kahoot : code PIN + QR code générés depuis data-pin ---------- */
+  (() => {
+    const sec = document.querySelector('[data-title="Kahoot"]'); if (!sec) return;
+    const raw = (sec.dataset.pin || '').trim(), digits = raw.replace(/\D/g, '');
+    const pinEl = document.getElementById('kPin'), qrEl = document.getElementById('kQr'), cap = document.getElementById('kCap');
+    // Affichage du PIN par blocs (ex. « 123 4567 ») ; tirets en attendant
+    const shown = digits ? raw.replace(/[^\d ]/g, '') : '––– ––––';
+    pinEl.innerHTML = [...shown].map((ch, k) => ch === ' ' ? '<span class="gap"></span>' : `<span class="${digits ? '' : 'todo'}" style="--k:${k}">${ch}</span>`).join('');
+    if (sec.dataset.qr) { qrEl.innerHTML = `<img src="${sec.dataset.qr}" alt="QR code du Kahoot">`; return; }
+    if (!digits) {
+      qrEl.innerHTML = '<div class="placeholder">QR code<small>apparaîtra ici dès que<br>le code PIN sera renseigné</small></div>';
+      return;
+    }
+    const url = 'https://kahoot.it/?pin=' + digits;
+    const qr = qrcode(0, 'M'); qr.addData(url); qr.make();
+    qrEl.innerHTML = qr.createSvgTag({ cellSize: 8, margin: 0, scalable: true });
+    qrEl.querySelector('svg').setAttribute('aria-label', 'QR code vers ' + url);
+    cap.textContent = 'kahoot.it · PIN ' + raw;
+  })();
+
   /* ---------- 3. Titres animés mot par mot ---------- */
   document.querySelectorAll('[data-split]').forEach(el => {
     let wi = 0;
@@ -1288,9 +3754,9 @@ svg [data-reveal]{transform-box:fill-box;transform-origin:center}
       [...node.childNodes].forEach(n => {
         if (n.nodeType === 3) {
           const frag = document.createDocumentFragment();
-          n.textContent.split(/(\s+)/).forEach(part => {
+          n.textContent.split(/([ \t\n\r]+)/).forEach(part => {
             if (!part) return;
-            if (/^\s+$/.test(part)) { frag.appendChild(document.createTextNode(part)); return; }
+            if (/^[ \t\n\r]+$/.test(part)) { frag.appendChild(document.createTextNode(part)); return; }
             const s = document.createElement('span');
             s.className = 'w'; s.style.setProperty('--wi', wi++); s.textContent = part;
             frag.appendChild(s);
@@ -1420,7 +3886,7 @@ svg [data-reveal]{transform-box:fill-box;transform-origin:center}
 
   /* ---------- 8. Défilement : progression, caméra, interface ---------- */
   const bar = document.getElementById('progressBar'), hud = document.getElementById('hudCurrent'),
-        hudWho = document.getElementById('hudWho'), hudFrags = document.getElementById('hudFrags');
+        hudFrags = document.getElementById('hudFrags');
   let ticking = false, lastIdx = -1;
   function onScroll() {
     if (ticking) return; ticking = true;
@@ -1450,7 +3916,6 @@ svg [data-reveal]{transform-box:fill-box;transform-origin:center}
     const idx = currentIndex(), s = sections[idx];
     hud.textContent = pad(idx + 1);
     dots.forEach((d, i) => d.classList.toggle('active', i === idx));
-    hudWho.textContent = s.dataset.who || '';
     const total = fragsOf(s).length, n = shownFrags(s);
     hudFrags.innerHTML = total ? Array.from({ length: total }, (_, k) => `<i class="${k < n ? 'on' : ''}"></i>`).join('') : '';
     if (notesPanel.classList.contains('on')) fillNotes(notesPanel, idx);
@@ -1556,7 +4021,7 @@ svg [data-reveal]{transform-box:fill-box;transform-origin:center}
   function fillNotes(panel, i) {
     const s = sections[i];
     panel.querySelector('#npTitle').textContent = `${pad(i + 1)} · ${s.dataset.title}`;
-    panel.querySelector('#npMeta').textContent = `${s.dataset.who} · ${clockStart ? mmss(Date.now() - clockStart) : '00:00'}`;
+    panel.querySelector('#npMeta').textContent = `${clockStart ? mmss(Date.now() - clockStart) : '00:00'}`;
     panel.querySelector('#npBody').innerHTML = notesHTML(i);
   }
 
@@ -1602,7 +4067,7 @@ svg [data-reveal]{transform-box:fill-box;transform-origin:center}
     if (!pw || pw.closed) return;
     const d = pw.document, i = animId ? targetIndex : currentIndex(), s = sections[i], nx = sections[i + 1];
     const el = d.getElementById('pNotes'); if (!el) return;
-    el.innerHTML = `<h1>${pad(i + 1)} · ${s.dataset.title}</h1><div class="who">🎤 ${s.dataset.who}</div>${notesHTML(i)}`;
+    el.innerHTML = `<h1>${pad(i + 1)} · ${s.dataset.title}</h1><div class="who">${s.dataset.who}</div>${notesHTML(i)}`;
     d.getElementById('pCount').textContent = `${pad(i + 1)} / ${pad(sections.length)}`;
     const total = fragsOf(s).length, n = shownFrags(s);
     d.getElementById('pFrags').innerHTML = total ? Array.from({ length: total }, (_, k) => `<i class="${k < n ? 'on' : ''}"></i>`).join('') + ` ${n}/${total}` : 'Aucune';
