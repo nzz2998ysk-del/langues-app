@@ -205,6 +205,17 @@ function writeAppPages() {
   return CODES.length * PAGES.length;
 }
 
+// Pre-generated audio (scripts/audio/generate.py): each word/sentence that has
+// a file gets "a": <id>, played from /course/audio/<code>/<id>.mp3.
+function linkAudio(code, c) {
+  const idx = path.join(ROOT, "course", "audio", code, "index.json");
+  if (!fs.existsSync(idx)) return;
+  const map = JSON.parse(fs.readFileSync(idx, "utf8"));
+  let n = 0;
+  for (const item of c.words.concat(c.phrases)) if (map[item.t]) { item.a = map[item.t]; n++; }
+  c.audio = n > 0;
+}
+
 // ---------------------------------------------------------------- main
 const report = [];
 const built = {};
@@ -218,6 +229,6 @@ if (problems.length) { console.error(problems.slice(0, 60).join("\n")); console.
 console.log(report.join("\n"));
 if (!CHECK) {
   fs.mkdirSync(OUT, { recursive: true });
-  for (const [code, c] of Object.entries(built)) fs.writeFileSync(path.join(OUT, code + ".json"), JSON.stringify(c));
+  for (const [code, c] of Object.entries(built)) { linkAudio(code, c); fs.writeFileSync(path.join(OUT, code + ".json"), JSON.stringify(c)); }
   console.log(`course/data: ${CODES.length} files · app.html: ${writeAppPages()} page stubs`);
 }

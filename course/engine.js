@@ -110,6 +110,7 @@
   function goTop(url) { try { window.top.location.href = url; } catch (e) { window.location.href = url; } }
 
   // ------------------------------------------------------------------ audio
+  var AUDIO = {}; // text → id of its pre-generated audio file
   var TTS = {
     voice: null, ready: false, warned: false, approx: false,
     pick: function () {
@@ -132,7 +133,36 @@
       var p = (C.tts || LANG).toLowerCase().split("-")[0], f = (C.ttsFallback || "").toLowerCase().split("-")[0];
       return speechSynthesis.getVoices().filter(function (v) { var l = v.lang.toLowerCase().split(/[-_]/)[0]; return l === p || (f && l === f); });
     },
+    // Pre-generated neural voice (same everywhere, works offline once heard);
+    // the device's voice is the fallback for texts or languages without a file.
+    file: null,
+    playFile: function (id, btn, onend) {
+      var self = this;
+      try { speechSynthesis.cancel(); } catch (e) {}
+      if (this.file) { this.file.pause(); this.file = null; }
+      var a = new Audio("/course/audio/" + LANG + "/" + id + ".mp3");
+      a.preservesPitch = true;
+      a.playbackRate = Math.max(0.6, Math.min(1.4, ((P && P.settings.rate) || 0.9) / 0.9));
+      var pill = document.getElementById("speakPill");
+      document.querySelectorAll(".speaking").forEach(function (e) { e.classList.remove("speaking"); });
+      if (btn) btn.classList.add("speaking");
+      if (pill) pill.classList.add("on");
+      var done = function () { if (btn) btn.classList.remove("speaking"); if (pill) pill.classList.remove("on"); if (self.file === a) self.file = null; if (onend) onend(); };
+      a.onended = done;
+      a.onerror = function () { done(); self.speakDevice(a._text, btn, onend); };
+      a._text = this._last;
+      this.file = a;
+      var p = a.play();
+      if (p && p.catch) p.catch(function () { done(); });
+    },
     speak: function (text, btn, onend) {
+      if (!text) return;
+      this._last = text;
+      var id = AUDIO[text];
+      if (id && !(P && P.settings.voiceSource === "device")) { this.playFile(id, btn, onend); return; }
+      this.speakDevice(text, btn, onend);
+    },
+    speakDevice: function (text, btn, onend) {
       if (!text) return;
       if (!("speechSynthesis" in window)) { toast(T("tts_unsupported")); return; }
       if (!this.ready) this.pick();
@@ -339,7 +369,7 @@
       var lk = m.premium && locked(m.premium);
       return '<button type="button" class="navcard' + (lk ? " is-locked" : "") + '" data-nav="' + m.id + '"><div class="ic">' + m.ic + '</div><div><div class="tt">' + esc(T("mod_" + m.id)) + (lk ? ' <span class="lock">🔒</span>' : "") + '</div><div class="ds">' + esc(T("desc_" + m.id)) + '</div></div><span class="arrow">›</span></button>';
     }).join("");
-    var html = "";
+    var html = guidedCards();
     if (due) html += '<div class="box row"><div>🧠 <b>' + esc(T("reviews_due", { n: due })) + '</b></div><span class="spacer"></span><button type="button" class="bpr" data-nav="revision">' + esc(T("review_now")) + "</button></div>";
     if (wotd) html += '<div class="sect"><div class="secttit">' + esc(T("word_of_day")) + '</div><div class="box row">' + snd(wotd.t) + '<div><div class="t" style="font-size:var(--ig27-fs-title2);line-height:var(--ig27-lh-title2);font-weight:600">' + esc(wotd.t) + "</div>" + (wotd.r ? '<div class="muted small">' + esc(wotd.r) + "</div>" : "") + "<div>" + esc(wg(wotd)) + fallbackTag(wotd.g) + "</div></div><span class=\"spacer\"></span>" + lvBadge(wotd.level) + "</div></div>";
     html += '<div class="sect"><div class="secttit">' + esc(T("cefr_levels")) + '</div><div class="grid cols-3">' + levelCards + "</div></div>";
@@ -969,6 +999,132 @@
     return '<header class="duo-bar"><button type="button" class="btn2" id="quitL" aria-label="' + esc(T("quit")) + '">✕</button><div class="duo-progress-track"><div class="duo-progress-fill" style="width:' + Math.round(50 * i / n) + '%"></div></div></header><main class="con">' + inner + "</main>" +
       '<div class="speaking-pill" id="speakPill"><div class="wave"><span></span><span></span><span></span></div>' + esc(T("speaking")) + "</div>";
   }
+  // ------------------------------------------------------------------ guided path
+  // Placement test (adaptive, ~2 min) + "today's lesson" that mixes due reviews,
+  // a few new words at the suggested level and a short quiz.
+  function openLevels() {
+    return LEVELS.filter(function (l) { return !(C.locked && C.locked.levels.indexOf(l) >= 0) && C.words.filter(function (w) { return w.level === l && wg(w); }).length >= 8; });
+  }
+  function dailyLevel() {
+    var lv = openLevels(); if (!lv.length) return "A1";
+    var from = P.placement && lv.indexOf(P.placement.level) >= 0 ? lv.indexOf(P.placement.level) : 0;
+    for (var i = from; i < lv.length; i++) {
+      var L = lv[i];
+      if (C.words.some(function (w) { return w.level === L && wg(w) && !seen(w); })) return L;
+    }
+    return lv[lv.length - 1];
+  }
+  function dailyPlan() {
+    var adv = !locked("premium:srs-advanced"), left = adv ? 10 : Math.min(10, Math.max(0, 20 - dayRec().reviews));
+    var L = dailyLevel(), lw = C.words.filter(function (w) { return w.level === L && wg(w); });
+    var fresh = lw.filter(function (w) { return !seen(w); });
+    return { level: L, reviews: shuffle(dueWords().filter(function (w) { return !w.custom; })).slice(0, left), fresh: (fresh.length ? fresh : lw).slice(0, 5), pool: lw };
+  }
+  function guidedCards() {
+    var h = "";
+    if (!P.placement && openLevels().length > 1) {
+      h += '<div class="box with-masc">' + masc("curious", 72, "masc-inline") + '<div style="flex:1"><h3>🧭 ' + esc(T("place_title")) + '</h3><p class="muted small">' + esc(T("place_d")) + '</p><div class="row" style="margin-top:var(--ig27-space-3)"><button type="button" class="bpr" id="placeStart">' + esc(T("place_start")) + '</button><button type="button" class="btn2" id="placeSkip">' + esc(T("place_skip")) + "</button></div></div></div>";
+    }
+    var plan = dailyPlan(), done = dayRec().daily;
+    h += '<div class="box with-masc daily-card">' + masc(done ? "heart" : "excited", 72, "masc-inline") + '<div style="flex:1"><h3>☀️ ' + esc(T("daily_title")) + ' <span class="badge bg-' + plan.level + '" style="vertical-align:middle">' + plan.level + "</span></h3>" +
+      '<p class="muted small">' + esc(done ? T("daily_done") : plan.reviews.length ? T("daily_d", { r: plan.reviews.length, n: plan.fresh.length }) : T("daily_d_new", { n: plan.fresh.length })) + "</p>" +
+      '<button type="button" class="' + (done ? "btn2" : "bpr") + '" id="dailyStart" style="margin-top:var(--ig27-space-3)">' + esc(done ? T("daily_again") : T("daily_start")) + "</button></div></div>";
+    return '<div class="sect">' + h + "</div>";
+  }
+  function bindGuided() {
+    var ps = document.getElementById("placeStart"); if (ps) ps.addEventListener("click", placementFlow);
+    var sk = document.getElementById("placeSkip"); if (sk) sk.addEventListener("click", function () { P.placement = { level: "A1", at: Date.now(), skipped: true }; save(); render(); });
+    var ds = document.getElementById("dailyStart"); if (ds) ds.addEventListener("click", dailyFlow);
+  }
+  function dailyFlow() {
+    var plan = dailyPlan(), i = 0, j = 0;
+    var quiz = function () {
+      var words = plan.fresh.concat(plan.reviews);
+      startQuiz({ modes: ["mcq", "reverse", "listen", "mcq"], words: words.length >= 4 ? words.concat(pick(plan.pool, 6)) : plan.pool, n: 8, onDone: function () {
+        var d = dayRec(); d.daily = true;
+        plan.fresh.forEach(function (w) { if (!P.srs[w.id]) { srsAdd(w); P.srs[w.id].due = Date.now() + DAY - 3600000; } (P.words[w.id] = P.words[w.id] || { ok: 0, ko: 0, seen: 0, last: 0 }).seen++; });
+        save();
+        return { title: T("daily_done") };
+      } });
+    };
+    var learn = function () {
+      if (j >= plan.fresh.length) return quiz();
+      var w = plan.fresh[j];
+      app.innerHTML = quizShellLesson(plan.reviews.length + j, plan.reviews.length + plan.fresh.length, '<div class="quiz-card"><div class="quiz-kind">' + esc(T("daily_step_new")) + " · " + (j + 1) + "/" + plan.fresh.length + " " + lvBadge(w.level) + '</div><div class="flash"><div class="big t"' + (C.dir === "rtl" ? ' dir="rtl"' : "") + ">" + esc(w.t) + "</div>" + (w.r ? '<div class="rom">' + esc(w.r) + "</div>" : "") +
+        '<div class="row" style="justify-content:center;margin-top:var(--ig27-space-3)">' + snd(w.t) + '</div><div class="gl">' + esc(wg(w)) + fallbackTag(w.g) + "</div>" +
+        (w.ex ? '<div class="exs">' + snd(w.ex.t, true) + " " + tgt(w.ex.t) + "<br>" + esc(gl(w.ex.g)) + "</div>" : "") + '</div><button type="button" class="bpr wide" id="nextW">' + esc(T("continue")) + "</button></div>");
+      if (P.settings.autoplay) TTS.speak(w.t);
+      document.getElementById("nextW").addEventListener("click", function () { j++; learn(); });
+      document.getElementById("nextW").focus();
+    };
+    var review = function () {
+      if (i >= plan.reviews.length) return learn();
+      var w = plan.reviews[i];
+      app.innerHTML = quizShellLesson(i, plan.reviews.length + plan.fresh.length, '<div class="quiz-card"><div class="quiz-kind">' + esc(T("daily_step_review")) + " · " + (i + 1) + "/" + plan.reviews.length + " " + lvBadge(w.level) + '</div><div class="flash"><div class="big t"' + (C.dir === "rtl" ? ' dir="rtl"' : "") + ">" + esc(w.t) + '</div><div class="row" style="justify-content:center;margin-top:var(--ig27-space-2)">' + snd(w.t) + "</div>" +
+        '<div id="back" hidden>' + (w.r ? '<div class="rom">' + esc(w.r) + "</div>" : "") + '<div class="gl">' + esc(wg(w)) + "</div></div></div>" +
+        '<div id="actions"><button type="button" class="bpr wide" id="reveal">' + esc(T("show_answer")) + "</button></div></div>");
+      if (P.settings.autoplay) TTS.speak(w.t);
+      document.getElementById("reveal").focus();
+      document.getElementById("reveal").addEventListener("click", function () {
+        document.getElementById("back").hidden = false;
+        document.getElementById("actions").innerHTML = '<div class="quiz-opts">' + [[1, "again"], [3, "hard"], [4, "good"], [5, "easy"]].map(function (g) { return '<button type="button" class="quiz-opt" data-q="' + g[0] + '">' + esc(T("grade_" + g[1])) + "</button>"; }).join("") + "</div>";
+        app.querySelectorAll("[data-q]").forEach(function (b) { b.addEventListener("click", function () { srsGrade(w, +b.getAttribute("data-q")); i++; review(); }); });
+        app.querySelector("[data-q]").focus();
+      });
+    };
+    review();
+  }
+  function placementFlow() {
+    var lv = openLevels(), PER = 5, idx = Math.min(1, lv.length - 1), passed = {}, tried = {};
+    var L, qs, k, ok;
+    var result = function (level) {
+      var beyond = level === lv[lv.length - 1] && passed[level] && C.locked && C.locked.levels.length;
+      P.placement = { level: level, at: Date.now() }; save();
+      app.innerHTML = quizShellLesson(1, 2, '<div class="complete"><div class="big">' + mascOr("excited", "🧭") + "</div><h2>" + esc(T("place_result", { level: level })) + '</h2><p class="muted">' + esc(T("place_result_d")) + "</p>" +
+        (beyond ? '<p class="small">' + esc(T("place_beyond")) + "</p>" : "") + '<div class="row" style="justify-content:center;margin-top:var(--ig27-space-5)"><button type="button" class="bpr" id="placeGo">☀️ ' + esc(T("daily_title")) + "</button></div></div>");
+      document.getElementById("placeGo").addEventListener("click", dailyFlow);
+      document.getElementById("placeGo").focus();
+    };
+    var nextLevel = function () {
+      tried[L] = true; passed[L] = ok >= PER - 1;
+      if (passed[L]) {
+        if (idx + 1 < lv.length && !tried[lv[idx + 1]]) { idx++; return startLevel(); }
+        return result(lv[Math.min(idx + 1, lv.length - 1)]);
+      }
+      if (idx > 0 && !tried[lv[idx - 1]]) { idx--; return startLevel(); }
+      return result(L);
+    };
+    var paint = function () {
+      if (k >= qs.length) return nextLevel();
+      var q = qs[k];
+      app.innerHTML = quizShellLesson(k, qs.length, '<div class="quiz-card"><div class="quiz-kind">' + esc(T("place_q", { level: L, i: k + 1, n: qs.length })) + "</div>" +
+        (q.mode === "mcq" ? '<div class="quiz-q">' + tgt(q.prompt) + snd(q.audio) + "</div>" : '<div class="quiz-q">' + esc(q.prompt) + "</div>") + '<div class="quiz-sub"></div>' +
+        '<div class="quiz-opts">' + q.opts.map(function (o, n) { return '<button type="button" class="quiz-opt' + (q.optsT ? " t" : "") + '" data-opt="' + n + '">' + esc(o) + "</button>"; }).join("") + "</div>" +
+        '<div class="row" style="justify-content:center;margin-top:var(--ig27-space-3)"><button type="button" class="btn2" id="dunno">' + esc(T("dont_know")) + "</button></div></div>");
+      var done = false;
+      var answer = function (val) {
+        if (done) return; done = true;
+        if (val === q.answer) ok++;
+        app.querySelectorAll("[data-opt]").forEach(function (x) { x.disabled = true; if (q.opts[+x.getAttribute("data-opt")] === q.answer) x.classList.add("correct"); else if (q.opts[+x.getAttribute("data-opt")] === val) x.classList.add("wrong"); });
+        setTimeout(function () { k++; paint(); }, 650);
+      };
+      app.querySelectorAll("[data-opt]").forEach(function (b) { b.addEventListener("click", function () { answer(q.opts[+b.getAttribute("data-opt")]); }); });
+      document.getElementById("dunno").addEventListener("click", function () { answer(null); });
+    };
+    var startLevel = function () {
+      L = lv[idx]; k = 0; ok = 0;
+      var lw = C.words.filter(function (w) { return w.level === L && wg(w); });
+      var picked = pick(lw, PER);
+      qs = picked.map(function (w, n) {
+        var tf = function (x) { return x.t; };
+        return n % 2 ? { mode: "reverse", prompt: wg(w), answer: w.t, optsT: true, opts: shuffle([w.t].concat(distractors(w, lw, tf, 3).map(tf))) }
+          : { mode: "mcq", prompt: w.t, audio: w.t, answer: wg(w), opts: shuffle([wg(w)].concat(distractors(w, lw, wg, 3).map(wg))) };
+      });
+      paint();
+    };
+    if (!lv.length) return;
+    startLevel();
+  }
   document.addEventListener("click", function (e) { if (e.target.id === "quitL") { e.stopImmediatePropagation(); e.preventDefault(); QUIZ = null; render(); } }, true);
 
   // ------------------------------------------------------------------ exam
@@ -1102,6 +1258,7 @@
     var html = '<h1 class="ttl">' + esc(T("mod_profil")) + '</h1><p class="sub">' + esc(T("profile_sub")) + "</p>" +
       '<div class="box row"><div><b>' + esc(ME.name || T("learner")) + '</b><div class="muted small">' + esc(T("base_lang")) + " : " + esc(langName(BASE)) + " → " + esc(langName(LANG)) + '</div></div><span class="spacer"></span><button type="button" class="btn2" data-go="/profile">✏️ ' + esc(T("change")) + "</button></div>" +
       '<div class="box"><h3>🔊 ' + esc(T("audio")) + '</h3><div class="row" style="margin-bottom:var(--ig27-space-2)"><label for="rate">' + esc(T("speech_rate")) + '</label><input type="range" id="rate" min="0.5" max="1.3" step="0.1" value="' + P.settings.rate + '"><span id="rateV">' + P.settings.rate + "×</span>" + snd(C.words[0] ? C.words[0].t : C.name, true) + "</div>" +
+      (C.audio ? '<div class="row"><label for="voiceSource">' + esc(T("voice_source")) + '</label><select class="sel" id="voiceSource"><option value="">' + esc(T("voice_papote")) + '</option><option value="device"' + (P.settings.voiceSource === "device" ? " selected" : "") + ">" + esc(T("voice_device")) + "</option></select></div>" : "") +
       '<div class="row"><label for="voice">' + esc(T("voice")) + '</label><select class="sel" id="voice"><option value="">' + esc(T("auto")) + "</option>" + voices.map(function (v) { return "<option" + (v.name === P.settings.voice ? " selected" : "") + ">" + esc(v.name) + "</option>"; }).join("") + "</select></div>" +
       (voices.length ? "" : '<p class="muted small">' + esc(T("tts_no_voice", { lang: C.name })) + "</p>") + "</div>" +
       '<div class="box"><h3>⚙️ ' + esc(T("settings")) + "</h3>" +
@@ -1111,6 +1268,7 @@
       '<button type="button" class="btn2" id="offline">📴 ' + esc(T("feat_offline")) + (locked("premium:offline") ? " 🔒" : "") + "</button>" +
       '<button type="button" class="btn2" id="export">⬇️ ' + esc(T("feat_export")) + (locked("premium:export") ? " 🔒" : "") + "</button>" +
       '</div><p class="muted small" id="offState" style="margin-top:var(--ig27-space-2)"></p></div>' +
+      '<div class="box"><h3>🧭 ' + esc(T("place_title")) + '</h3><p class="muted small">' + esc(P.placement && !P.placement.skipped ? T("place_result", { level: P.placement.level }) : T("place_d")) + '</p><button type="button" class="btn2" id="placeRedo" style="margin-top:var(--ig27-space-3)">' + esc(T("place_redo")) + "</button></div>" +
       '<div class="box"><h3>🗑️ ' + esc(T("danger")) + '</h3><button type="button" class="btn2 ko" id="reset">' + esc(T("reset_progress")) + "</button></div>";
     return shell("mod_profil", html);
   };
@@ -1119,8 +1277,11 @@
     var rate = document.getElementById("rate");
     rate.addEventListener("input", function () { P.settings.rate = +rate.value; document.getElementById("rateV").textContent = rate.value + "×"; save(); });
     document.getElementById("voice").addEventListener("change", function (e) { P.settings.voice = e.target.value; TTS.pick(); save(); });
+    var vs = document.getElementById("voiceSource");
+    if (vs) vs.addEventListener("change", function (e) { P.settings.voiceSource = e.target.value; save(); TTS.speak((C.words[0] || {}).t); });
     document.getElementById("goal").addEventListener("change", function (e) { P.settings.goal = +e.target.value; save(); });
     app.querySelectorAll("[data-set]").forEach(function (c) { c.addEventListener("change", function () { P.settings[c.getAttribute("data-set")] = c.checked; save(); }); });
+    document.getElementById("placeRedo").addEventListener("click", placementFlow);
     document.getElementById("reset").addEventListener("click", function () { if (confirm(T("reset_confirm"))) { var s = P.settings; P = newProgress(); P.settings = s; save(); render(); } });
     document.getElementById("export").addEventListener("click", function () {
       if (locked("premium:export")) { toast(T("premium_only"), "cool"); return; }
@@ -1150,7 +1311,7 @@
   var BINDERS = {
     vocabulaire: bindVocab, phrases: bindPhrases, grammaire: bindGrammar, conjugaison: bindConj, alphabet: bindAlphabet,
     lecture: bindLecture, ecoute: bindEcoute, exercices: bindExercices, revision: bindRevision, prononciation: bindPron,
-    culture: function () { decorateTargetText(app); }, dictionnaire: bindDict, profil: bindProfil,
+    hub: bindGuided, culture: function () { decorateTargetText(app); }, dictionnaire: bindDict, profil: bindProfil,
     examen: function () { app.querySelectorAll("[data-exam]").forEach(function (b) { b.addEventListener("click", function () { examFlow(b.getAttribute("data-exam")); }); }); },
     certificat: function () {
       app.querySelectorAll("[data-cert]").forEach(function (b) { b.addEventListener("click", function () { app.querySelectorAll("[data-cert]").forEach(function (x) { x.classList.toggle("on", x === b); }); paintCert(b.getAttribute("data-cert")); }); });
@@ -1183,6 +1344,8 @@
     }).then(function (j) { try { (TOP.__COURSE_CACHE = TOP.__COURSE_CACHE || {})[LANG] = j; } catch (e) {} return j; });
     courseP.then(function (j) {
       C = j.course; ACCESS = j.access; ME = j.me;
+      AUDIO = {};
+      (C.words || []).concat(C.phrases || []).forEach(function (w) { if (w.a) AUDIO[w.t] = w.a; });
       if (j.brand) BRAND = j.brand;
       BASE = String(ME.baseLang || "fr"); UI = (window.I18N && window.I18N.resolve(BASE)) || "fr";
       document.documentElement.lang = BASE;

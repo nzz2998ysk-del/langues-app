@@ -644,7 +644,8 @@ app.post("/api/csp-report", express.json({ type: ["application/csp-report", "app
 const staticDir = (dir) => {
   const short = express.static(dir, { maxAge: isProd ? "1h" : 0, index: false });
   const forever = express.static(dir, { maxAge: isProd ? "365d" : 0, immutable: isProd, index: false });
-  return (req, res, next) => (req.query.v ? forever : short)(req, res, next);
+  // audio files are named after a hash of their content: cacheable for good too
+  return (req, res, next) => (req.query.v || req.path.startsWith("/audio/") ? forever : short)(req, res, next);
 };
 app.use("/design-system", staticDir(path.join(__dirname, "design-system")));
 
