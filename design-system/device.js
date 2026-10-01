@@ -140,8 +140,10 @@
     toggle("pen", i.pen); toggle("kbd", i.keyboardNav); toggle("bigtext", i.prefs.fontScale >= 1.2);
     var s = root.style;
     s.setProperty("--vh", (i.viewport.h / 100) + "px");
-    s.setProperty("--app-h", i.viewport.visibleH + "px");
-    s.setProperty("--app-hz", (i.viewport.visibleH / i.zoom.ui) + "px"); // same, in zoomed CSS px
+    // Visible height in CSS px of this page (divided by the UI zoom on big
+    // screens, so that height:var(--app-h) always equals the visible area).
+    s.setProperty("--app-h", (i.viewport.visibleH / i.zoom.ui) + "px");
+    s.setProperty("--app-hz", (i.viewport.visibleH / i.zoom.ui) + "px");
     s.setProperty("--ui-zoom", String(i.zoom.ui));
     if (TOP && "zoom" in s) s.zoom = i.zoom.ui !== 1 ? String(i.zoom.ui) : "";
   }

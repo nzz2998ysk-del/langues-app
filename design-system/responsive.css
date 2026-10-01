@@ -85,7 +85,7 @@ html[data-kbd] :focus-visible{ outline:3px solid var(--ig27-accent); outline-off
 body.pp-page{ padding-left:max(var(--pp-gutter), var(--safe-l)); padding-right:max(var(--pp-gutter), var(--safe-r)); padding-bottom:max(16px, var(--safe-b)); }
 
 /* ------------------------------------------------------------ modals & toasts */
-dialog, .modal, .sheet{ max-height:calc(var(--app-h) - 24px); max-width:min(640px, calc(100vw - 24px)); overflow:auto; overscroll-behavior:contain; }
+dialog{ max-height:calc(var(--app-h) - 24px); max-width:min(640px, calc(100vw - 24px)); overflow:auto; overscroll-behavior:contain; }
 
 /* ------------------------------------------------------------ tables */
 /* Wide tables scroll horizontally inside their card, never the page. */
@@ -120,3 +120,4 @@ video, .media-16x9{ aspect-ratio:16 / 9; object-fit:cover; }
   input[type="range"]{ min-height:var(--pp-tap); }
   .soundbtn{ flex:none; }
 }
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}

@@ -7,7 +7,7 @@
 }catch(e){}})();</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<script src="/design-system/device.js"></script>
+<script src="/design-system/device.js"></script><script src="/design-system/liquid-glass.js"></script>
 <title>Papote — Apprends 39 langues en papotant</title><!--BRAND_HEAD-->
 <meta name="description" content="Papote : 39 langues du niveau A1 au C2, avec de l'audio sur chaque mot, des exercices variés, la révision intelligente et une mascotte qui t'encourage.">
 <link rel="stylesheet" href="/design-system/ios27-liquid-glass.css">
@@ -177,6 +177,7 @@ footer a{text-decoration:none}footer a:hover{color:var(--ig27-label-primary)}
 /* ---------- auth sheet (modal) ---------- */
 .sheet{position:fixed;inset:0;z-index:100;display:grid;place-items:center;padding:20px;visibility:hidden;opacity:0;transition:opacity .3s ease,visibility .3s}
 .sheet.open{visibility:visible;opacity:1}
+
 .sheet .backdrop{position:absolute;inset:0;background:color-mix(in srgb,var(--ig27-black) 35%,transparent);
   -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
 .auth-wrap{position:relative;width:100%;max-width:400px;max-height:100%;overflow:auto;transform:translateY(24px) scale(.97);transition:transform .45s cubic-bezier(.34,1.56,.64,1)}
@@ -206,8 +207,31 @@ footer a{text-decoration:none}footer a:hover{color:var(--ig27-label-primary)}
   *,*::before,*::after{animation:none!important;transition:none!important}
   .reveal{opacity:1;transform:none}.say{opacity:1;transform:none}
 }
+/* The sheet always fits the visible area (on-screen keyboard included) and
+   scrolls inside itself; short screens get a compact version. */
+.sheet{height:var(--app-h,100dvh);bottom:auto;padding:max(12px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(12px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left))}
+.auth-wrap{max-height:100%;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+@media (max-height:620px){
+  .auth-masc{width:56px;height:56px;margin:-4px auto 2px}
+  .auth-subtitle{display:none}
+}
+@media (max-height:460px){
+  .auth-masc{display:none}
+  .auth-wrap{max-width:min(560px,100%)}
+  .auth-card{padding:14px 18px !important}
+  .auth-header{margin-bottom:2px}
+  .auth-title{font-size:var(--ig27-fs-headline)}
+  .auth-note{display:none}
+}
+@media (max-height:460px) and (min-width:540px){
+  .auth-card{display:grid !important;grid-template-columns:1fr 1fr;column-gap:12px;row-gap:8px}
+  .auth-card>*{grid-column:1 / -1}
+  .auth-card>.field-group{grid-column:auto}
+}
+@media (max-width:359.98px){.auth-masc{display:none}.auth-subtitle{display:none}}
 </style>
 <link rel="stylesheet" href="/design-system/ios27-app.css">
+<link rel="stylesheet" href="/design-system/liquid-glass.css">
 <link rel="stylesheet" href="/design-system/responsive.css">
 </head>
 <body>

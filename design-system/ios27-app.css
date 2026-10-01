@@ -87,22 +87,12 @@ a{ color: var(--ig27-accent); }
 /* ------------------------------------------------------------------------
    3. Liquid Glass chrome — bars, floating controls, toasts, overlays
    ------------------------------------------------------------------------ */
-.ig27-glass,
-.top, .hdr, .duo-bar, .navmenu,
-#appTop, #tabbar,
-.themeToggle,
-.toast, .easter-toast, .speaking-pill, #__ttsFallbackToast{
-  background: var(--ig27-glass-regular-bg) !important;
-  -webkit-backdrop-filter: blur(var(--ig27-glass-regular-blur)) saturate(var(--ig27-glass-regular-saturate)) !important;
-  backdrop-filter: blur(var(--ig27-glass-regular-blur)) saturate(var(--ig27-glass-regular-saturate)) !important;
-  box-shadow: var(--ig27-glass-regular-shadow), inset 0 0 0 .5px var(--ig27-glass-rim-color) !important;
-  border-color: transparent !important;
-  color: var(--ig27-label-primary);
-}
-/* Bars that span the full width keep only a hairline edge, not a floating shadow */
-.hdr, .duo-bar{
-  box-shadow: inset 0 -.5px 0 var(--ig27-separator) !important;
-}
+/* The Liquid Glass material of these surfaces (.ig27-glass, .top, .hdr,
+   .duo-bar, .navmenu, #appTop, #tabbar, .themeToggle, toasts, .speaking-pill)
+   lives in design-system/liquid-glass.css. */
+.ig27-glass, .top, .hdr, .duo-bar, .navmenu, #appTop, #tabbar, .themeToggle,
+.toast, .easter-toast, .speaking-pill, #__ttsFallbackToast{ color: var(--ig27-label-primary); }
+
 /* In-page header = floating glass capsule above the content */
 .top{ padding-left: var(--ig27-content-margin); padding-right: var(--ig27-content-margin); border-radius: var(--ig27-radius-xxl); margin-top: var(--ig27-space-3); }
 

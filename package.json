@@ -9,7 +9,7 @@
   "scripts": {
     "start": "node server.js",
     "test": "node --test test/*.test.js",
-    "test:responsive": "node --test test/responsive/"
+    "test:responsive": "node --test test/responsive/responsive.e2e.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

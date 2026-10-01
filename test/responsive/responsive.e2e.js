@@ -4,7 +4,9 @@
 //   - the quiz fits on screen without scrolling, before and after answering,
 //   - touch targets are at least 44×44 px on touch screens,
 //   - device detection (data-device / data-input / data-orient) is right,
-//   - the debug panel (?debug=device) renders.
+//   - the debug panel (?debug=device) renders,
+//   - the login sheet fits, Liquid Glass and its transparency setting work,
+//   - the subscription page shows the full Free / Premium comparison.
 //
 //   TEST_DATABASE_URL=postgresql://user:pass@localhost:5432/langues_test \
 //   BROWSERS=chromium,firefox,webkit npm run test:responsive
@@ -139,14 +141,42 @@ for (const browserName of BROWSERS) {
           if (det.orient !== (d.w > d.h ? "landscape" : "portrait")) problems.push("orientation " + det.orient);
           const lo = await overflowOf(lp); if (lo.length) problems.push("landing overflow: " + lo.join(", "));
           if (d.touch) { const st = await smallTargets(lp); if (st.length) problems.push("landing small targets: " + st.join(", ")); }
+          // login sheet: covers the whole screen, the submit button is on screen
+          await lp.evaluate(() => openAuth("login")); // eslint-disable-line no-undef
+          await lp.waitForTimeout(700);
+          const auth = await lp.evaluate(() => {
+            const btn = document.getElementById("authSubmitBtn").getBoundingClientRect(), sheet = document.getElementById("authSheet").getBoundingClientRect();
+            const z = parseFloat(document.documentElement.style.zoom) || 1;
+            return { btnOk: btn.top >= 0 && btn.bottom <= innerHeight + 1, sheetOk: sheet.width * (z > 1 ? z : 1) >= innerWidth - 2 };
+          });
+          if (!auth.btnOk) problems.push("login button off screen");
+          if (!auth.sheetOk) problems.push("login backdrop does not cover the screen");
+          // Liquid Glass is active and the transparency setting applies
+          const glass = await lp.evaluate(() => {
+            const nav = document.querySelector("header.nav"), cs = getComputedStyle(nav);
+            const blur = (cs.backdropFilter && cs.backdropFilter !== "none") || (cs.webkitBackdropFilter && cs.webkitBackdropFilter !== "none");
+            const supports = CSS.supports("backdrop-filter", "blur(2px)") || CSS.supports("-webkit-backdrop-filter", "blur(2px)");
+            window.PapoteGlass.set(100);
+            const solid = document.documentElement.dataset.glass;
+            window.PapoteGlass.set(50);
+            return { ok: !!window.PapoteGlass, blur: !!blur, supports, solid };
+          });
+          if (!glass.ok) problems.push("PapoteGlass missing");
+          if (glass.supports && !glass.blur) problems.push("glass bar has no backdrop blur");
+          if (glass.solid !== "solid") problems.push("transparency slider not applied");
           await lctx.close();
 
           const ctx = await browser.newContext(contextOptions(browserName, d, userState));
           const page = await ctx.newPage();
           const errors = []; page.on("pageerror", (e) => errors.push(e.message));
           for (const p of ["/profile", "/subscribe", "/ideas"]) {
-            await page.goto(BASE + p); await page.waitForTimeout(500);
+            await page.goto(BASE + p); await page.waitForTimeout(p === "/subscribe" ? 1200 : 500);
             const o = await overflowOf(page); if (o.length) problems.push(`${p} overflow: ${o.join(", ")}`);
+            if (p === "/subscribe") {
+              const sub = await page.evaluate(() => ({ rows: document.querySelectorAll(".cmp-row").length, cta: !!document.getElementById("goBtn"), free: document.querySelector(".cmp-head").textContent }));
+              if (sub.rows < 20 || !sub.cta) problems.push("subscribe comparison incomplete: " + JSON.stringify(sub));
+            }
+            if (p === "/profile" && !(await page.$("#glassRange"))) problems.push("transparency slider missing in profile");
           }
           await page.goto(BASE + "/"); await page.waitForTimeout(2500);
           const ho = await overflowOf(page); if (ho.length) problems.push("home overflow: " + ho.join(", "));

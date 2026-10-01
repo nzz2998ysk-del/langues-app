@@ -138,6 +138,15 @@ Stripe), la personne qui l'a invitée reçoit `REFERRAL_DAYS` jours de Premium
 nœud, fleur, casquette, toque, couronne) se débloquent avec les XP de chaque
 langue ; des tenues dessinées en HD demanderont des illustrations dédiées.
 
+## Liquid Glass (iOS 27)
+
+Toutes les surfaces flottantes (barres, onglets, fenêtres, menus,
+notifications) et les cartes utilisent le matériau Liquid Glass
+(`design-system/liquid-glass.css` + `liquid-glass.js`), avec un curseur de
+transparence dans le profil, l'adaptation clair/sombre et aux préférences
+d'accessibilité, et une qualité adaptative pour les appareils modestes.
+Détails, mesures et personnalisation : [docs/LIQUID-GLASS.md](docs/LIQUID-GLASS.md).
+
 ## Adaptation à tous les écrans
 
 Téléphones (dès 280 px, encoches, paysage), tablettes, pliables, ordinateurs,

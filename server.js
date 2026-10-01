@@ -2106,6 +2106,18 @@ app.delete("/api/friends/:id", async (req, res) => {
   return res.json({ ok: true });
 });
 
+// ---- Subscription page: price and the limits of the free plan ----
+app.get("/api/plan", async (req, res) => {
+  let price = null;
+  try { price = await stripeLib.getPrice(); } catch (err) { console.error("plan price error:", err.message); }
+  return res.json({
+    price,
+    free: { lessonsPerDay: 3, reviewsPerDay: 20, customWords: 20, aiPerDay: AI_DAILY_FREE, levels: ["A1", "A2", "B1", "B2"] },
+    premium: { aiPerDay: AI_DAILY_PREMIUM, referralDays: REFERRAL_DAYS },
+    languages: Object.keys(LANG_META).length,
+  });
+});
+
 // ---- daily practice reminders (opt-in) ----
 function validTimeZone(tz) {
   if (typeof tz !== "string" || tz.length > 64 || !/^[A-Za-z_]+(\/[A-Za-z0-9_+-]+){0,2}$/.test(tz)) return false;

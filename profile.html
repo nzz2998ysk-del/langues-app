@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<script src="/design-system/device.js"></script>
+<script src="/design-system/device.js"></script><script src="/design-system/liquid-glass.js"></script>
 <title>Papote — Mon profil</title><!--BRAND_HEAD-->
 <script>(function(){try{
   var t = localStorage.getItem('lang_theme');
@@ -50,6 +50,7 @@ button.danger{background:var(--ig27-red);margin-top:12px}
 </style>
 <link rel="stylesheet" href="/design-system/ios27-app.css">
 <link rel="stylesheet" href="/design-system/papote.css">
+<link rel="stylesheet" href="/design-system/liquid-glass.css">
 <link rel="stylesheet" href="/design-system/responsive.css">
 </head>
 <body class="pp-page">
@@ -91,6 +92,18 @@ button.danger{background:var(--ig27-red);margin-top:12px}
     <div class="val" id="remUnverified" style="display:none;color:var(--ig27-orange);margin-top:10px" data-i18n="reminder_unverified"></div>
     <button type="button" id="remSave" data-click="saveReminder" data-i18n="save">Enregistrer</button>
     <div class="msg" id="remStatus"></div>
+  </div>
+
+  <div class="card">
+    <h2 style="margin:0 0 6px;font-size:var(--ig27-fs-title3);line-height:var(--ig27-lh-title3)" data-i18n="glass_title">Apparence · Liquid Glass</h2>
+    <p class="lead" style="margin:0 0 12px" data-i18n="glass_lead"></p>
+    <div class="lg-slider">
+      <div class="lg-preview" aria-hidden="true"><span class="lg-preview-chip lg-float" data-i18n="glass_preview">Aperçu du verre</span></div>
+      <label for="glassRange" data-i18n="glass_label">Transparence</label>
+      <input type="range" id="glassRange" min="0" max="100" step="5">
+      <div class="lg-scale" aria-hidden="true"><span data-i18n="glass_clear">Ultra-clair</span><span data-i18n="glass_tinted">Teinté</span></div>
+      <p class="val" id="glassSys" style="display:none;color:var(--ig27-orange)" data-i18n="glass_system"></p>
+    </div>
   </div>
 
   <div class="card">
@@ -158,6 +171,14 @@ async function saveReminder(){
     if (r.ok){ st.textContent = tr('saved'); st.classList.add('ok'); } else st.textContent = data.error || tr('save_error');
   } catch(e){ st.textContent = tr('net_error'); }
 }
+// Liquid Glass transparency (saved on this device, like the iOS 27 setting).
+(function(){
+  var r = document.getElementById('glassRange'); if (!r || !window.PapoteGlass) return;
+  var label = function(v){ return v + ' % — ' + (v <= 15 ? tr('glass_clear') : v >= 85 ? tr('glass_tinted') : tr('glass_regular')); };
+  r.value = PapoteGlass.get(); r.setAttribute('aria-valuetext', label(+r.value));
+  r.addEventListener('input', function(){ PapoteGlass.set(+r.value); r.setAttribute('aria-valuetext', label(+r.value)); });
+  if (window.matchMedia && (matchMedia('(prefers-reduced-transparency: reduce)').matches || matchMedia('(prefers-contrast: more)').matches)) document.getElementById('glassSys').style.display = 'block';
+})();
 async function loadProfile(){
   var r = await fetch('/api/me');
   if (!r.ok){ window.location.href = '/'; return; }

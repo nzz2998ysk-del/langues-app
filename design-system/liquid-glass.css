@@ -1,0 +1,236 @@
+/*!
+ * Papote — Liquid Glass (iOS 27) material for the web.
+ * Loaded on every page after papote.css and before responsive.css.
+ * Driven by design-system/liquid-glass.js (transparency slider, refraction,
+ * press ripples, uniform toolbar on scroll). Documentation: docs/LIQUID-GLASS.md
+ *
+ * The five optical ingredients, as layers of one element (no extra markup):
+ *   1. translucency + blur ...... tint (--lg-alpha) + backdrop-filter blur/saturate
+ *   2. refraction ............... SVG displacement in backdrop-filter (Chromium
+ *                                 only, html.lg-refract; elsewhere blur only)
+ *   3. chromatic aberration ..... red / blue inner fringes on the left/right edges
+ *   4. specular light ........... bright top liseré + Fresnel rim (gradient border
+ *                                 brighter on the corners) + soft top-left sheen;
+ *                                 iOS 27: darkened lower edge for depth
+ *   5. motion ................... morphing entrances, press squish and ripple
+ *                                 (no motion-driven specular: removed in iOS 27)
+ *
+ * Two recipes:
+ *   floating  bars, tab bar, sheets, menus, popovers, toasts: real backdrop blur
+ *   lite      cards in lists (vocabulary rows, quiz answers, boxes): same look
+ *             without backdrop-filter (they sit on the plain page background,
+ *             so blurring it would cost GPU time for no visible difference)
+ */
+
+/* ------------------------------------------------------------ tokens */
+:root{
+  /* Transparency slider (iOS 27 Réglages): 0 = ultra-clair … 1 = teinté.
+     Written by liquid-glass.js from the user's setting. */
+  --lg-t: .5;
+  --lg-tint: 255,255,255;
+  /* Legibility floor: with this minimum opacity, black text keeps ≥ 4.5:1
+     even over a black background behind the glass (worst case). */
+  --lg-min: .52;
+  --lg-alpha: calc(var(--lg-min) + (.95 - var(--lg-min)) * var(--lg-t));
+  --lg-alpha-lite: calc(.58 + .38 * var(--lg-t));
+  /* clearer glass = stronger blur, so busy backgrounds stay diffused */
+  --lg-blur: calc(16px + 16px * (1 - var(--lg-t)));
+  --lg-sat: 1.9;
+  --lg-rim-hi: rgba(255,255,255,.95);
+  --lg-rim-lo: rgba(255,255,255,.28);
+  --lg-lisere: rgba(255,255,255,.85);
+  --lg-edge: rgba(0,0,0,.09);
+  --lg-sheen: rgba(255,255,255,.55);
+  --lg-fringe-r: rgba(255,70,70,.20);
+  --lg-fringe-b: rgba(60,120,255,.24);
+  --lg-shadow: 0 14px 34px -14px rgba(0,0,0,.30), 0 2px 6px -2px rgba(0,0,0,.08);
+  --lg-shadow-lite: 0 6px 18px -10px rgba(0,0,0,.18);
+  --lg-spring: cubic-bezier(.34,1.56,.64,1);
+  --lg-ease: cubic-bezier(.22,1,.36,1);
+}
+html[data-theme="dark"]{
+  --lg-tint: 30,30,34;
+  --lg-min: .70;              /* white text ≥ 4.5:1 over a white background */
+  --lg-alpha-lite: calc(.66 + .30 * var(--lg-t));
+  --lg-rim-hi: rgba(255,255,255,.42);
+  --lg-rim-lo: rgba(255,255,255,.07);
+  --lg-lisere: rgba(255,255,255,.28);
+  --lg-edge: rgba(0,0,0,.45);
+  --lg-sheen: rgba(255,255,255,.12);
+  --lg-fringe-r: rgba(255,90,90,.16);
+  --lg-fringe-b: rgba(90,150,255,.22);
+  --lg-shadow: 0 16px 40px -14px rgba(0,0,0,.65), 0 2px 8px -2px rgba(0,0,0,.4);
+  --lg-shadow-lite: 0 6px 20px -10px rgba(0,0,0,.5);
+}
+@media (prefers-color-scheme: dark){
+  html:not([data-theme]){
+    --lg-tint: 30,30,34; --lg-min: .70; --lg-alpha-lite: calc(.66 + .30 * var(--lg-t));
+    --lg-rim-hi: rgba(255,255,255,.42); --lg-rim-lo: rgba(255,255,255,.07); --lg-lisere: rgba(255,255,255,.28);
+    --lg-edge: rgba(0,0,0,.45); --lg-sheen: rgba(255,255,255,.12);
+    --lg-fringe-r: rgba(255,90,90,.16); --lg-fringe-b: rgba(90,150,255,.22);
+    --lg-shadow: 0 16px 40px -14px rgba(0,0,0,.65), 0 2px 8px -2px rgba(0,0,0,.4); --lg-shadow-lite: 0 6px 20px -10px rgba(0,0,0,.5);
+  }
+}
+
+/* ------------------------------------------------------------ recipes */
+/* FLOATING glass: bars, tab bar, sheets, menus, popovers, toasts */
+.lg, .lg-float,
+.top, .hdr, .duo-bar, .navmenu, #appTop, #tabbar, .themeToggle,
+.toast, .easter-toast, .speaking-pill, #__ttsFallbackToast,
+.ig27-glass, .auth-card, header.nav, .lg-sheet{
+  background:
+    radial-gradient(120% 80% at 12% -20%, var(--lg-sheen), transparent 55%) padding-box,
+    linear-gradient(rgba(var(--lg-tint), var(--lg-alpha)), rgba(var(--lg-tint), var(--lg-alpha))) padding-box,
+    linear-gradient(135deg, var(--lg-rim-hi), var(--lg-rim-lo) 35%, var(--lg-rim-lo) 65%, var(--lg-rim-hi)) border-box !important;
+  border: 1px solid transparent !important;
+  -webkit-backdrop-filter: blur(var(--lg-blur)) saturate(var(--lg-sat)) !important;
+  backdrop-filter: blur(var(--lg-blur)) saturate(var(--lg-sat)) !important;
+  box-shadow:
+    inset 0 1px 0 var(--lg-lisere),
+    inset 0 -1.5px 1px -.5px var(--lg-edge),
+    inset 2px 0 2px -2px var(--lg-fringe-r),
+    inset -2px 0 2px -2px var(--lg-fringe-b),
+    var(--lg-shadow) !important;
+  color: var(--ig27-label-primary);
+}
+/* Full-width bars keep a hairline instead of a floating shadow */
+.hdr, .duo-bar, header.nav{
+  border-width: 0 0 1px 0 !important;
+  box-shadow: inset 0 1px 0 var(--lg-lisere), inset 0 -1px 0 var(--lg-edge) !important;
+}
+
+/* LITE glass: cards and rows on the page background (no backdrop blur) */
+.lg-lite,
+.box, .navcard, .lvlcard, .vrow, .quiz-card, .stat-box, .rule-card, .read-card,
+.prow, .badge-card, .abc-card, .chat-bubble:not(.me), .lb-row,
+body.pp-page .card, .demo-card, .shell{
+  background:
+    radial-gradient(140% 90% at 10% -30%, var(--lg-sheen), transparent 50%) padding-box,
+    linear-gradient(rgba(var(--lg-tint), var(--lg-alpha-lite)), rgba(var(--lg-tint), var(--lg-alpha-lite))) padding-box,
+    linear-gradient(135deg, var(--lg-rim-hi), var(--lg-rim-lo) 40%, var(--lg-rim-lo) 60%, var(--lg-rim-hi)) border-box !important;
+  border: 1px solid transparent !important;
+  box-shadow: inset 0 1px 0 var(--lg-lisere), inset 0 -1px 0 var(--lg-edge), var(--lg-shadow-lite) !important;
+}
+/* Answers and secondary buttons: glass "pills" */
+.quiz-opt, .order-chip, .kbtn, .outfit-opt{
+  background:
+    linear-gradient(rgba(var(--lg-tint), var(--lg-alpha-lite)), rgba(var(--lg-tint), var(--lg-alpha-lite))) padding-box,
+    linear-gradient(135deg, var(--lg-rim-hi), var(--lg-rim-lo) 45%, var(--lg-rim-hi)) border-box;
+  border-color: transparent;
+  box-shadow: inset 0 1px 0 var(--lg-lisere), inset 0 -1px 0 var(--lg-edge), 0 4px 12px -8px rgba(0,0,0,.25);
+}
+/* answer states keep their meaning (colour + border), glass underneath */
+.quiz-opt.correct{ background: linear-gradient(var(--ig27-green-soft), var(--ig27-green-soft)) padding-box, linear-gradient(var(--ig27-green), var(--ig27-green)) border-box; }
+.quiz-opt.wrong{ background: linear-gradient(var(--ig27-red-soft), var(--ig27-red-soft)) padding-box, linear-gradient(var(--ig27-red), var(--ig27-red)) border-box; }
+
+/* Coloured cards keep their colour, with the glass rim and liseré on top */
+.hero, .premium-card, .pitch{
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.45), inset 0 -1.5px 1px -.5px rgba(0,0,0,.18), var(--lg-shadow) !important;
+}
+
+/* Legibility first: on clear glass the secondary text (and its aliases)
+   gets darker in light mode / lighter in dark mode so that it keeps ≥ 4.5:1
+   over any background; tinted glass keeps the regular iOS greys. */
+html:not([data-glass="tinted"]):not([data-glass="solid"]) :is(.lg, .lg-float, .lg-lite, .top, .hdr, .duo-bar, .navmenu, #appTop, #tabbar, .toast, .speaking-pill, .auth-card, header.nav, .lg-sheet, .box, .navcard, .lvlcard, .vrow, .quiz-card, .stat-box, .rule-card, .read-card, .prow, .badge-card, .abc-card, .lb-row, .card, .shell, .quiz-opt){
+  --ig27-label-secondary: #3a3a3f; --ig27-label-tertiary: #4a4a50; --muted: #3a3a3f; --muted-2: #4a4a50;
+}
+html[data-theme="dark"]:not([data-glass="tinted"]):not([data-glass="solid"]) :is(.lg, .lg-float, .lg-lite, .top, .hdr, .duo-bar, .navmenu, #appTop, #tabbar, .toast, .speaking-pill, .auth-card, header.nav, .lg-sheet, .box, .navcard, .lvlcard, .vrow, .quiz-card, .stat-box, .rule-card, .read-card, .prow, .badge-card, .abc-card, .lb-row, .card, .shell, .quiz-opt){
+  --ig27-label-secondary: #ededf2; --ig27-label-tertiary: #d8d8de; --muted: #ededf2; --muted-2: #d8d8de;
+}
+@media (prefers-color-scheme: dark){
+  html:not([data-theme]):not([data-glass="tinted"]):not([data-glass="solid"]) :is(.lg, .lg-float, .lg-lite, .hdr, .navmenu, #appTop, #tabbar, .auth-card, header.nav, .box, .vrow, .quiz-card, .card){
+    --ig27-label-secondary: #ededf2; --ig27-label-tertiary: #d8d8de; --muted: #ededf2; --muted-2: #d8d8de;
+  }
+}
+
+/* ------------------------------------------------------------ refraction */
+/* Chromium only (Chrome, Edge, Samsung Internet, Android WebView): the
+   backdrop is displaced through an SVG lens before being blurred. Other
+   engines keep the blur, which is the documented fallback. */
+html.lg-refract #appTop, html.lg-refract #tabbar, html.lg-refract .auth-card,
+html.lg-refract header.nav, html.lg-refract .lg-sheet, html.lg-refract .lg-float, html.lg-refract .toast{
+  -webkit-backdrop-filter: url(#lg-lens) blur(var(--lg-blur)) saturate(var(--lg-sat)) !important;
+  backdrop-filter: url(#lg-lens) blur(var(--lg-blur)) saturate(var(--lg-sat)) !important;
+}
+
+/* ------------------------------------------------------------ iOS 27: uniform toolbar */
+/* When content scrolls under a floating bar, the bar becomes more opaque so
+   its text stays readable (html.lg-scrolled is set by liquid-glass.js). */
+html.lg-scrolled #appTop, html.lg-scrolled header.nav, html.lg-scrolled .pp-top{
+  --lg-alpha: calc(.82 + .14 * var(--lg-t));
+  box-shadow: inset 0 1px 0 var(--lg-lisere), 0 1px 0 var(--lg-edge), var(--lg-shadow) !important;
+  transition: box-shadow .3s var(--lg-ease);
+}
+
+/* ------------------------------------------------------------ motion */
+@keyframes lg-morph-in{
+  0%{ opacity:0; transform:translateY(8px) scale(.94); filter:blur(6px); }
+  60%{ opacity:1; filter:blur(0); }
+  100%{ opacity:1; transform:none; filter:none; }
+}
+@keyframes lg-wobble{ 0%,100%{ scale:1; } 35%{ scale:1.035 .97; } 70%{ scale:.985 1.02; } }
+.navmenu.on, .lg-sheet, .sheet.open .auth-card, .quiz-card{ animation: lg-morph-in .5s var(--lg-ease) both; }
+.toast.show, .speaking-pill.on{ animation: lg-wobble .6s var(--lg-spring); }
+/* press: the surface squishes like a drop, then springs back */
+.quiz-opt, .bpr, .btn2, .navcard, .pill, .tabbtn, .lvlcard, .order-chip, .kbtn, .soundbtn, .outfit-opt{
+  transition: transform .45s var(--lg-spring), box-shadow .3s var(--lg-ease), background-color .3s var(--lg-ease);
+}
+.quiz-opt:active, .bpr:active, .btn2:active, .navcard:active, .pill:active, .tabbtn:active, .lvlcard:active, .order-chip:active, .kbtn:active, .soundbtn:active, .outfit-opt:active{
+  transform: scale(.965);
+  transition-duration: .12s;
+}
+/* ripple of light injected by liquid-glass.js at the touch point */
+.lg-ink{ position:absolute; inset:0; border-radius:inherit; overflow:hidden; pointer-events:none; z-index:0; }
+.lg-ink i{ position:absolute; width:16px; height:16px; margin:-8px 0 0 -8px; border-radius:50%;
+  background: radial-gradient(circle, rgba(255,255,255,.5), rgba(255,255,255,.18) 45%, transparent 70%); mix-blend-mode: screen;
+  animation: lg-ripple .65s var(--lg-ease) forwards; }
+html[data-theme="dark"] .lg-ink i{ background: radial-gradient(circle, rgba(255,255,255,.35), rgba(255,255,255,.1) 45%, transparent 70%); }
+@keyframes lg-ripple{ from{ transform:scale(1); opacity:1; } to{ transform:scale(28); opacity:0; } }
+
+/* Tab bar: the selection is a drop of glass that slides between tabs */
+#tabbar{ position:fixed; }
+#tabbar .lg-drop{ position:absolute; top:4px; bottom:4px; left:0; width:0; border-radius:999px; pointer-events:none; z-index:0;
+  background: linear-gradient(var(--ig27-accent), color-mix(in srgb, var(--ig27-accent) 80%, var(--ig27-indigo)));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.45), inset 0 -1px 1px rgba(0,0,0,.2), 0 6px 16px -6px color-mix(in srgb, var(--ig27-accent) 60%, transparent);
+  transition: transform .55s var(--lg-spring), width .55s var(--lg-spring); }
+#tabbar.lg-has-drop .tabbtn{ position:relative; z-index:1; }
+#tabbar.lg-has-drop .tabbtn.on{ background: transparent !important; box-shadow:none !important; }
+
+/* ------------------------------------------------------------ accessibility */
+/* Réduire la transparence / Augmenter le contraste (system or slider at max):
+   glass becomes an opaque, high-contrast surface. */
+@media (prefers-reduced-transparency: reduce){
+  :root, html[data-theme]{ --lg-alpha: 1; --lg-alpha-lite: 1; --lg-sheen: transparent; }
+  html.lg-refract *{ -webkit-backdrop-filter:none !important; backdrop-filter:none !important; }
+}
+html[data-glass="solid"], html[data-lg-quality="low"]{ --lg-alpha: 1; --lg-alpha-lite: 1; }
+html[data-lg-quality="low"] *{ -webkit-backdrop-filter:none !important; backdrop-filter:none !important; }
+html[data-glass="solid"] *{ -webkit-backdrop-filter:none !important; backdrop-filter:none !important; }
+@media (prefers-contrast: more){
+  :root, html[data-theme]{ --lg-alpha: 1; --lg-alpha-lite: 1; --lg-sheen: transparent; --lg-rim-hi: var(--ig27-label-primary); --lg-rim-lo: var(--ig27-label-primary); --lg-fringe-r: transparent; --lg-fringe-b: transparent; }
+}
+@media (prefers-reduced-motion: reduce){
+  .lg-ink, #tabbar .lg-drop{ display:none; }
+  .navmenu.on, .lg-sheet, .sheet.open .auth-card, .quiz-card, .toast.show, .speaking-pill.on{ animation:none; }
+}
+@media (forced-colors: active){
+  .lg, .lg-float, .lg-lite, .top, .hdr, .duo-bar, .navmenu, #appTop, #tabbar, .toast, .auth-card, header.nav, .box, .navcard, .vrow, .quiz-card, .quiz-opt, body.pp-page .card{
+    background: Canvas !important; border: 1px solid CanvasText !important; box-shadow:none !important;
+    -webkit-backdrop-filter:none !important; backdrop-filter:none !important; }
+  .lg-ink, #tabbar .lg-drop{ display:none; }
+}
+/* Browsers without backdrop-filter: a denser tint keeps text readable */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))){
+  :root, html[data-theme]{ --lg-alpha: calc(.86 + .12 * var(--lg-t)); }
+}
+
+/* ------------------------------------------------------------ settings control */
+.lg-slider{ display:grid; gap:10px; }
+.lg-slider .lg-scale{ display:flex; justify-content:space-between; font-size:13px; color:var(--ig27-label-secondary); }
+.lg-slider input[type="range"]{ width:100%; accent-color: var(--ig27-accent); min-height:44px; }
+.lg-preview{ position:relative; height:120px; border-radius:22px; overflow:hidden; display:grid; place-items:center;
+  background:
+    repeating-linear-gradient(90deg, rgba(255,255,255,.9) 0 6px, transparent 6px 22px),
+    conic-gradient(from 210deg at 30% 40%, #ff5f6d, #ffc371, #7bdcb5, #4facfe, #a18cd1, #ff5f6d); }
+.lg-preview::before{ content:"Aa Bb Cc"; position:absolute; left:8%; top:50%; transform:translateY(-50%); font: 800 46px/1 var(--ig27-font-family); color:#111; opacity:.85; }
+.lg-preview .lg-preview-chip{ position:relative; width:min(78%,340px); min-height:64px; display:grid; place-items:center; border-radius:999px; font-weight:700; }
