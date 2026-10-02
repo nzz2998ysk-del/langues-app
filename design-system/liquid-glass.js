@@ -1,5 +1,5 @@
 /*!
- * Papote — Liquid Glass behaviour (pairs with liquid-glass.css).
+ * Pap’pote — Liquid Glass behaviour (pairs with liquid-glass.css).
  *
  *   PapoteGlass.get()      current transparency 0 (ultra-clair) … 100 (teinté)
  *   PapoteGlass.set(v)     change it (saved on this device, applied to every

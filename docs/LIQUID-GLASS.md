@@ -1,14 +1,14 @@
-# Papote — Liquid Glass (iOS 27)
+# Pap’pote — Liquid Glass (iOS 27)
 
 Le matériau « Liquid Glass » d'iOS 26/27, adapté au web, appliqué à toutes les
-surfaces de Papote. Deux fichiers :
+surfaces de Pap’pote. Deux fichiers :
 
 | Fichier | Rôle |
 |---|---|
 | `design-system/liquid-glass.css` | Le matériau (jetons, recettes « flottante » et « légère », réfraction, barre uniforme, animations, accessibilité, curseur). Chargé sur toutes les pages après `papote.css`, avant `responsive.css`. |
 | `design-system/liquid-glass.js` | Le comportement : curseur de transparence (`PapoteGlass`), lentille de réfraction, ondulations au toucher, « goutte » de la barre d'onglets, barre uniforme au défilement, qualité adaptative. |
 
-Pas de dépendance : Papote est écrit en JavaScript natif, sans React. Le
+Pas de dépendance : Pap’pote est écrit en JavaScript natif, sans React. Le
 paquet npm `@ios27_design_system/react` (v1.0.0) a été évalué mais n'est pas
 utilisé : il imposerait React à toute l'application pour quelques composants.
 Le rendu est reproduit ici en CSS/JS natif, sur les mêmes principes.

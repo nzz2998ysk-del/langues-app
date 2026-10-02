@@ -1,8 +1,8 @@
-# Papote — logo et mascotte
+# Pap’pote — logo et mascotte
 
 | Fichier | Contenu |
 |---|---|
-| `logo.png` | le logo complet (chat + bulle « Papote »), source |
+| `logo.png` | le logo complet (chat + bulle « Pap’pote »), source |
 | `mascotte.png` | la planche de la mascotte : grille **4 × 4** (16 expressions), source |
 | `mascotte/mascotte-<expression>.png` | les 16 expressions découpées, fond transparent |
 | `logo-512.png`, `icon-*.png`, `apple-touch-icon.png`, `favicon-32.png` | générés depuis `logo.png` |
@@ -37,7 +37,7 @@ silhouette : le pelage blanc reste opaque), attribue chaque morceau (« zzz »,
 | Mauvaise réponse | `thinking` ou `curious` — jamais triste ni moqueuse |
 | Fin de quiz | `heart` (100 %), `excited`, `happy`, `thinking` (< 50 %) |
 | Premium (page Premium, section Premium de l'accueil, contenus verrouillés) | `cool`, `heart` |
-| « Papote écrit… » (écoute de la prononciation) | `curious` / `thinking` / `wink` en alternance + bulle à points |
+| « Pap’pote écrit… » (écoute de la prononciation) | `curious` / `thinking` / `wink` en alternance + bulle à points |
 | Aucun résultat / liste vide | `thinking` ou `sad` |
 | Fenêtre de connexion | `wave` |
 | Accueil d'une langue | `wave` |

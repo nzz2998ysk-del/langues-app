@@ -1,6 +1,6 @@
-# Papote — système adaptatif (responsive)
+# Pap’pote — système adaptatif (responsive)
 
-Ce document décrit comment Papote s'adapte à tous les appareils, du téléphone
+Ce document décrit comment Pap’pote s'adapte à tous les appareils, du téléphone
 plié de 280 px à la télévision 4K, et comment le vérifier.
 
 Aperçus (générés par la suite de tests) :

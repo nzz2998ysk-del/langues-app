@@ -1,4 +1,4 @@
-# Audit de sécurité — Papote
+# Audit de sécurité — Pap’pote
 
 Audit complet du code (`server.js`, `lib/`, pages HTML, moteur `course/`), de la
 configuration (`render.yaml`, `.env.example`), du schéma PostgreSQL et des

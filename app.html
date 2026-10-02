@@ -4,7 +4,7 @@
 }catch(e){}})();</script>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <script src="/design-system/device.js"></script><script src="/design-system/liquid-glass.js"></script>
-<title>Papote</title><!--BRAND_HEAD-->
+<title>Pap’pote</title><!--BRAND_HEAD-->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Langues">
@@ -37,7 +37,7 @@ body{min-height:100vh;min-height:100dvh}
   color:var(--ig27-label-secondary);animation:lblPulse 1.6s var(--ig27-ease-standard) infinite}
 @keyframes lblPulse{0%,100%{opacity:.55}50%{opacity:1}}
 
-/* ===== Opening animation: speech bubble + "Papote" ===== */
+/* ===== Opening animation: speech bubble + "Pap’pote" ===== */
 #loadingOverlay.intro .spin,#loadingOverlay.intro .lbl{display:none}
 #loadingOverlay:not(.intro) .intro-wrap{display:none}
 .intro-wrap{display:flex;flex-direction:column;align-items:center;gap:var(--ig27-space-4)}
@@ -54,7 +54,7 @@ body{min-height:100vh;min-height:100dvh}
 .intro-logo{width:min(62vw,260px);height:auto;animation:logoIn .8s cubic-bezier(.34,1.56,.64,1) both;filter:drop-shadow(0 18px 30px color-mix(in srgb,var(--ig27-accent) 35%,transparent))}
 @keyframes logoIn{0%{opacity:0;transform:scale(.4) rotate(-8deg)}60%{opacity:1}100%{transform:none}}
 .intro-wrap:has(.intro-logo) .intro-bubble,.intro-wrap:has(.intro-logo) .intro-name{display:none}
-/* Mascot splash: Papote naps ("zzz"), then wakes up amazed as the name pops in */
+/* Mascot splash: Pap’pote naps ("zzz"), then wakes up amazed as the name pops in */
 .intro-wrap:has(.intro-masc) .intro-bubble{display:none}
 .intro-masc{position:relative;width:min(48vw,200px);aspect-ratio:1;animation:logoIn .7s cubic-bezier(.34,1.56,.64,1) both;
   filter:drop-shadow(0 18px 30px color-mix(in srgb,var(--ig27-accent) 30%,transparent))}
@@ -71,7 +71,7 @@ body{min-height:100vh;min-height:100dvh}
 .hub-title .brand-logo{display:block;width:min(46vw,190px);height:auto;margin:0 auto}
 .hub-title:has(.brand-logo) .hub-title-text{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 /* ===== Language opening: a disc in the language colour grows from the tapped
-   card, flag + name + Papote waving, then it melts into the course ===== */
+   card, flag + name + Pap’pote waving, then it melts into the course ===== */
 #langPortal{position:fixed;inset:0;z-index:9000;display:none;align-items:center;justify-content:center;pointer-events:none;
   background:radial-gradient(120% 90% at var(--lp-x,50%) var(--lp-y,50%),color-mix(in srgb,var(--lp-color,var(--ig27-accent)) 88%,var(--ig27-white)) 0%,var(--lp-color,var(--ig27-accent)) 45%,color-mix(in srgb,var(--lp-color,var(--ig27-accent)) 70%,var(--ig27-indigo)) 100%);
   clip-path:circle(0 at var(--lp-x,50%) var(--lp-y,50%))}
@@ -331,12 +331,12 @@ window.addEventListener("error",function(e){if(e&&e.message)rep(e.message,e.erro
 })();
 </script>
 <script src="/course/i18n.js"></script>
-<div id="loadingOverlay" class="intro" role="status" aria-label="Papote">
+<div id="loadingOverlay" class="intro" role="status" aria-label="Pap’pote">
   <!--BRAND_LOADING--><div class="spin"></div><div class="lbl" data-i18n="loading">Chargement…</div>
   <div class="intro-wrap" aria-hidden="true">
     <!--BRAND_SPLASH-->
     <div class="intro-bubble"><i></i><i></i><i></i></div>
-    <div class="intro-name"><span style="--i:0">P</span><span style="--i:1">a</span><span style="--i:2">p</span><span style="--i:3">o</span><span style="--i:4">t</span><span style="--i:5">e</span></div>
+    <div class="intro-name"><span style="--i:0">P</span><span style="--i:1">a</span><span style="--i:2">p</span><span style="--i:3">’</span><span style="--i:4">p</span><span style="--i:5">o</span><span style="--i:6">t</span><span style="--i:7">e</span></div>
     <div class="intro-hello" id="introHello">Bonjour</div>
   </div>
 </div>
@@ -366,7 +366,7 @@ window.addEventListener("error",function(e){if(e&&e.message)rep(e.message,e.erro
   <div class="hub-orb hub-orb-3"></div>
   <div class="hub-wrap">
     <div class="hub-header">
-      <div class="hub-title" role="heading" aria-level="1"><!--BRAND_LOGO--><span class="hub-title-text" data-i18n="app_name">Papote</span></div>
+      <div class="hub-title" role="heading" aria-level="1"><!--BRAND_LOGO--><span class="hub-title-text" data-i18n="app_name">Pap’pote</span></div>
       <div class="hub-subtitle" id="hubGreeting" data-i18n="hub_choose">Choisis une langue pour commencer</div>
       <div class="hub-header-actions">
         <a href="/admin" class="hub-admin-link" id="hubAdminLink" style="display:none">⚙️ <span data-i18n="admin">Admin</span></a>
@@ -449,7 +449,7 @@ function buildFrame(key){
   var f = document.createElement("iframe");
   f.setAttribute("allow", "microphone");
   f.id = "frame-" + key;
-  f.title = "Papote · " + key.replace(".html", "").split("__").join(" · ");
+  f.title = "Pap’pote · " + key.replace(".html", "").split("__").join(" · ");
   container.appendChild(f);
   frames[key] = f;
   f.addEventListener("load", function(){

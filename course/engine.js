@@ -69,7 +69,7 @@
   function rom(r) { return r && P.settings.rom !== false ? '<span class="r">' + esc(r) + "</span>" : ""; }
   function locked(key) { return !!(ACCESS && ACCESS.features && ACCESS.features[key]); }
   function modLocked(mod) { return locked(LANG + ":" + mod); }
-  // ---- Papote mascot: one expression per situation (files in
+  // ---- Pap’pote mascot: one expression per situation (files in
   // /design-system/brand/mascotte/, cut by scripts/brand/process-brand.py).
   // Mistakes always get a thinking/curious face, never a sad or mocking one.
   // Without the files, the previous emoji are kept.
@@ -87,7 +87,7 @@
   // Big illustration for end screens: mascot if available, else the emoji.
   function mascOr(mood, emoji, size) { return masc(mood, size || 132, "masc-big") || emoji; }
   function pickMood(list) { var ok = list.filter(hasMood); return ok.length ? ok[Math.floor(Math.random() * ok.length)] : list[0]; }
-  // "Papote is typing": 2-3 expressions that take turns + a bubble with dots.
+  // "Pap’pote is typing": 2-3 expressions that take turns + a bubble with dots.
   function mascTyping(label, moods) {
     moods = (moods || ["thinking", "curious", "wink"]).filter(hasMood);
     var dots = '<span class="typing-dots" aria-hidden="true"><i></i><i></i><i></i></span>';
@@ -1053,7 +1053,7 @@
 
   // ------------------------------------------------------------------ culture
   // ------------------------------------------------------------------ mascot outfits
-  // Accessories unlocked with this language's XP, worn by Papote on the home
+  // Accessories unlocked with this language's XP, worn by Pap’pote on the home
   // screen (emoji overlays; HD outfits will need dedicated artwork).
   var OUTFITS = [
     { id: "none", ic: "", xp: 0 },
@@ -1105,7 +1105,7 @@
         document.getElementById("copyCode").addEventListener("click", function () { copy(d.code, T("copied")); });
         document.getElementById("shareLink").addEventListener("click", function () {
           var text = T("invite_text", { lang: langName(LANG) });
-          if (navigator.share) navigator.share({ title: "Papote", text: text, url: d.link }).catch(function () {});
+          if (navigator.share) navigator.share({ title: "Pap’pote", text: text, url: d.link }).catch(function () {});
           else copy(text + " " + d.link, T("link_copied"));
         });
         document.getElementById("addFriend").addEventListener("submit", function (e) {
@@ -1126,7 +1126,7 @@
   }
 
   // ------------------------------------------------------------------ AI conversation
-  // Chat with Papote (an AI tutor) through the server proxy /api/chat; the
+  // Chat with Pap’pote (an AI tutor) through the server proxy /api/chat; the
   // conversation stays in this tab (sessionStorage), never on the server.
   var SCENARIOS = ["free", "cafe", "travel", "intro", "shopping", "doctor", "job", "debate"];
   var CHAT = null;
@@ -1675,7 +1675,7 @@
   function paintCert(L) {
     var ex = P.exams[L], el = document.getElementById("cert"); if (!el) return;
     el.innerHTML = '<div style="font-size:48px">' + esc(C.flag) + "</div><h2>" + esc(T("cert_title")) + '</h2><p class="muted">' + esc(T("cert_attests")) + '</p><div class="who">' + esc(ME.name || T("learner")) + "</div><p>" +
-      esc(T("cert_body", { lang: langName(LANG), level: L, label: T("level_" + L), score: ex.best })) + '</p><p class="muted small" style="margin-top:var(--ig27-space-6)">' + esc(T("cert_date", { d: ex.date })) + " · Papote · #" + esc(String(ME.id) + "-" + LANG + "-" + L) + "</p>";
+      esc(T("cert_body", { lang: langName(LANG), level: L, label: T("level_" + L), score: ex.best })) + '</p><p class="muted small" style="margin-top:var(--ig27-space-6)">' + esc(T("cert_date", { d: ex.date })) + " · Pap’pote · #" + esc(String(ME.id) + "-" + LANG + "-" + L) + "</p>";
   }
 
   // ------------------------------------------------------------------ dictionary
@@ -2166,7 +2166,7 @@
     // fresh #app (drops listeners bound by the previous page)
     var fresh = app.cloneNode(false); app.parentNode.replaceChild(fresh, app); app = fresh;
     QUIZ = null;
-    if (KIDS) { setQuizMode(false); document.title = "Papote · " + langName(LANG); renderKids(); return; }
+    if (KIDS) { setQuizMode(false); document.title = "Pap’pote · " + langName(LANG); renderKids(); return; }
     var L = levelOf(PAGE), fn = L ? function () { return PAGES.level(L); } : PAGES[PAGE];
     var mod = MODULES.filter(function (m) { return m.id === PAGE; })[0];
     if (!fn || (mod && !available(mod))) { PAGE = "hub"; fn = PAGES.hub; }

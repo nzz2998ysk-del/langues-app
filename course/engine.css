@@ -278,7 +278,7 @@ input,select,textarea{font-family:inherit;color:var(--ink)}
   .hbar{grid-template-columns:90px 1fr 40px}
 }
 
-/* ===== Papote mascot ===== */
+/* ===== Pap’pote mascot ===== */
 .masc{display:inline-block;object-fit:contain;flex:none;pointer-events:none;user-select:none;
   animation:mascIn .55s cubic-bezier(.34,1.56,.64,1) both}
 @keyframes mascIn{0%{opacity:0;transform:translateY(10px) scale(.6) rotate(-6deg)}100%{opacity:1;transform:none}}
@@ -296,7 +296,7 @@ p.with-masc{justify-content:center}
 .masc-hero{float:right;margin:-8px 0 0 var(--ig27-space-3);width:104px;height:104px}
 .rtl-ui .masc-hero,[dir=rtl] .masc-hero{float:left;margin:-8px var(--ig27-space-3) 0 0}
 .masc-toast{width:40px;height:40px;vertical-align:middle;margin-inline-end:8px;animation:none}
-/* "Papote is typing": the faces take turns, the dots bounce */
+/* "Pap’pote is typing": the faces take turns, the dots bounce */
 .masc-typing{display:inline-flex;align-items:center;gap:8px;vertical-align:middle}
 .mt-faces{position:relative;width:44px;height:44px;flex:none}
 .mt-faces .mt-face{position:absolute;inset:0;width:44px;height:44px;opacity:0;animation:mtFace 2.7s infinite}

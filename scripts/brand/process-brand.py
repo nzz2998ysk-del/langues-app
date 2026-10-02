@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Prepare the Papote brand images for the app.
+"""Prepare the Pap’pote brand images for the app.
 
 Inputs (drop them in design-system/brand/):
-  logo.png      the Papote logo (cat + "Papote" bubble)
+  logo.png      the Pap’pote logo (cat + "Pap’pote" bubble)
   mascotte.png  the mascot sheet: a 4 x 4 grid of expressions (row by row)
 
 Outputs (design-system/brand/):

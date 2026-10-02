@@ -1,5 +1,5 @@
 /*!
- * Papote device layer — detects the device and exposes it to every page.
+ * Pap’pote device layer — detects the device and exposes it to every page.
  *
  *   window.PapoteDevice.info          current snapshot (see detect())
  *   window.PapoteDevice.on(fn)        fn(info) now and on every change
@@ -211,7 +211,7 @@
       ["Drapeaux", ["short", "tiny"].filter(function (k) { return i[k]; }).concat(i.foldSegments > 1 ? ["pliable"] : []).join(", ") || "—"],
       ["Préférences", (i.prefs.dark ? "sombre" : "clair") + " · contraste " + i.prefs.contrast + (i.prefs.reducedMotion ? " · sans animation" : "") + (i.prefs.forcedColors ? " · couleurs forcées" : "") + " · texte ×" + i.prefs.fontScale],
     ];
-    panel.innerHTML = '<b style="display:block;margin-bottom:4px">📱 Papote · appareil détecté</b>' + rows.map(function (r) {
+    panel.innerHTML = '<b style="display:block;margin-bottom:4px">📱 Pap’pote · appareil détecté</b>' + rows.map(function (r) {
       return '<div><span style="opacity:.7">' + r[0] + " :</span> " + String(r[1]).replace(/[&<>]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]; }) + "</div>";
     }).join("") + '<div style="opacity:.6;margin-top:4px">Alt+Maj+D pour masquer · ?debug=off pour désactiver</div>';
   }

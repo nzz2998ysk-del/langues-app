@@ -431,7 +431,7 @@ test("legal pages are public and never inject raw environment values", { skip },
   for (const u of ["/mentions-legales", "/confidentialite"]) {
     const r = await client()("GET", u);
     assert.equal(r.status, 200);
-    assert.match(r.text, /Papote/);
+    assert.match(r.text, /Pap’pote/);
     assert.doesNotMatch(r.text, /\{\{[A-Z_]+\}\}/);
   }
   const csp = await fetch(BASE + "/api/csp-report", { method: "POST", headers: { "content-type": "application/csp-report" }, body: JSON.stringify({ "csp-report": { "violated-directive": "script-src" } }) });

@@ -32,7 +32,7 @@ const isProd = process.env.NODE_ENV === "production";
 // address (email verification link or password-reset link), so nobody can
 // pre-register this address and grab the admin role. No hard-coded default.
 const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || "").trim().toLowerCase();
-const BUSINESS_NAME = process.env.BUSINESS_NAME || "Papote";
+const BUSINESS_NAME = process.env.BUSINESS_NAME || "Pap’pote";
 // Where the daily "boîte à idées" digest is sent. Defaults to the admin account.
 const DIGEST_EMAIL = (process.env.DIGEST_EMAIL || ADMIN_EMAIL).toLowerCase();
 // Minimum length for new passwords (signup, reset). Existing shorter passwords
@@ -521,7 +521,7 @@ app.post("/api/webhooks/stripe", express.raw({ type: "application/json" }), asyn
       const inv = event.data.object;
       if (inv.billing_reason === "subscription_cycle" && inv.amount_paid > 0) {
         const r = await pool.query("SELECT id FROM users WHERE stripe_customer_id = $1 OR stripe_subscription_id = $2 LIMIT 1", [inv.customer || "", inv.subscription || ""]);
-        if (r.rows[0]) await recordPaymentAndInvoice(r.rows[0].id, inv.id, inv.amount_paid, inv.currency || "eur", "Abonnement Papote Premium (renouvellement)");
+        if (r.rows[0]) await recordPaymentAndInvoice(r.rows[0].id, inv.id, inv.amount_paid, inv.currency || "eur", "Abonnement Pap’pote Premium (renouvellement)");
       }
       return res.json({ received: true });
     }
@@ -548,7 +548,7 @@ app.post("/api/webhooks/stripe", express.raw({ type: "application/json" }), asyn
               [rw.rows[0].referred_by, REFERRAL_DAYS]
             );
           }
-          await recordPaymentAndInvoice(userId, session.id, session.amount_total || 0, session.currency || "eur", "Abonnement Papote Premium");
+          await recordPaymentAndInvoice(userId, session.id, session.amount_total || 0, session.currency || "eur", "Abonnement Pap’pote Premium");
         }
       }
     }
@@ -658,7 +658,7 @@ function htmlTemplate(name) {
   htmlTemplates.set(name, tpl);
   return tpl;
 }
-// ---- Papote brand (logo, icons, mascot) ----
+// ---- Pap’pote brand (logo, icons, mascot) ----
 // Files are produced by scripts/brand/process-brand.py into design-system/brand/
 // and listed in brand.json; everything degrades gracefully when absent.
 const BRAND_DIR = path.join(__dirname, "design-system", "brand");
@@ -697,15 +697,15 @@ function brandMarkup() {
     "<!--BRAND_HEAD-->": b.icons
       ? '<link rel="icon" type="image/png" href="/design-system/brand/favicon-32.png"><link rel="apple-touch-icon" href="/design-system/brand/apple-touch-icon.png"><link rel="manifest" href="/manifest.webmanifest">'
       : "",
-    "<!--BRAND_LOGO-->": b.logo ? logo("brand-logo", "Papote", 48) : "",
-    // Opening animation: Papote asleep, then wakes up amazed.
+    "<!--BRAND_LOGO-->": b.logo ? logo("brand-logo", "Pap’pote", 48) : "",
+    // Opening animation: Pap’pote asleep, then wakes up amazed.
     "<!--BRAND_SPLASH-->": has("sleeping") && has("amazed")
       ? `<div class="intro-masc">${img("sleeping", 200, "im-sleep")}${img("amazed", 200, "im-awake")}</div>`
       : b.logo ? logo("intro-logo", "", 200) : "",
     "<!--BRAND_LOADING-->": has("sleeping") ? img("sleeping", 120, "load-masc") : "",
     "<!--BRAND_WAVE-->": has("wave") ? img("wave", 96, "auth-masc") : "",
     "<!--BRAND_PREMIUM-->": ["cool", "heart"].filter(has).map((m) => img(m, 120, "prem-masc prem-" + m)).join(""),
-    "<!--BRAND_HERO-->": b.logo ? logo("hero-logo", "Papote", 240, ' fetchpriority="high"') : "",
+    "<!--BRAND_HERO-->": b.logo ? logo("hero-logo", "Pap’pote", 240, ' fetchpriority="high"') : "",
     "<!--BRAND_MASCOTS-->": ["wave", "happy", "thinking", "heart", "cool", "sleeping"]
       .filter(has).map((m) => img(m, 128, "", "lazy")).join(""),
   };
@@ -1503,7 +1503,7 @@ app.get("/api/admin/config", requireAdmin, async (req, res) => {
     { key: "admin_mfa", ok: admins.rows[0].n > 0 && admins.rows[0].mfa === admins.rows[0].n, label: `Double authentification active pour tous les admins (${admins.rows[0].mfa}/${admins.rows[0].n})`, help: "Section « Sécurité » ci-dessous" },
     { key: "anthropic", ok: env("ANTHROPIC_API_KEY"), label: "Conversation IA (ANTHROPIC_API_KEY)", help: "console.anthropic.com → API Keys, puis Render → Environment (jamais dans le code)" },
     { key: "sendgrid", ok: Boolean(emailProvider()), label: "Envoi d'emails (SENDGRID_API_KEY)", help: "SendGrid → Settings → API Keys (Mail Send), puis Render → Environment (jamais dans le code)" },
-    { key: "email_from", ok: true, label: `Expéditeur : ${emailFrom || "Papote <papotelangues@icloud.com>"}`, help: "Doit être un expéditeur vérifié dans SendGrid → Settings → Sender Authentication" },
+    { key: "email_from", ok: true, label: `Expéditeur : ${emailFrom || "Pap’pote <papotelangues@icloud.com>"}`, help: "Doit être un expéditeur vérifié dans SendGrid → Settings → Sender Authentication" },
     { key: "stripe", ok: env("STRIPE_SECRET_KEY") && env("STRIPE_PRICE_ID") && env("STRIPE_WEBHOOK_SECRET"), label: "Paiement Stripe configuré", help: "STRIPE_SECRET_KEY, STRIPE_PRICE_ID, STRIPE_WEBHOOK_SECRET" },
     { key: "stripe_events", ok: STRIPE_STATUS.state === "ok" || STRIPE_STATUS.state === "updated", label: "Webhook Stripe : événements d'abonnement", help: STRIPE_STATUS.detail || STRIPE_STATUS.state },
     { key: "db_tls", ok: DB_TLS.mode === "verified" || DB_TLS.mode === "disabled", label: `TLS base de données : ${DB_TLS.mode}`, help: DB_TLS.note },
@@ -2074,7 +2074,7 @@ app.post("/api/chat", async (req, res) => {
     if (messages.length && messages[messages.length - 1].role === m.role) messages[messages.length - 1].content += "\n" + content;
     else messages.push({ role: m.role, content });
   }
-  // Papote speaks first: the API wants a user turn first, so the opening is
+  // Pap’pote speaks first: the API wants a user turn first, so the opening is
   // represented by the "[start]" marker the system prompt explains.
   if (!messages.length || messages[0].role !== "user") messages.unshift({ role: "user", content: "[start]" });
   if (messages[messages.length - 1].role !== "user") return res.status(400).json({ error: "Message invalide." });
@@ -2087,7 +2087,7 @@ app.post("/api/chat", async (req, res) => {
     const base = access.user.base_lang && LANG_META[access.user.base_lang] ? access.user.base_lang : "fr";
     const target = LANG_META[lang].name, baseName = LANG_META[base].name;
     const system =
-      `You are Papote, a warm and playful cat who is a language tutor. You are having a spoken-style conversation in ${target} (language code "${lang}") ` +
+      `You are Pap’pote, a warm and playful cat who is a language tutor. You are having a spoken-style conversation in ${target} (language code "${lang}") ` +
       `with a learner whose own language is ${baseName} ("${base}"). Learner level: ${level} — use ${LEVEL_STYLE[level]}. Scenario: ${AI_SCENARIOS[scenario]}.\n` +
       "Rules: always answer in the target language, 1 to 3 sentences, and end with a question that keeps the conversation going. " +
       "Stay in the scenario, stay kind and encouraging, never produce unsafe or adult content; if the learner goes off-topic in a harmful way, gently steer back. " +
@@ -2160,7 +2160,7 @@ app.get("/api/friends", async (req, res) => {
     const xpBy = new Map(xp.rows.map((r) => [r.user_id, r.xp]));
     const refs = await pool.query("SELECT COUNT(*)::int AS n, COUNT(*) FILTER (WHERE referral_rewarded)::int AS rewarded FROM users WHERE referred_by = $1", [req.userId]);
     const board = users.rows.map((u) => ({
-      id: u.id, me: u.id === req.userId, name: u.name || "Papote #" + String(u.id).padStart(4, "0"), xp: xpBy.get(u.id) || 0,
+      id: u.id, me: u.id === req.userId, name: u.name || "Pap’pote #" + String(u.id).padStart(4, "0"), xp: xpBy.get(u.id) || 0,
     })).sort((a, b) => b.xp - a.xp || a.name.localeCompare(b.name));
     return res.json({ code, link: `${APP_URL}/?ref=${code}`, board, invited: refs.rows[0].n, rewarded: refs.rows[0].rewarded, referralDays: REFERRAL_DAYS, week: weekDays()[0] });
   } catch (err) {
@@ -2254,10 +2254,10 @@ async function handleUnsubscribe(req, res) {
     return res.status(500).type("text/plain").send("Erreur serveur.");
   }
   if (req.method === "POST") return res.json({ ok: true });
-  res.type("html").send(`<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Papote</title></head>
+  res.type("html").send(`<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Pap’pote</title></head>
 <body style="font-family:system-ui,sans-serif;max-width:480px;margin:15vh auto;padding:0 16px;text-align:center">
 <h1 style="font-size:22px">🐱 C'est noté.</h1><p>Tu ne recevras plus de rappels quotidiens. Tu peux les réactiver à tout moment dans ton profil.</p>
-<p lang="en" style="color:#8a8a8e">Done — you won't get daily reminders anymore.</p><p><a href="/">Papote</a></p></body></html>`);
+<p lang="en" style="color:#8a8a8e">Done — you won't get daily reminders anymore.</p><p><a href="/">Pap’pote</a></p></body></html>`);
 }
 app.get("/api/reminders/unsubscribe", handleUnsubscribe);
 app.post("/api/reminders/unsubscribe", handleUnsubscribe);
@@ -2287,7 +2287,7 @@ async function sendDueReminders(now = new Date()) {
       if (data.srs && typeof data.srs === "object") due = Object.values(data.srs).filter((x) => x && x.due <= now.getTime()).length;
     }
     const lang = u.base_lang === "fr" ? "fr" : "en";
-    const langName = u.lang && LANG_META[u.lang] ? LANG_META[u.lang].name : "Papote";
+    const langName = u.lang && LANG_META[u.lang] ? LANG_META[u.lang].name : "Pap’pote";
     const unsubLink = `${APP_URL}/api/reminders/unsubscribe?u=${u.id}&t=${unsubToken(u.id)}`;
     // Mark first: a failed send is skipped for the day rather than retried every 10 minutes.
     await pool.query("UPDATE users SET reminder_last = $1 WHERE id = $2", [local.date, u.id]);
@@ -2362,7 +2362,7 @@ app.get("/favicon.ico", (req, res) => {
 });
 app.get("/manifest.webmanifest", (req, res) => {
   res.type("application/manifest+json").json({
-    name: "Papote", short_name: "Papote", start_url: "/", display: "standalone",
+    name: "Pap’pote", short_name: "Pap’pote", start_url: "/", display: "standalone",
     background_color: "#ffffff", theme_color: "#4f46e5",
     icons: brandInfo().icons ? [
       { src: "/design-system/brand/icon-192.png", sizes: "192x192", type: "image/png" },

@@ -1,5 +1,5 @@
 /*!
- * Papote — content of the children's mode (loaded before engine.js).
+ * Pap’pote — content of the children's mode (loaded before engine.js).
  *
  * WORDS: concrete concepts of the shared vocabulary (content/vocab/*.txt), with
  * a picture (emoji) and the word in the child's own language (fr / en). The

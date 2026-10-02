@@ -1,5 +1,5 @@
 /*!
- * Papote responsive foundation — loaded LAST on every page (after the design
+ * Pap’pote responsive foundation — loaded LAST on every page (after the design
  * system, the app layer and papote.css), including the course pages.
  * Mobile-first. Combines viewport size with the signals written on <html> by
  * design-system/device.js (data-device, data-input, data-short, data-tiny,

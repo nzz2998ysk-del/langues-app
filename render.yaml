@@ -19,7 +19,7 @@ services:
       - key: ADMIN_EMAIL
         sync: false
       - key: BUSINESS_NAME
-        value: Papote
+        value: Pap’pote
       # Transactional email (Resend). Both are set by hand in the Render
       # dashboard (service -> Environment), never committed: see .env.example.
       - key: EMAIL_FROM

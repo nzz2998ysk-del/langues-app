@@ -1,4 +1,4 @@
-# Papote — app d'apprentissage des langues (39 langues)
+# Pap’pote — app d'apprentissage des langues (39 langues)
 
 Application web d'apprentissage de 39 langues (anglais, espagnol, italien,
 hébreu, chinois, portugais, russe, allemand, japonais, français, hindi, coréen,
@@ -18,7 +18,7 @@ facture envoyée par email.
   liens légaux ; connexion, inscription, mot de passe oublié et double
   authentification dans une feuille modale.
 - **Animation d'ouverture** de l'application (logo ou bulle + lettres
-  « Papote », « bonjour » dans 12 langues), une fois par session, respecte
+  « Pap’pote », « bonjour » dans 12 langues), une fois par session, respecte
   « réduire les animations ».
 - **Logo et mascotte** : fichiers à déposer dans `design-system/brand/` (voir
   le README de ce dossier), puis `python3 scripts/brand/process-brand.py`. Tant
@@ -134,7 +134,7 @@ Chaque compte a un code ami (8 caractères) et un lien d'invitation
 (XP gagnés depuis lundi, toutes langues ; seuls les prénoms affichés sont
 visibles, jamais les emails). Quand une personne invitée s'abonne (webhook
 Stripe), la personne qui l'a invitée reçoit `REFERRAL_DAYS` jours de Premium
-(30 par défaut), une seule fois par filleul. Les tenues de Papote (écharpe,
+(30 par défaut), une seule fois par filleul. Les tenues de Pap’pote (écharpe,
 nœud, fleur, casquette, toque, couronne) se débloquent avec les XP de chaque
 langue ; des tenues dessinées en HD demanderont des illustrations dédiées.
 
@@ -267,7 +267,7 @@ SendGrid :
 (La facture après paiement et le récapitulatif quotidien de la boîte à idées
 passent par le même helper.) Tous les emails (bienvenue, mot de passe oublié,
 facture, rappel quotidien, boîte à idées) partagent le même gabarit au design
-de Papote (`layout()` dans `lib/email.js` : logo, mascotte, carte blanche
+de Pap’pote (`layout()` dans `lib/email.js` : logo, mascotte, carte blanche
 arrondie, dégradé bleu → indigo, version texte incluse) ; logo et mascotte
 sont chargés depuis `APP_URL`.
 
@@ -292,7 +292,7 @@ dans un commit — voir aussi `.env.example`) :
 | Variable | Où l'obtenir |
 |---|---|
 | `SENDGRID_API_KEY` | SendGrid → **Settings → API Keys** → *Create API Key* (accès restreint, permission **Mail Send**). |
-| `EMAIL_FROM` | Facultatif. Par défaut `Papote <papotelangues@icloud.com>`. L'adresse doit être **vérifiée** dans SendGrid → **Settings → Sender Authentication** (*Single Sender Verification* : SendGrid envoie un lien de confirmation à cette adresse), sinon SendGrid répond 403. |
+| `EMAIL_FROM` | Facultatif. Par défaut `Pap’pote <papotelangues@icloud.com>`. L'adresse doit être **vérifiée** dans SendGrid → **Settings → Sender Authentication** (*Single Sender Verification* : SendGrid envoie un lien de confirmation à cette adresse), sinon SendGrid répond 403. |
 
 Comportement :
 - Sans `SENDGRID_API_KEY`, l'app fonctionne normalement : aucun email n'est
@@ -336,7 +336,7 @@ en premium et envoie la facture par email. À configurer sur Render :
 **Factures** : à chaque paiement (premier mois via `checkout.session.completed`,
 renouvellements via `invoice.paid`), l'app crée une facture numérotée en
 continu (`PAP-2026-00001`, `PAP-2026-00002`…), l'envoie par email avec le PDF
-en pièce jointe (`lib/invoice.js`, au design de Papote) et la rend
+en pièce jointe (`lib/invoice.js`, au design de Pap’pote) et la rend
 téléchargeable dans **Profil → Mes factures** (`GET /api/invoices`,
 `GET /api/invoices/<numéro>.pdf`, réservé au titulaire). Un même paiement
 renvoyé par Stripe ne crée ni deuxième facture ni deuxième email.
