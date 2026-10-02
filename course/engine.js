@@ -312,7 +312,7 @@
       '<div class="logo">' + esc(C.flag) + "</div>" +
       '<div class="lt"><strong>' + esc(T(titleKey)) + "</strong><small>" + esc(T("learn_lang", { lang: langName(LANG) })) + "</small></div>" +
       '<div class="hdr-actions">' +
-      (ACCESS.premium ? '<span class="premium-chip">★ Premium</span>' : '<button type="button" class="profbadge" data-go="/subscribe" aria-label="' + esc(T("go_premium")) + '">★<span class="pb-tx"> ' + esc(T("go_premium")) + "</span></button>") +
+      (ACCESS.ultra ? '<span class="premium-chip ultra-chip">✦ Ultra</span>' : ACCESS.premium ? '<span class="premium-chip">★ Premium</span>' : '<button type="button" class="profbadge" data-go="/subscribe" aria-label="' + esc(T("go_premium")) + '">★<span class="pb-tx"> ' + esc(T("go_premium")) + "</span></button>") +
       '<button type="button" class="navtoggle" id="themeBtn" aria-label="' + esc(T("theme_toggle")) + '">' + (document.documentElement.getAttribute("data-theme") === "dark" ? "☀️" : "🌙") + "</button>" +
       '<button type="button" class="navtoggle" id="navToggle" aria-expanded="false" aria-controls="navMenu" aria-label="' + esc(T("modules")) + '"><span class="nt-ic" aria-hidden="true">☰</span><span class="nt-tx"> ' + esc(T("modules")) + "</span></button>" +
       "</div></header>" +
@@ -1147,7 +1147,7 @@
       '<button type="button" class="btn2" id="chatNew">↺ ' + esc(T("chat_new")) + "</button></div>" +
       '<div class="chat-log" id="chatLog" role="log" aria-live="polite"></div>' +
       '<form class="chat-in" id="chatForm"><textarea id="chatIn" rows="2" maxlength="500" aria-label="' + esc(T("chat_ph")) + '" placeholder="' + esc(T("chat_ph")) + '"' + (C.dir === "rtl" ? ' dir="rtl"' : "") + ' lang="' + esc(LANG) + '"></textarea>' +
-      '<button type="submit" class="bpr" id="chatSend">' + esc(T("chat_send")) + "</button></form>";
+      '<button type="submit" class="bpr" id="chatSend">' + esc(T("chat_send")) + "</button></form>" + correctorBox();
     return shell("mod_conversation", html);
   };
   function chatMsgHtml(m, i) {
@@ -1160,7 +1160,40 @@
       '<div class="chat-tools">' + snd(m.content, true) + (m.translation ? '<button type="button" class="btn2 small" data-tr="' + i + '">' + esc(T("chat_translate")) + "</button>" : "") + "</div>" +
       (m.translation ? '<div class="muted small chat-tr" id="tr' + i + '" hidden>' + esc(m.translation) + "</div>" : "") + "</div></div>";
   }
+  // Ultra: AI correction of a whole text (letter, email, essay…).
+  function correctorBox() {
+    var lv = LEVELS.filter(function (l) { return !(C.locked && C.locked.levels.indexOf(l) >= 0); });
+    var head = '<h2>✍️ ' + esc(T("corr_title")) + ' <span class="ultra-chip small">✦ Ultra</span></h2><p class="muted small">' + esc(T("corr_d")) + "</p>";
+    if (!ACCESS.ultra) return '<div class="box corr-box">' + head + '<button type="button" class="bpr" data-go="/subscribe">✦ ' + esc(T("corr_go")) + "</button></div>";
+    return '<div class="box corr-box">' + head + '<form id="corrForm"><textarea id="corrIn" rows="6" maxlength="1500" lang="' + esc(LANG) + '"' + (C.dir === "rtl" ? ' dir="rtl"' : "") + ' aria-label="' + esc(T("corr_ph")) + '" placeholder="' + esc(T("corr_ph")) + '"></textarea>' +
+      '<div class="row" style="margin-top:var(--ig27-space-2)"><label class="small">' + esc(T("chat_level")) + ' <select class="sel" id="corrLv">' + lv.map(function (l) { return "<option" + ((P.placement && P.placement.level === l) ? " selected" : "") + ">" + l + "</option>"; }).join("") + '</select></label><button type="submit" class="bpr" id="corrGo">' + esc(T("corr_btn")) + "</button></div></form>" +
+      '<div id="corrOut" aria-live="polite"></div></div>';
+  }
+  function bindCorrector() {
+    var f = document.getElementById("corrForm"); if (!f) return;
+    var out = document.getElementById("corrOut"), go = document.getElementById("corrGo"), inp = document.getElementById("corrIn");
+    f.addEventListener("submit", function (e) {
+      e.preventDefault();
+      var text = inp.value.trim(); if (text.length < 3) { inp.focus(); return; }
+      go.disabled = true; out.innerHTML = '<div class="chat-row">' + mascTyping(T("corr_wait")) + "</div>";
+      fetch("/api/correct", { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ lang: LANG, level: document.getElementById("corrLv").value, text: text }) })
+        .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
+        .then(function (x) {
+          go.disabled = false;
+          if (!x.ok) { out.innerHTML = '<p class="msg">' + esc(x.j.error === "quota" ? T("chat_quota") : x.j.error || T("save_error")) + "</p>"; return; }
+          var j = x.j;
+          out.innerHTML = '<div class="corr-res">' + (j.score != null ? '<p class="small"><b>' + esc(T("corr_score", { n: j.score })) + "</b></p>" : "") +
+            '<h3>' + esc(T("corr_fixed")) + '</h3><div class="corr-text t"' + (C.dir === "rtl" ? ' dir="rtl"' : "") + ">" + esc(j.corrected) + " " + snd(j.corrected, true) + "</div>" +
+            (j.notes && j.notes.length ? "<h3>" + esc(T("corr_notes")) + '</h3><ul class="corr-notes">' + j.notes.map(function (n) {
+              return "<li>" + (n.from ? '<s class="t">' + esc(n.from) + "</s> → " : "") + '<b class="t">' + esc(n.to) + "</b>" + (n.why ? '<br><span class="muted small">' + esc(n.why) + "</span>" : "") + "</li>";
+            }).join("") + "</ul>" : '<p>' + esc(T("corr_perfect")) + "</p>") +
+            (j.tip ? '<p class="small">💡 ' + esc(j.tip) + "</p>" : "") + "</div>";
+        })
+        .catch(function () { go.disabled = false; out.innerHTML = '<p class="msg">' + esc(T("net_error")) + "</p>"; });
+    });
+  }
   function bindConversation() {
+    bindCorrector();
     var ch = chatLoad(), log = document.getElementById("chatLog"), input = document.getElementById("chatIn"), sendB = document.getElementById("chatSend"), status = document.getElementById("chatStatus");
     var busy = false, enabled = true;
     var paint = function (typing) {

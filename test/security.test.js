@@ -73,7 +73,11 @@ before(async () => {
     let b = ""; rq.on("data", (d) => (b += d)); rq.on("end", () => {
       aiCalls.push({ key: rq.headers["x-api-key"], body: JSON.parse(b) });
       rs.setHeader("content-type", "application/json");
-      rs.end(JSON.stringify({ content: [{ type: "text", text: '{"reply":"Hola, ¿qué tal?","rom":"","translation":"Salut, ça va ?","correction":""}' }] }));
+      const sys = String(JSON.parse(b).system || "");
+      const text = /wrote a text/.test(sys)
+        ? '{"corrected":"Yo tengo un perro.","notes":[{"from":"Yo tiene","to":"Yo tengo","why":"1re personne"}],"score":80,"tip":"Continue !"}'
+        : '{"reply":"Hola, ¿qué tal?","rom":"","translation":"Salut, ça va ?","correction":""}';
+      rs.end(JSON.stringify({ content: [{ type: "text", text }] }));
     });
   });
   await new Promise((r) => aiMock.listen(0, r));
@@ -366,6 +370,42 @@ test("admin actions are written to the audit trail", { skip }, async () => {
   assert.ok(log.json.entries.some((e) => e.action === "user.premium" && e.target === String(me.rows[0].id)));
 });
 
+test("offers: unknown plans are refused, the plan follows Stripe, the corrector is Ultra only", { skip }, async () => {
+  const c = await signup("plans@example.com");
+  const id = (await pool.query("SELECT id FROM users WHERE email = 'plans@example.com'")).rows[0].id;
+  // Unknown offer -> 400; a known one without Stripe configured -> 501 (never a crash).
+  assert.equal((await c("POST", "/api/checkout", { plan: "gold" })).status, 400);
+  assert.equal((await c("POST", "/api/checkout", { plan: "__proto__" })).status, 400);
+  assert.equal((await c("POST", "/api/checkout", { plan: "yearly" })).status, 501);
+  const plan = await c("GET", "/api/plan");
+  assert.deepEqual(Object.keys(plan.json.prices).sort(), ["monthly", "ultra", "yearly"]);
+  // Free account: no corrector.
+  assert.equal((await c("POST", "/api/correct", { lang: "es", text: "Yo tiene un perro." })).status, 403);
+  // Yearly Premium: Premium, not Ultra.
+  await stripeEvent({ type: "checkout.session.completed", data: { object: { id: "cs_y", client_reference_id: String(id), payment_status: "paid", customer: "cus_p", subscription: "sub_p", amount_total: 3999, currency: "eur", metadata: { plan: "yearly" } } } });
+  let me = (await c("GET", "/api/me")).json;
+  assert.equal(me.plan, "yearly"); assert.equal(me.ultra, false); assert.equal(me.subscribed, true);
+  assert.equal((await pool.query("SELECT 1 FROM payments WHERE stripe_session_id = 'cs_y'")).rows.length, 1);
+  assert.equal((await c("POST", "/api/correct", { lang: "es", text: "Yo tiene un perro." })).status, 403);
+  // Switching to Ultra in the customer portal arrives as subscription.updated.
+  await stripeEvent({ type: "customer.subscription.updated", data: { object: { id: "sub_p", customer: "cus_p", status: "active", metadata: { plan: "ultra" }, items: { data: [{ price: { id: "price_unknown" } }] } } } });
+  me = (await c("GET", "/api/me")).json;
+  assert.equal(me.plan, "ultra"); assert.equal(me.ultra, true);
+  const r = await c("POST", "/api/correct", { lang: "es", level: "A2", text: "Yo tiene un perro." });
+  assert.equal(r.status, 200);
+  assert.equal(r.json.corrected, "Yo tengo un perro.");
+  assert.equal(r.json.notes[0].to, "Yo tengo");
+  assert.equal((await c("POST", "/api/correct", { lang: "xx", text: "abc" })).status, 400);
+  assert.equal((await c("POST", "/api/correct", { lang: "es", text: "" })).status, 400);
+  // Already subscribed: no second subscription through checkout.
+  // (Stripe is not configured in tests, so this stops earlier with 501.)
+  // Cancellation withdraws Premium and Ultra.
+  await stripeEvent({ type: "customer.subscription.deleted", data: { object: { id: "sub_p", customer: "cus_p", status: "canceled" } } });
+  me = (await c("GET", "/api/me")).json;
+  assert.equal(me.subscribed, false); assert.equal(me.ultra, false); assert.equal(me.plan, null);
+  assert.equal((await c("POST", "/api/correct", { lang: "es", text: "Yo tiene un perro." })).status, 403);
+});
+
 test("the Stripe webhook rejects unsigned events", { skip }, async () => {
   const r = await fetch(BASE + "/api/webhooks/stripe", {
     method: "POST",
@@ -489,7 +529,7 @@ test("analytics only accept known events and store no account id", { skip }, asy
   for (const ev of ["view:hub", "lesson_done", "view:<script>", "drop table", "view:__proto__"]) await c("POST", "/api/track", { event: ev, lang: "de" });
   await new Promise((r) => setTimeout(r, 300));
   const rows = (await pool.query("SELECT event, lang, count FROM analytics_daily ORDER BY event")).rows;
-  assert.deepEqual(rows.map((r) => r.event).filter((e) => !e.startsWith("chat")).sort(), ["lesson_done", "view:hub"]);
+  assert.deepEqual(rows.map((r) => r.event).filter((e) => !e.startsWith("chat") && e !== "correct").sort(), ["lesson_done", "view:hub"]);
   const id = String((await pool.query("SELECT id FROM users WHERE email = 'track@example.com'")).rows[0].id);
   const visitors = (await pool.query("SELECT visitor FROM analytics_active")).rows;
   assert.ok(visitors.length >= 1 && visitors.every((v) => v.visitor !== id && !v.visitor.includes("track@")));

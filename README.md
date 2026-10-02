@@ -325,8 +325,21 @@ le lien dans l'email — à ajuster si le domaine change.
 `POST /api/webhooks/stripe` reçoit la confirmation de paiement, passe le compte
 en premium et envoie la facture par email. À configurer sur Render :
 - `STRIPE_SECRET_KEY` — clé secrète de ton compte Stripe (Dashboard → Developers → API keys).
-- `STRIPE_PRICE_ID` — l'ID du tarif récurrent créé dans Stripe (Produits → créer
-  un produit avec un prix récurrent mensuel/annuel).
+- Les **3 offres** = 3 prix récurrents créés dans Stripe (Catalogue de produits) :
+  - `STRIPE_PRICE_ID` — **Mensuel**, Premium sans engagement (ex. 4,99 €/mois) ;
+  - `STRIPE_PRICE_ID_YEARLY` — **Annuel**, Premium payé une fois par an,
+    engagement 12 mois (ex. 39,99 €/an, soit 3,33 €/mois) ;
+  - `STRIPE_PRICE_ID_ULTRA` — **Ultra**, mensuel sans engagement (ex. 9,99 €/mois) :
+    tout Premium + correcteur de textes IA (`POST /api/correct`) + quota IA
+    `AI_DAILY_ULTRA` (1000 messages/jour par défaut) + badge Ultra.
+  Les montants affichés sur `/subscribe` sont lus dans Stripe (le pourcentage
+  d'économie de l'Annuel est calculé). Une offre sans prix configuré s'affiche
+  « Bientôt disponible ». L'offre choisie est enregistrée (`users.plan`) et suit
+  les changements faits dans le portail client (`customer.subscription.updated`).
+- **Gérer mon abonnement** (`POST /api/billing-portal`) ouvre le portail client
+  Stripe : changer d'offre, de carte, résilier, voir les factures. À activer une
+  fois dans Stripe → Paramètres → Facturation → Portail client (autoriser le
+  changement entre les 3 prix, résiliation **en fin de période**).
 - `STRIPE_WEBHOOK_SECRET` — à créer dans Stripe (Developers → Webhooks → Add
   endpoint), URL : `https://<ton-app>.onrender.com/api/webhooks/stripe`,
   événements : `checkout.session.completed`, `invoice.paid`,

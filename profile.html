@@ -114,6 +114,14 @@ button.danger{background:var(--ig27-red);margin-top:12px}
     </div>
   </div>
 
+  <div class="card" id="planCard">
+    <h2 style="margin:0 0 6px;font-size:var(--ig27-fs-title3);line-height:var(--ig27-lh-title3)" data-i18n="plan_title">Mon abonnement</h2>
+    <p class="lead" style="margin:0 0 10px" id="planVal">…</p>
+    <button type="button" id="planManage" data-click="manageBilling" hidden data-i18n="sp_manage">Gérer mon abonnement</button>
+    <a class="secondary" id="planSee" href="/subscribe" style="display:inline-block;margin-top:10px" data-i18n="sp_see_offers">Voir les offres</a>
+    <div class="msg" id="planStatus"></div>
+  </div>
+
   <div class="card" id="invoicesCard" hidden>
     <h2 style="margin:0 0 6px;font-size:var(--ig27-fs-title3);line-height:var(--ig27-lh-title3)" data-i18n="invoices_title">Mes factures</h2>
     <p class="lead" style="margin:0 0 10px" data-i18n="invoices_lead">Tes factures Premium, au format PDF.</p>
@@ -139,7 +147,7 @@ button.danger{background:var(--ig27-red);margin-top:12px}
 <script src="/course/i18n.js"></script>
 <script>
 var BASE = 'fr';
-function tr(k){ return I18N.t(BASE, k); }
+function tr(k, v){ return I18N.t(BASE, k, v); }
 function applyLang(code){ return I18N.load(code).then(function(c){ BASE = c; document.documentElement.lang = c; document.documentElement.dir = I18N.rtl(c) ? 'rtl' : 'ltr'; I18N.apply(c); }); }
 var LANG_META = {
   en:{flag:"🇬🇧", name:"English"}, es:{flag:"🇪🇸", name:"Español"}, it:{flag:"🇮🇹", name:"Italiano"},
@@ -170,6 +178,25 @@ LANG_ORDER.forEach(function(code){
 var remHour = document.getElementById('remHour');
 for (var h = 6; h <= 23; h++){ var o = document.createElement('option'); o.value = h; o.textContent = (h < 10 ? '0' : '') + h + ':00'; remHour.appendChild(o); }
 var BROWSER_TZ = (function(){ try { return Intl.DateTimeFormat().resolvedOptions().timeZone || 'Europe/Paris'; } catch(e){ return 'Europe/Paris'; } })();
+function fillPlan(me){
+  var v = document.getElementById('planVal');
+  var until = me.premiumUntil ? new Date(me.premiumUntil) : null;
+  v.textContent = me.subscribed ? (me.ultra ? '✦ ' : '★ ') + tr('sp_your_plan', { name: tr('sp_pl_' + (me.plan || 'monthly')) })
+    : until ? '★ ' + tr('sp_until', { date: until.toLocaleDateString(BASE) }) : tr('plan_free');
+  document.getElementById('planManage').hidden = !me.canManageBilling;
+  document.getElementById('planSee').textContent = tr(me.subscribed ? 'sp_switch' : 'sp_see_offers');
+  PLAN_ME = me;
+}
+var PLAN_ME = null;
+async function manageBilling(){
+  var st = document.getElementById('planStatus'); st.className = 'msg';
+  try {
+    var r = await fetch('/api/billing-portal', { method: 'POST' });
+    var d = await r.json().catch(function(){ return {}; });
+    if (r.ok && d.url){ window.location.href = d.url; return; }
+    st.textContent = d.error || tr('save_error');
+  } catch(e){ st.textContent = tr('net_error'); }
+}
 function fillReminder(me){
   var r = me.reminder || {enabled:false, hour:19, tz:BROWSER_TZ};
   document.getElementById('remOn').checked = !!r.enabled;
@@ -205,8 +232,9 @@ async function loadProfile(){
   select.value = me.baseLang || 'fr';
   CUR_MODE = me.mode === 'kids' ? 'kids' : 'adult';
   document.getElementById('modeSel').value = CUR_MODE;
+  fillPlan(me);
   fillReminder(me);
-  applyLang(select.value);
+  applyLang(select.value).then(function(){ fillPlan(me); });
 }
 
 function clearOfflineData(){
