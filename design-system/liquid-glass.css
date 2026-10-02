@@ -217,6 +217,50 @@ html[data-theme="dark"] .lg-ink i{ background: radial-gradient(circle, rgba(255,
 #tabbar.lg-has-drop .tabbtn{ position:relative; z-index:1; }
 #tabbar.lg-has-drop .tabbtn.on{ background: transparent !important; box-shadow:none !important; }
 
+/* ------------------------------------------------------------ remaining controls
+   Audit (every visible control of every page): these were still flat. */
+/* Filter / choice pills and the landing CTAs on coloured cards: lite glass */
+.pill:not(.on):not(.primary), .premium .pill, .chat-in textarea, .field, .sel,
+.pp-page input[type=text], .pp-page input[type=password], .pp-page input[type=email], .pp-page input[type=search], .pp-page select, .pp-page textarea,
+.auth-card input:not([type=checkbox]):not([type=radio]){
+  background:
+    linear-gradient(rgba(var(--lg-tint), var(--lg-alpha-lite)), rgba(var(--lg-tint), var(--lg-alpha-lite))) padding-box,
+    linear-gradient(135deg, var(--lg-rim-hi), var(--lg-rim-lo) 45%, var(--lg-rim-hi)) border-box !important;
+  border: 1px solid transparent !important;
+  box-shadow: inset 0 1px 0 var(--lg-lisere), inset 0 -1px 0 var(--lg-edge), 0 4px 12px -8px rgba(0,0,0,.22);
+}
+.premium .pill{ color: var(--brand) !important; }
+:is(.chat-in textarea, .field, .sel, .pp-page input, .pp-page select, .pp-page textarea, .auth-card input):focus-visible{
+  box-shadow: inset 0 1px 0 var(--lg-lisere), 0 0 0 3px color-mix(in srgb, var(--ig27-accent) 35%, transparent) !important;
+}
+/* Selected state (side menu, chips): tinted glass — the accent shows through a
+   glass layer with its liseré and sheen, like a selected iOS 27 control. White
+   text keeps >= 4.5:1 (accent at >= 88 % opacity). */
+.navmenu button.on, .pill.on{
+  background:
+    radial-gradient(140% 90% at 10% -30%, rgba(255,255,255,.35), transparent 55%) padding-box,
+    linear-gradient(color-mix(in srgb, var(--on-fill, var(--ig27-accent)) 92%, transparent), color-mix(in srgb, var(--on-fill, var(--ig27-accent)) 92%, transparent)) padding-box,
+    linear-gradient(135deg, rgba(255,255,255,.75), rgba(255,255,255,.12) 45%, rgba(255,255,255,.55)) border-box !important;
+  border: 1px solid transparent !important;
+  color: var(--ig27-on-accent) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.45), inset 0 -1px 0 rgba(0,0,0,.18), 0 8px 18px -10px color-mix(in srgb, var(--ig27-accent) 70%, transparent) !important;
+}
+/* Tables (grammar, legal pages): a lite glass card */
+.gtable, .rule-body table, .pp-page .card table{
+  border-collapse: separate !important; border-spacing: 0; overflow: hidden; border-radius: 16px;
+  background:
+    linear-gradient(rgba(var(--lg-tint), var(--lg-alpha-lite)), rgba(var(--lg-tint), var(--lg-alpha-lite))) padding-box,
+    linear-gradient(135deg, var(--lg-rim-hi), var(--lg-rim-lo) 45%, var(--lg-rim-hi)) border-box;
+  border: 1px solid transparent;
+  box-shadow: inset 0 1px 0 var(--lg-lisere), var(--lg-shadow-lite);
+}
+/* Destructive and "danger zone" controls keep their colour, with the glass rim */
+.danger, details.danger-zone, .pp-page details{
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.4), inset 0 -1px 0 rgba(0,0,0,.15), var(--lg-shadow-lite);
+}
+/* Chat bubbles from Papote: lite glass (the user's own stay accent-coloured) */
+.chat-bubble:not(.me){ border: 1px solid transparent; }
+
 /* ------------------------------------------------------------ accessibility */
 /* Réduire la transparence / Augmenter le contraste (system or slider at max):
    glass becomes an opaque, high-contrast surface. */

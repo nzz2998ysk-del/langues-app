@@ -293,6 +293,10 @@
   ];
   function available(m) { return !m.need || m.need(); }
   function nav(page) {
+    // Same page (e.g. "Back" at the end of a review, a lesson or a quiz): the
+    // app frame would ignore a request for the page it already shows, so
+    // re-render here and leave any in-page sub-screen.
+    if (page === PAGE) { render(); try { window.scrollTo(0, 0); } catch (e) {} return; }
     if (window.parent && window.parent !== window) {
       try { window.parent.postMessage({ modNav: page + ".html" }, "*"); return; } catch (e) {}
     }
