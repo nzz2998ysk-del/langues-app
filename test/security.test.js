@@ -376,15 +376,20 @@ test("offers: unknown plans are refused, the plan follows Stripe, the corrector 
   // Unknown offer -> 400; a known one without Stripe configured -> 501 (never a crash).
   assert.equal((await c("POST", "/api/checkout", { plan: "gold" })).status, 400);
   assert.equal((await c("POST", "/api/checkout", { plan: "__proto__" })).status, 400);
-  assert.equal((await c("POST", "/api/checkout", { plan: "yearly" })).status, 501);
+  assert.equal((await c("POST", "/api/checkout", { plan: "commit" })).status, 501);
+  assert.equal((await c("POST", "/api/checkout", { plan: "ultra" })).status, 400); // not on sale
   const plan = await c("GET", "/api/plan");
-  assert.deepEqual(Object.keys(plan.json.prices).sort(), ["monthly", "ultra", "yearly"]);
+  assert.deepEqual(Object.keys(plan.json.prices).sort(), ["commit", "monthly"]);
   // Free account: no corrector.
   assert.equal((await c("POST", "/api/correct", { lang: "es", text: "Yo tiene un perro." })).status, 403);
-  // Yearly Premium: Premium, not Ultra.
-  await stripeEvent({ type: "checkout.session.completed", data: { object: { id: "cs_y", client_reference_id: String(id), payment_status: "paid", customer: "cus_p", subscription: "sub_p", amount_total: 3999, currency: "eur", metadata: { plan: "yearly" } } } });
+  // 12-month commitment: Premium, not Ultra, committed for a year.
+  await stripeEvent({ type: "checkout.session.completed", data: { object: { id: "cs_y", client_reference_id: String(id), payment_status: "paid", customer: "cus_p", subscription: "sub_p", amount_total: 499, currency: "eur", metadata: { plan: "commit" } } } });
   let me = (await c("GET", "/api/me")).json;
-  assert.equal(me.plan, "yearly"); assert.equal(me.ultra, false); assert.equal(me.subscribed, true);
+  assert.equal(me.plan, "commit"); assert.equal(me.ultra, false); assert.equal(me.subscribed, true);
+  const days = (new Date(me.commitUntil) - Date.now()) / 86400000;
+  assert.ok(days > 360 && days < 370, "commitment of ~12 months");
+  // Inside the commitment, the portal needs the no-cancellation configuration (absent here -> 501, never the normal portal).
+  assert.equal((await c("POST", "/api/billing-portal")).status, 501);
   assert.equal((await pool.query("SELECT 1 FROM payments WHERE stripe_session_id = 'cs_y'")).rows.length, 1);
   assert.equal((await c("POST", "/api/correct", { lang: "es", text: "Yo tiene un perro." })).status, 403);
   // Switching to Ultra in the customer portal arrives as subscription.updated.

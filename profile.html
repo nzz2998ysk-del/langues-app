@@ -181,10 +181,11 @@ var BROWSER_TZ = (function(){ try { return Intl.DateTimeFormat().resolvedOptions
 function fillPlan(me){
   var v = document.getElementById('planVal');
   var until = me.premiumUntil ? new Date(me.premiumUntil) : null;
-  v.textContent = me.subscribed ? (me.ultra ? '✦ ' : '★ ') + tr('sp_your_plan', { name: tr('sp_pl_' + (me.plan || 'monthly')) })
+  v.textContent = me.subscribed ? (me.ultra ? '✦ ' : '★ ') + tr('sp_your_plan', { name: tr('sp_pl_' + (me.plan || 'monthly')) }) + (me.commitUntil ? ' · ' + tr('sp_commit_until', { date: new Date(me.commitUntil).toLocaleDateString(BASE) }) : '')
     : until ? '★ ' + tr('sp_until', { date: until.toLocaleDateString(BASE) }) : tr('plan_free');
   document.getElementById('planManage').hidden = !me.canManageBilling;
   document.getElementById('planSee').textContent = tr(me.subscribed ? 'sp_switch' : 'sp_see_offers');
+  document.getElementById('planSee').hidden = Boolean(me.commitUntil);
   PLAN_ME = me;
 }
 var PLAN_ME = null;

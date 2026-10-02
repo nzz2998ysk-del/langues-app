@@ -1164,7 +1164,8 @@
   function correctorBox() {
     var lv = LEVELS.filter(function (l) { return !(C.locked && C.locked.levels.indexOf(l) >= 0); });
     var head = '<h2>✍️ ' + esc(T("corr_title")) + ' <span class="ultra-chip small">✦ Ultra</span></h2><p class="muted small">' + esc(T("corr_d")) + "</p>";
-    if (!ACCESS.ultra) return '<div class="box corr-box">' + head + '<button type="button" class="bpr" data-go="/subscribe">✦ ' + esc(T("corr_go")) + "</button></div>";
+    // Ultra is not on sale for now: no upsell, only shown to Ultra accounts.
+    if (!ACCESS.ultra) return "";
     return '<div class="box corr-box">' + head + '<form id="corrForm"><textarea id="corrIn" rows="6" maxlength="1500" lang="' + esc(LANG) + '"' + (C.dir === "rtl" ? ' dir="rtl"' : "") + ' aria-label="' + esc(T("corr_ph")) + '" placeholder="' + esc(T("corr_ph")) + '"></textarea>' +
       '<div class="row" style="margin-top:var(--ig27-space-2)"><label class="small">' + esc(T("chat_level")) + ' <select class="sel" id="corrLv">' + lv.map(function (l) { return "<option" + ((P.placement && P.placement.level === l) ? " selected" : "") + ">" + l + "</option>"; }).join("") + '</select></label><button type="submit" class="bpr" id="corrGo">' + esc(T("corr_btn")) + "</button></div></form>" +
       '<div id="corrOut" aria-live="polite"></div></div>';

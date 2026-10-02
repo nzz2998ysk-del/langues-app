@@ -48,7 +48,7 @@ body.is-premium #goBtn, body.is-premium .sub-sticky{display:none !important}
 /* ---------- comparison ---------- */
 h2{font-size:clamp(22px,3vw,28px);font-weight:800;letter-spacing:-.01em;margin:clamp(28px,5vw,48px) 4px 14px}
 .cmp{border-radius:26px;overflow:hidden}
-.cmp-head,.cmp-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(64px,16%) minmax(64px,16%) minmax(64px,16%);align-items:center}
+.cmp-head,.cmp-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(72px,22%) minmax(72px,22%);align-items:center}
 .cmp-head{position:sticky;top:0;z-index:2;font-weight:800;font-size:14px;text-transform:uppercase;letter-spacing:.04em;color:var(--ig27-label-secondary)}
 .cmp-head>div,.cmp-row>div{padding:12px clamp(10px,2vw,18px)}
 .cmp-head .col-p{color:var(--ig27-accent)}
@@ -65,16 +65,16 @@ h2{font-size:clamp(22px,3vw,28px);font-weight:800;letter-spacing:-.01em;margin:c
 .cmp-row .v,.cmp-head .v{overflow-wrap:normal;word-break:normal;hyphens:auto}
 @media (max-width:480px){
   .cmp-row .f small{display:none}.cmp-row .f.open small{display:block}.cmp-row .f{cursor:pointer}
-  .cmp-head,.cmp-row{grid-template-columns:minmax(0,1fr) 62px 62px 62px}
+  .cmp-head,.cmp-row{grid-template-columns:minmax(0,1fr) 76px 76px}
   .cmp-head{font-size:11px;letter-spacing:0;text-transform:none}
   .cmp-head>div,.cmp-row>div{padding:10px 8px}
   .cmp-row .v{font-size:12px}
   .cmp-row .f b{font-size:14px}
 }
-@media (max-width:340px){ .cmp-head,.cmp-row{grid-template-columns:minmax(0,1fr) 54px 54px 54px} .cmp-row .v{font-size:11px} }
+@media (max-width:340px){ .cmp-head,.cmp-row{grid-template-columns:minmax(0,1fr) 64px 64px} .cmp-row .v{font-size:11px} }
 /* ---------- offers ---------- */
 .plans{display:grid;gap:14px;grid-template-columns:1fr}
-@media (min-width:760px){.plans{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (min-width:640px){.plans{grid-template-columns:repeat(2,minmax(0,1fr));max-width:820px;margin:0 auto}}
 .plan{position:relative;display:flex;flex-direction:column;gap:10px;border-radius:26px;padding:22px 20px}
 .plan h3{font-size:20px;font-weight:800}
 .plan .pl-sub{color:var(--ig27-label-secondary);font-size:14px;min-height:2.6em}
@@ -129,7 +129,7 @@ h2{font-size:clamp(22px,3vw,28px);font-weight:800;letter-spacing:-.01em;margin:c
     <div class="offer lg-float" id="offer">
       <div class="price" id="price"><b>…</b></div>
       <ul class="reassure">
-        <li data-i18n="sp_r_3offers">3 offres : Mensuel, Annuel ou Ultra</li>
+        <li data-i18n="sp_r_2offers">2 offres : avec ou sans engagement</li>
         <li data-i18n="sp_r2">Paiement sécurisé par Stripe</li>
         <li data-i18n="sp_r3">Aucune publicité, jamais</li>
       </ul>
@@ -143,17 +143,16 @@ h2{font-size:clamp(22px,3vw,28px);font-weight:800;letter-spacing:-.01em;margin:c
   <h2 id="plansTitle" data-i18n="sp_offers">Choisis ton offre</h2>
   <div class="plans" id="plans" aria-labelledby="plansTitle"></div>
 
-  <h2 id="cmpTitle" data-i18n="sp_compare3">Gratuit, Premium ou Ultra : ce qui est inclus</h2>
+  <h2 id="cmpTitle" data-i18n="sp_compare">Gratuit ou Premium : ce qui est inclus</h2>
   <div class="cmp lg-lite" role="table" aria-labelledby="cmpTitle" id="cmp">
-    <div class="cmp-head" role="row"><div role="columnheader" data-i18n="sp_feature">Fonctionnalité</div><div role="columnheader" class="v" data-i18n="sp_free">Gratuit</div><div role="columnheader" class="v col-p">Premium</div><div role="columnheader" class="v col-u">Ultra</div></div>
+    <div class="cmp-head" role="row"><div role="columnheader" data-i18n="sp_feature">Fonctionnalité</div><div role="columnheader" class="v" data-i18n="sp_free">Gratuit</div><div role="columnheader" class="v col-p">Premium</div></div>
   </div>
 
   <h2 data-i18n="sp_faq">Questions fréquentes</h2>
   <div class="faq">
-    <details class="lg-lite"><summary data-i18n="sp_q1">Puis-je annuler quand je veux ?</summary><p data-i18n="sp_a1b">Mensuel et Ultra sont sans engagement : tu annules quand tu veux avec « Gérer mon abonnement », et tu gardes ton accès jusqu'à la fin du mois déjà payé.</p></details>
-    <details class="lg-lite"><summary data-i18n="sp_q5">Comment marche l'offre Annuelle ?</summary><p data-i18n="sp_a5">Tu paies 12 mois en une fois, moins cher que 12 mois au mensuel. C'est un engagement d'un an : pas de remboursement en cours d'année, mais tu peux désactiver le renouvellement à tout moment et l'offre s'arrête au bout des 12 mois.</p></details>
-    <details class="lg-lite"><summary data-i18n="sp_q6">Qu'apporte Ultra en plus ?</summary><p data-i18n="sp_a6">Tout Premium, plus le correcteur de textes par l'IA (Pap’pote corrige tes mails, lettres et rédactions et explique chaque erreur), beaucoup plus de messages avec l'IA chaque jour et le badge Ultra.</p></details>
-    <details class="lg-lite"><summary data-i18n="sp_q7">Puis-je changer d'offre ?</summary><p data-i18n="sp_a7">Oui, à tout moment depuis « Gérer mon abonnement » : le changement est calculé au prorata par Stripe.</p></details>
+    <details class="lg-lite"><summary data-i18n="sp_q1">Puis-je annuler quand je veux ?</summary><p data-i18n="sp_a1c">Avec l'offre sans engagement, oui : tu résilies quand tu veux avec « Gérer mon abonnement » et tu gardes ton accès jusqu'à la fin du mois payé. Avec l'offre à 4,99 €, tu t'engages pour 12 mois ; ensuite elle devient résiliable à tout moment.</p></details>
+    <details class="lg-lite"><summary data-i18n="sp_q5c">Comment marche l'offre avec engagement ?</summary><p data-i18n="sp_a5c">Tu paies chaque mois, moins cher que sans engagement, et tu t'engages pour 12 mois : la résiliation n'est pas possible pendant cette première année. Au bout des 12 mois, l'abonnement continue au même prix et devient résiliable à tout moment.</p></details>
+    <details class="lg-lite"><summary data-i18n="sp_q7">Puis-je changer d'offre ?</summary><p data-i18n="sp_a7c">Depuis l'offre sans engagement, tu peux résilier puis choisir l'offre avec engagement. Pendant les 12 mois d'engagement, l'offre ne peut pas être changée.</p></details>
     <details class="lg-lite"><summary data-i18n="sp_q2">Que se passe-t-il si j'arrête Premium ?</summary><p data-i18n="sp_a2">Tu repasses en gratuit sans rien perdre : ta progression, tes mots et tes badges restent dans ton compte. Seuls les contenus Premium redeviennent verrouillés.</p></details>
     <details class="lg-lite"><summary data-i18n="sp_q3">Le paiement est-il sécurisé ?</summary><p data-i18n="sp_a3">Le paiement se fait sur la page sécurisée de Stripe : Pap’pote ne voit et ne stocke jamais ta carte bancaire. Une facture t'est envoyée par email.</p></details>
     <details class="lg-lite"><summary data-i18n="sp_q4">Et si un ami m'a invité ?</summary><p id="faqRef" data-i18n="sp_a4">Quand tu t'abonnes après avoir été invité, l'ami qui t'a invité reçoit des jours de Premium offerts. Toi, tu profites de tout immédiatement.</p></details>
@@ -206,10 +205,6 @@ var GROUPS = [
     { k: 'pron', kind: 'global', key: 'premium:pronunciation-ai' },
     { k: 'ai', kind: 'ai' }
   ]},
-  { t: 'sp_g_ultra', rows: [
-    { k: 'corrector', kind: 'ultra' },
-    { k: 'ultrabadge', kind: 'ultra' }
-  ]},
   { t: 'sp_g_more', rows: [
     { k: 'friends', kind: 'always' },
     { k: 'badges', kind: 'global', key: 'premium:badges' },
@@ -259,7 +254,7 @@ function renderTable(){
   GROUPS.forEach(function(g){
     h += '<div role="rowgroup"><div class="cmp-group" role="row"><span role="rowheader">' + esc(tr(g.t)) + '</span></div>';
     g.rows.forEach(function(r){
-      h += '<div class="cmp-row" role="row"><div class="f" role="rowheader"><b>' + esc(tr('sp_f_' + r.k)) + '</b><small>' + esc(tr('sp_d_' + r.k)) + '</small></div>' + cell(freeValue(r)) + cell(premValue(r)).replace('class="v', 'class="col-p v') + cell(ultraValue(r)).replace('class="v', 'class="col-u v') + '</div>';
+      h += '<div class="cmp-row" role="row"><div class="f" role="rowheader"><b>' + esc(tr('sp_f_' + r.k)) + '</b><small>' + esc(tr('sp_d_' + r.k)) + '</small></div>' + cell(freeValue(r)) + cell(premValue(r)).replace('class="v', 'class="col-p v') + '</div>';
     });
     h += '</div>';
   });
@@ -277,23 +272,22 @@ function monthly(p){
   return months ? Math.round(p.amount / months) : null;
 }
 var PLANS = [
-  { id: 'monthly', name: 'sp_pl_monthly', sub: 'sp_pl_monthly_d', pts: ['sp_pl_all', 'sp_pl_nocommit', 'sp_pl_cancel'] },
-  { id: 'yearly', name: 'sp_pl_yearly', sub: 'sp_pl_yearly_d', pts: ['sp_pl_all', 'sp_pl_12', 'sp_pl_once'], best: true },
-  { id: 'ultra', name: 'sp_pl_ultra', sub: 'sp_pl_ultra_d', pts: ['sp_pl_allprem', 'sp_pl_corrector', 'sp_pl_ai', 'sp_pl_badge', 'sp_pl_nocommit'], ultra: true }
+  { id: 'commit', name: 'sp_pl_commit', sub: 'sp_pl_commit_d', pts: ['sp_pl_all', 'sp_pl_12', 'sp_pl_monthly_pay'], best: true },
+  { id: 'monthly', name: 'sp_pl_monthly', sub: 'sp_pl_monthly_d', pts: ['sp_pl_all', 'sp_pl_nocommit', 'sp_pl_cancel'] }
 ];
 function renderPrice(){
   var info = STATE.plan || {}, prices = info.prices || { monthly: info.price }, avail = info.available || {};
   var el = document.getElementById('price'), sticky = document.getElementById('stickyPrice');
   // Hero: "from X / month" using the cheapest monthly equivalent.
   var eqs = PLANS.map(function(p){ return monthly(prices[p.id]); }).filter(function(x){ return x; });
-  var cur = (prices.monthly || prices.yearly || prices.ultra || {}).currency || 'eur';
+  var cur = (prices.monthly || prices.commit || {}).currency || 'eur';
   if (eqs.length){ var m = Math.min.apply(null, eqs); el.className = 'price'; el.innerHTML = '<span>' + esc(tr('sp_from')) + '</span><b>' + esc(money(m, cur)) + '</b><span>' + esc(tr('sp_per_month')) + '</span>'; sticky.textContent = tr('sp_from') + ' ' + money(m, cur) + ' ' + tr('sp_per_month'); }
   else { el.className = 'price unknown'; el.innerHTML = '<b>' + esc(tr('sp_price_checkout')) + '</b>'; sticky.textContent = 'Premium'; }
   var mm = monthly(prices.monthly), me = STATE.me || {}, mine = me.subscribed ? me.plan : null;
   document.getElementById('plans').innerHTML = PLANS.map(function(pl){
-    var p = prices[pl.id], ok = avail[pl.id] !== false, eq = monthly(p), save = pl.id === 'yearly' && mm && eq && eq < mm ? Math.round(100 * (1 - eq / mm)) : 0;
+    var p = prices[pl.id], ok = avail[pl.id] !== false, eq = monthly(p), save = pl.id === 'commit' && mm && eq && eq < mm ? Math.round(100 * (1 - eq / mm)) : 0;
     var priceHtml = !ok ? '<div class="price unknown"><b>' + esc(tr('sp_soon')) + '</b></div>'
-      : p && p.amount ? '<div class="price"><b>' + esc(money(p.amount, p.currency)) + '</b><span>' + esc(perText(p)) + '</span></div>' + (pl.id === 'yearly' && eq ? '<div class="pl-eq">' + esc(tr('sp_eq', { amount: money(eq, p.currency) })) + (save ? ' · ' + esc(tr('sp_save', { n: save })) : '') + '</div>' : '')
+      : p && p.amount ? '<div class="price"><b>' + esc(money(p.amount, p.currency)) + '</b><span>' + esc(perText(p)) + '</span></div>' + (pl.id === 'commit' && p.interval !== 'month' && eq ? '<div class="pl-eq">' + esc(tr('sp_eq', { amount: money(eq, p.currency) })) + (save ? ' · ' + esc(tr('sp_save', { n: save })) : '') + '</div>' : '')
       : '<div class="price unknown"><b>' + esc(tr('sp_price_checkout')) + '</b></div>';
     var btn = mine === pl.id ? '<button class="cta ghost" data-click="manageBilling">' + esc(tr('sp_current')) + '</button>'
       : mine ? '<button class="cta ghost" data-click="manageBilling">' + esc(tr('sp_switch')) + '</button>'
@@ -310,7 +304,7 @@ function renderMe(){
   var until = me.premiumUntil ? new Date(me.premiumUntil) : null;
   if (me.subscribed || me.isAdmin || until){
     document.body.classList.add('is-premium');
-    document.getElementById('already').textContent = (me.ultra ? '✦ ' : '★ ') + (until && !me.subscribed ? tr('sp_until', { date: until.toLocaleDateString(BASE) }) : me.subscribed ? tr('sp_your_plan', { name: tr('sp_pl_' + (me.plan || 'monthly')) }) : tr('sp_already'));
+    document.getElementById('already').textContent = (me.ultra ? '✦ ' : '★ ') + (until && !me.subscribed ? tr('sp_until', { date: until.toLocaleDateString(BASE) }) : me.subscribed ? tr('sp_your_plan', { name: tr('sp_pl_' + (me.plan || 'monthly')) }) + (me.commitUntil ? ' · ' + tr('sp_commit_until', { date: new Date(me.commitUntil).toLocaleDateString(BASE) }) : '') : tr('sp_already'));
   }
   document.getElementById('manageBtn').hidden = !me.canManageBilling;
   var plan = STATE.plan;

@@ -326,20 +326,19 @@ le lien dans l'email — à ajuster si le domaine change.
 en premium et envoie la facture par email. À configurer sur Render :
 - `STRIPE_SECRET_KEY` — clé secrète de ton compte Stripe (Dashboard → Developers → API keys).
 - Les **3 offres** = 3 prix récurrents créés dans Stripe (Catalogue de produits) :
-  - `STRIPE_PRICE_ID` — **Mensuel**, Premium sans engagement (ex. 4,99 €/mois) ;
-  - `STRIPE_PRICE_ID_YEARLY` — **Annuel**, Premium payé une fois par an,
-    engagement 12 mois (ex. 39,99 €/an, soit 3,33 €/mois) ;
-  - `STRIPE_PRICE_ID_ULTRA` — **Ultra**, mensuel sans engagement (ex. 9,99 €/mois) :
-    tout Premium + correcteur de textes IA (`POST /api/correct`) + quota IA
-    `AI_DAILY_ULTRA` (1000 messages/jour par défaut) + badge Ultra.
+  - `STRIPE_PRICE_ID` — **Sans engagement**, Premium 6,99 €/mois, résiliable à tout moment ;
+  - `STRIPE_PRICE_ID_COMMIT` — **Avec engagement**, Premium 4,99 €/mois, engagement
+    12 mois : `users.commit_until` = premier paiement + 12 mois ; pendant ce temps
+    « Gérer mon abonnement » ouvre le portail `STRIPE_PORTAL_CONFIG_COMMITTED`
+    (sans résiliation) ; ensuite le portail normal `STRIPE_PORTAL_CONFIG` ;
+  - Ultra (`STRIPE_PRICE_ID_ULTRA`, correcteur de textes IA, `AI_DAILY_ULTRA`) existe
+    dans le code mais **n'est pas proposé pour l'instant**.
   Les montants affichés sur `/subscribe` sont lus dans Stripe (le pourcentage
   d'économie de l'Annuel est calculé). Une offre sans prix configuré s'affiche
   « Bientôt disponible ». L'offre choisie est enregistrée (`users.plan`) et suit
   les changements faits dans le portail client (`customer.subscription.updated`).
 - **Gérer mon abonnement** (`POST /api/billing-portal`) ouvre le portail client
-  Stripe : changer d'offre, de carte, résilier, voir les factures. À activer une
-  fois dans Stripe → Paramètres → Facturation → Portail client (autoriser le
-  changement entre les 3 prix, résiliation **en fin de période**).
+  Stripe (carte bancaire, factures, résiliation en fin de période hors engagement).
 - `STRIPE_WEBHOOK_SECRET` — à créer dans Stripe (Developers → Webhooks → Add
   endpoint), URL : `https://<ton-app>.onrender.com/api/webhooks/stripe`,
   événements : `checkout.session.completed`, `invoice.paid`,

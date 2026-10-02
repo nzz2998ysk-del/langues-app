@@ -286,8 +286,10 @@ async function initDb() {
   await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS token_version INTEGER NOT NULL DEFAULT 0;`);
   await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS stripe_customer_id TEXT;`);
   await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS stripe_subscription_id TEXT;`);
-  // Which offer the subscription is on: monthly | yearly | ultra (see lib/stripe.js PLANS).
+  // Which offer the subscription is on: monthly | commit | ultra (see lib/stripe.js PLANS).
   await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS plan TEXT;`);
+  // End of the 12-month commitment ("commit" offer): no cancellation before it.
+  await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS commit_until TIMESTAMPTZ;`);
   // Opt-in daily practice reminder by email: local hour + IANA time zone, and the
   // local date of the last reminder sent (never twice the same day).
   await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS reminder_enabled BOOLEAN NOT NULL DEFAULT FALSE;`);
@@ -465,11 +467,11 @@ for (const method of ["get", "post", "put", "patch", "delete"]) {
 // retries webhooks: an already-recorded payment is skipped (no duplicate
 // number, no second email).
 // The three offers (prices live in Stripe, see lib/stripe.js).
-function planOf(v) { return v === "monthly" || v === "yearly" || v === "ultra" ? v : null; }
+function planOf(v) { return v === "monthly" || v === "commit" || v === "ultra" ? v : null; }
 function planLabel(plan) {
   if (plan === "ultra") return "Abonnement Pap’pote Ultra (mensuel)";
-  if (plan === "yearly") return "Abonnement Pap’pote Premium (annuel, 12 mois)";
-  return "Abonnement Pap’pote Premium (mensuel)";
+  if (plan === "commit") return "Abonnement Pap’pote Premium (mensuel, engagement 12 mois)";
+  return "Abonnement Pap’pote Premium (mensuel, sans engagement)";
 }
 async function recordPaymentAndInvoice(userId, stripeRef, amount, currency, description) {
   const u = (await pool.query("SELECT email, name FROM users WHERE id = $1", [userId])).rows[0];
@@ -550,6 +552,10 @@ app.post("/api/webhooks/stripe", express.raw({ type: "application/json" }), asyn
             "UPDATE users SET subscribed = TRUE, plan = $4, stripe_customer_id = COALESCE($2, stripe_customer_id), stripe_subscription_id = COALESCE($3, stripe_subscription_id) WHERE id = $1",
             [userId, session.customer || null, session.subscription || null, plan]
           );
+          // The 12-month commitment starts with the first payment (a Stripe retry keeps it).
+          if (plan === "commit") {
+            await pool.query("UPDATE users SET commit_until = NOW() + INTERVAL '12 months' WHERE id = $1 AND (commit_until IS NULL OR commit_until < NOW())", [userId]);
+          }
           // Referral reward, once per invited account: the friend who invited
           // them gets REFERRAL_DAYS of Premium (added after any current period).
           const rw = await pool.query(
@@ -1193,7 +1199,7 @@ app.get("/api/me", async (req, res) => {
   if (!req.userId) return res.status(401).json({ authenticated: false });
   try {
     const result = await pool.query(
-      "SELECT id, email, name, subscribed, is_admin, lang_order, base_lang, email_verified, reminder_enabled, reminder_hour, reminder_tz, premium_until, mode, plan, stripe_customer_id FROM users WHERE id = $1",
+      "SELECT id, email, name, subscribed, is_admin, lang_order, base_lang, email_verified, reminder_enabled, reminder_hour, reminder_tz, premium_until, mode, plan, stripe_customer_id, commit_until FROM users WHERE id = $1",
       [req.userId]
     );
     const user = result.rows[0];
@@ -1215,6 +1221,7 @@ app.get("/api/me", async (req, res) => {
       plan: user.subscribed ? planOf(user.plan) || "monthly" : null,
       ultra: hasUltra(user),
       canManageBilling: Boolean(user.stripe_customer_id),
+      commitUntil: user.subscribed && user.commit_until && new Date(user.commit_until) > new Date() ? user.commit_until : null,
       isAdmin: user.is_admin,
       langOrder,
       baseLang: user.base_lang || "fr",
@@ -1525,7 +1532,7 @@ app.get("/api/admin/config", requireAdmin, async (req, res) => {
     { key: "sendgrid", ok: Boolean(emailProvider()), label: "Envoi d'emails (SENDGRID_API_KEY)", help: "SendGrid → Settings → API Keys (Mail Send), puis Render → Environment (jamais dans le code)" },
     { key: "email_from", ok: true, label: `Expéditeur : ${emailFrom || "Pap’pote <papotelangues@icloud.com>"}`, help: "Doit être un expéditeur vérifié dans SendGrid → Settings → Sender Authentication" },
     { key: "stripe", ok: env("STRIPE_SECRET_KEY") && env("STRIPE_PRICE_ID") && env("STRIPE_WEBHOOK_SECRET"), label: "Paiement Stripe configuré", help: "STRIPE_SECRET_KEY, STRIPE_PRICE_ID, STRIPE_WEBHOOK_SECRET" },
-    { key: "stripe_plans", ok: env("STRIPE_PRICE_ID_YEARLY") && env("STRIPE_PRICE_ID_ULTRA"), label: "Offres Annuel et Ultra configurées", help: "STRIPE_PRICE_ID_YEARLY, STRIPE_PRICE_ID_ULTRA (prix créés dans Stripe → Catalogue de produits)" },
+    { key: "stripe_plans", ok: env("STRIPE_PRICE_ID_COMMIT") && env("STRIPE_PORTAL_CONFIG") && env("STRIPE_PORTAL_CONFIG_COMMITTED"), label: "Offre avec engagement et portail client configurés", help: "STRIPE_PRICE_ID_COMMIT, STRIPE_PORTAL_CONFIG, STRIPE_PORTAL_CONFIG_COMMITTED" },
     { key: "stripe_events", ok: STRIPE_STATUS.state === "ok" || STRIPE_STATUS.state === "updated", label: "Webhook Stripe : événements d'abonnement", help: STRIPE_STATUS.detail || STRIPE_STATUS.state },
     { key: "db_tls", ok: DB_TLS.mode === "verified" || DB_TLS.mode === "disabled", label: `TLS base de données : ${DB_TLS.mode}`, help: DB_TLS.note },
     { key: "backup", ok: Boolean(lastBackup.rows[0]) && Date.now() - Date.parse(lastBackup.rows[0].value) < 3 * 86400000, label: "Sauvegarde de la base de moins de 3 jours", help: lastBackup.rows[0] ? `Dernière : ${lastBackup.rows[0].value}` : "GitHub → Settings → Secrets : BACKUP_DATABASE_URL, BACKUP_PASSPHRASE (voir README)" },
@@ -1836,7 +1843,7 @@ app.post("/api/checkout", async (req, res) => {
     return res.status(429).json({ error: "Trop de tentatives. Réessaie dans quelques minutes." });
   }
   const plan = (req.body && req.body.plan) || "monthly";
-  if (!planOf(plan)) return res.status(400).json({ error: "Offre inconnue." });
+  if (!planOf(plan) || plan === "ultra") return res.status(400).json({ error: "Offre inconnue." });
   if (!stripeLib.isConfigured() || !stripeLib.planAvailable(plan)) {
     return res.status(501).json({ error: "Cette offre n'est pas encore disponible." });
   }
@@ -1867,9 +1874,13 @@ app.post("/api/billing-portal", async (req, res) => {
   if (rateLimited("portal:" + req.userId, 10, 15 * 60 * 1000)) return res.status(429).json({ error: "Trop de tentatives. Réessaie dans quelques minutes." });
   if (!stripeLib.isConfigured()) return res.status(501).json({ error: "Le paiement n'est pas encore configuré côté serveur." });
   try {
-    const u = (await pool.query("SELECT stripe_customer_id FROM users WHERE id = $1", [req.userId])).rows[0];
+    const u = (await pool.query("SELECT stripe_customer_id, commit_until FROM users WHERE id = $1", [req.userId])).rows[0];
     if (!u || !u.stripe_customer_id) return res.status(404).json({ error: "Aucun abonnement à gérer." });
-    const session = await stripeLib.createPortalSession(u.stripe_customer_id, `${APP_URL}/subscribe`);
+    // Inside the 12-month commitment: the portal without cancellation.
+    const committed = u.commit_until && new Date(u.commit_until) > new Date();
+    const config = committed ? process.env.STRIPE_PORTAL_CONFIG_COMMITTED : process.env.STRIPE_PORTAL_CONFIG;
+    if (committed && !config) return res.status(501).json({ error: "La gestion de l'abonnement n'est pas encore configurée." });
+    const session = await stripeLib.createPortalSession(u.stripe_customer_id, `${APP_URL}/subscribe`, config || undefined);
     return res.json({ url: session.url });
   } catch (err) {
     console.error("billing portal error:", err.message);
@@ -2306,12 +2317,14 @@ app.delete("/api/friends/:id", async (req, res) => {
 
 // ---- Subscription page: price and the limits of the free plan ----
 app.get("/api/plan", async (req, res) => {
+  // Ultra is not offered for now: only the two Premium offers are listed.
+  const OFFERED = ["monthly", "commit"];
   const prices = {};
-  for (const p of ["monthly", "yearly", "ultra"]) {
+  for (const p of OFFERED) {
     try { prices[p] = await stripeLib.getPrice(p); } catch (err) { prices[p] = null; console.error(`plan price error (${p}):`, err.message); }
   }
   const available = {};
-  for (const p of ["monthly", "yearly", "ultra"]) available[p] = stripeLib.planAvailable(p);
+  for (const p of OFFERED) available[p] = stripeLib.planAvailable(p);
   return res.json({
     price: prices.monthly,
     prices,
@@ -2519,6 +2532,9 @@ createPool()
       console.log(`langues-app listening on port ${PORT}`);
       logEmailConfig();
       if (!ADMIN_EMAIL) console.warn("[config] ADMIN_EMAIL is not set: set it in Render -> Environment.");
+      // Which payment settings are present (never their values).
+      const has = (k) => (process.env[k] ? "ok" : "absent");
+      console.log(`[stripe] secret key: ${has("STRIPE_SECRET_KEY")}, webhook secret: ${has("STRIPE_WEBHOOK_SECRET")}, sans engagement: ${has("STRIPE_PRICE_ID")}, engagement 12 mois: ${has("STRIPE_PRICE_ID_COMMIT")}, portail: ${has("STRIPE_PORTAL_CONFIG")}/${has("STRIPE_PORTAL_CONFIG_COMMITTED")}`);
       checkStripeWebhook().catch((err) => console.warn("[stripe] webhook check failed:", err.message));
     });
   })
