@@ -183,15 +183,22 @@ function frenchFor(block) {
 // English word -> French: candidates whose MAIN meaning is this word, same part
 // of speech first ("you" -> "vous, tu"), most frequent French words first.
 function frenchOfEnglish(word, pos) {
-  const out = [];
-  for (const k of [POS_CLASS(pos) + "|" + word, word]) {
-    for (const c of pivot.get(k) || []) {
-      if (c.primary === 0 && c.rank < 30000 && out.indexOf(c.fr) < 0) out.push(c.fr);
-      if (out.length >= 2) break;
+  // 1) French words whose MAIN meaning is this word; 2) failing that, one of
+  // their first meanings (same part of speech first, then any)
+  if (FR_FIX[word]) return FR_FIX[word];
+  for (const strict of [true, false]) {
+    const out = [];
+    // the loose pass stays within the same part of speech ("bet" noun -> "pari")
+    for (const k of strict ? [POS_CLASS(pos) + "|" + word, word] : [POS_CLASS(pos) + "|" + word]) {
+      for (const c of pivot.get(k) || []) {
+        if ((!strict || c.primary === 0) && c.rank < (strict ? 30000 : 15000) && out.indexOf(c.fr) < 0) out.push(c.fr);
+        if (out.length >= 2) break;
+      }
+      if (out.length) break;
     }
-    if (out.length) break;
+    if (out.length) return out.join(", ");
   }
-  return out.join(", ");
+  return "";
 }
 
 // ---------------------------------------------------------------- English ranks (pivot ranking)
