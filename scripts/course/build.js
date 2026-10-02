@@ -78,6 +78,19 @@ function glosses(forms, code) {
 }
 const normKey = (s) => String(s || "").toLowerCase().normalize("NFD").replace(/[̀-֑ͯ-ׇ]/g, "").replace(/[^\p{L}\p{N}]+/gu, " ").trim();
 
+// Themes of the Wiktionary vocabulary: by part of speech.
+const WK_THEMES = [
+  { id: "lex-noun", fr: "Noms", en: "Nouns", icon: "📦" },
+  { id: "lex-verb", fr: "Verbes", en: "Verbs", icon: "🏃" },
+  { id: "lex-adj", fr: "Adjectifs", en: "Adjectives", icon: "🎨" },
+  { id: "lex-adv", fr: "Adverbes", en: "Adverbs", icon: "⏱️" },
+  { id: "lex-gram", fr: "Mots grammaticaux", en: "Function words", icon: "🔗" },
+  { id: "lex-other", fr: "Autres mots", en: "Other words", icon: "✳️" },
+];
+const WK_THEME = { noun: "lex-noun", verb: "lex-verb", adj: "lex-adj", adv: "lex-adv", character: "lex-other",
+  pron: "lex-gram", det: "lex-gram", prep: "lex-gram", conj: "lex-gram", particle: "lex-gram", article: "lex-gram",
+  postp: "lex-gram", num: "lex-gram", classifier: "lex-gram", counter: "lex-gram", contraction: "lex-gram", intj: "lex-other", phrase: "lex-other" };
+
 // ---------------------------------------------------------------- build one language
 const VOCAB = parseMatrix(path.join(CONTENT, "vocab"), "vocab");
 const PHRASES = parseMatrix(path.join(CONTENT, "phrases"), "phrases");
@@ -118,10 +131,29 @@ function build(code) {
     words.push(word); byKey.set(normKey(w.t), word); usedThemes.add(w.theme);
   });
 
+  // --- large frequency-ranked vocabulary imported from Wiktionary (see
+  // scripts/course/import-wiktionary.js and content/wiktionary/SOURCES.md).
+  // Hand-authored words above always win; these fill every level.
+  const wkFile = path.join(CONTENT, "wiktionary", code + ".json");
+  if (fs.existsSync(wkFile)) {
+    // duplicates: Hebrew/Arabic vowel marks ignored, Latin accents kept (Vietnamese
+    // "ma", "má", "mà" are different words)
+    const wkKey = (t) => String(t || "").toLowerCase().replace(/[\u0591-\u05C7\u064B-\u065F\u0670]/g, "").trim();
+    const have = new Set(words.map((w) => wkKey(w.t)));
+    JSON.parse(fs.readFileSync(wkFile, "utf8")).words.forEach((w, i) => {
+      const key = wkKey(w.t);
+      if (!key || have.has(key)) return;
+      have.add(key);
+      const theme = WK_THEME[w.pos] || "lex-other";
+      const word = { id: "k" + (i + 1), t: w.t, r: w.r || "", level: w.level, theme, pos: w.pos || "", gender: "", g: w.g, src: "wk" };
+      words.push(word); usedThemes.add(theme);
+    });
+  }
+
   // --- themes (labels: fr/en/... from the matrix header, legacy fr labels)
   const themes = [];
   const seenT = new Set();
-  for (const t of (legacy.themes || []).concat(VOCAB.themes, pack.themes || [])) {
+  for (const t of (legacy.themes || []).concat(VOCAB.themes, pack.themes || [], WK_THEMES)) {
     if (seenT.has(t.id) || !usedThemes.has(t.id)) continue;
     seenT.add(t.id); themes.push(t);
   }

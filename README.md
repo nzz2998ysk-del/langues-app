@@ -333,6 +333,20 @@ vers le compte bancaire renseigné dans ton Dashboard Stripe (Paramètres →
 Comptes bancaires / Payouts). Cette app ne touche jamais à tes coordonnées
 bancaires — c'est à faire une seule fois, directement dans Stripe.
 
+## Vocabulaire étendu (Wiktionary + fréquences)
+
+Chaque langue reçoit jusqu'à **15 000 mots** classés par fréquence et répartis sur
+les 6 niveaux (A1 → C2), avec leur sens en anglais et, le plus souvent, en
+français. Sources libres (CC BY-SA) : Wiktionary (via
+`Vuizur/Wiktionary-Dictionaries`) et les listes de fréquence OpenSubtitles de
+`hermitdave/FrequencyWords`. Détails, licence et procédure de mise à jour :
+[`content/wiktionary/SOURCES.md`](content/wiktionary/SOURCES.md) ; script :
+`scripts/course/import-wiktionary.js`. Les mots rédigés à la main restent
+prioritaires ; les mots importés sont rangés par nature (Noms, Verbes,
+Adjectifs, Adverbes, Mots grammaticaux). Sans sens français, l'appli affiche le
+sens anglais avec une étiquette « EN ». Le serveur garde en mémoire les
+`COURSE_CACHE_LANGS` langues les plus récentes (8 par défaut).
+
 ## Moteur de cours et contenu
 
 Chaque langue × module est une petite page (`<body data-lang data-page>`)
