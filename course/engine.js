@@ -1110,7 +1110,8 @@
         });
         document.getElementById("addFriend").addEventListener("submit", function (e) {
           e.preventDefault();
-          var code = document.getElementById("friendCode").value;
+          var code = document.getElementById("friendCode").value.trim();
+          if (!code) { toast(T("friend_code_label"), "thinking"); document.getElementById("friendCode").focus(); return; }
           fetch("/api/friends", { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ code: code }) })
             .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
             .then(function (res) { if (res.ok) { toast(T("friend_added"), "excited"); load(); } else toast(res.j.error || T("chat_error"), "sad"); });

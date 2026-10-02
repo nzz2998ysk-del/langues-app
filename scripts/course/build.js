@@ -155,6 +155,15 @@ function build(code) {
       if (!it.id) it.id = k[0] + i;
     });
   }
+  // Legacy HTML (old hand-built pages) carries inline handlers such as
+  // onclick="ESP.speak('…')": blocked by the CSP and calling a function that no
+  // longer exists. Turn them into the engine's delegated data-say buttons;
+  // refuse any other inline handler.
+  const fixInline = (html) => typeof html !== "string" ? html : html
+    .replace(/<button class='speakbtn' onclick="[A-Z]+\.speak\('(.*?)'\)">/g, (m, t) => `<button type="button" class='soundbtn' data-say="${t.replace(/\\'/g, "'").replace(/"/g, "&quot;")}" aria-label="Écouter">`);
+  const walk = (o) => { if (Array.isArray(o)) return o.map(walk); if (o && typeof o === "object") { for (const k of Object.keys(o)) o[k] = walk(o[k]); return o; } return fixInline(o); };
+  for (const k of ["grammar", "readings", "culture"]) walk(merged[k]);
+  if (/\son[a-z]+\s*=/i.test(JSON.stringify(merged))) problems.push(`${code}: inline event handler left in the content (blocked by the CSP)`);
   if (merged.conj) merged.conj.verbs.forEach((v) => { if (!v.level) v.level = "A2"; });
   words.forEach((w) => { if (!LEVELS.includes(w.level)) problems.push(`${code}: word ${w.id} "${w.t}" bad level ${w.level}`); });
   return merged;
