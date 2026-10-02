@@ -269,6 +269,21 @@ test("prototype keys and unknown languages are rejected", { skip }, async () => 
   assert.equal(v.status, 200);
 });
 
+test("kids mode: only adult/kids are accepted and it is private to the account", { skip }, async () => {
+  const a = await signup("kidmode@example.com");
+  const b = await signup("adultmode@example.com");
+  assert.equal((await a("GET", "/api/me")).json.mode, "adult");
+  for (const bad of ["admin", "", 1, null, { $ne: 1 }]) {
+    assert.equal((await a("PUT", "/api/profile", { mode: bad })).status, 400, JSON.stringify(bad));
+  }
+  assert.equal((await a("PUT", "/api/profile", { mode: "kids" })).status, 200);
+  assert.equal((await a("GET", "/api/me")).json.mode, "kids");
+  assert.equal((await a("GET", "/api/course/es")).json.me.mode, "kids");
+  assert.equal((await b("GET", "/api/me")).json.mode, "adult");
+  assert.equal((await a("PUT", "/api/profile", { mode: "adult" })).status, 200);
+  assert.equal((await a("GET", "/api/me")).json.mode, "adult");
+});
+
 test("progress is private to each account", { skip }, async () => {
   const a = await signup("alice@example.com");
   const b = await signup("bob@example.com");

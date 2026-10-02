@@ -71,6 +71,13 @@ button.danger{background:var(--ig27-red);margin-top:12px}
       <label for="baseLang" data-i18n="base_lang">Langue de base</label>
       <select id="baseLang"></select>
     </div>
+    <div class="field">
+      <label for="modeSel" data-i18n="mode_label">Mode</label>
+      <select id="modeSel">
+        <option value="adult" data-i18n="mode_adult">Adulte</option>
+        <option value="kids" data-i18n="mode_kids">Enfant</option>
+      </select>
+    </div>
     <div class="field email-row">
       <div><label style="margin-bottom:2px">Email</label><div class="val" id="emailVal">…</div><div class="val" id="emailUnverified" style="display:none;color:var(--ig27-orange)" data-i18n="email_unverified"></div></div>
     </div>
@@ -196,6 +203,8 @@ async function loadProfile(){
   document.getElementById('emailVal').textContent = me.email || '';
   document.getElementById('emailUnverified').style.display = me.emailVerified === false ? 'block' : 'none';
   select.value = me.baseLang || 'fr';
+  CUR_MODE = me.mode === 'kids' ? 'kids' : 'adult';
+  document.getElementById('modeSel').value = CUR_MODE;
   fillReminder(me);
   applyLang(select.value);
 }
@@ -228,7 +237,15 @@ async function deleteAccount(){
   st.textContent = r.status === 403 ? tr('wrong_password') : tr('save_error');
 }
 
+var CUR_MODE = 'adult';
 async function saveProfile(){
+  var mode = document.getElementById('modeSel').value;
+  // Leaving kids mode asks a small sum so a child can't do it alone.
+  if (CUR_MODE === 'kids' && mode === 'adult'){
+    var a = 3 + Math.floor(Math.random() * 7), b = 3 + Math.floor(Math.random() * 7);
+    var ans = prompt(tr('gate_lead') + '\n' + a + ' × ' + b + ' = ?');
+    if (ans === null || String(ans).trim() !== String(a * b)){ document.getElementById('modeSel').value = 'kids'; mode = 'kids'; }
+  }
   var btn = document.getElementById('saveBtn');
   var status = document.getElementById('status');
   status.className = 'msg';
@@ -238,11 +255,12 @@ async function saveProfile(){
     var r = await fetch('/api/profile', {
       method: 'PUT',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({name: document.getElementById('name').value.trim(), baseLang: select.value})
+      body: JSON.stringify({name: document.getElementById('name').value.trim(), baseLang: select.value, mode: mode})
     });
     var data = await r.json().catch(function(){ return {}; });
     if (r.ok){
       status.textContent = tr('saved');
+      CUR_MODE = mode;
       applyLang(select.value);
       try { if (window.top.__COURSE_CACHE) window.top.__COURSE_CACHE = {}; } catch(e) {}
       status.classList.add('ok');

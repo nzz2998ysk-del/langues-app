@@ -138,6 +138,13 @@ Stripe), la personne qui l'a invitée reçoit `REFERRAL_DAYS` jours de Premium
 nœud, fleur, casquette, toque, couronne) se débloquent avec les XP de chaque
 langue ; des tenues dessinées en HD demanderont des illustrations dédiées.
 
+## Mode enfant / mode adulte
+
+Chaque compte a un mode (`users.mode` : `adult` par défaut, ou `kids`), renvoyé par `/api/me` et `/api/course/:lang`, modifiable via `PUT /api/profile {mode}` (bouton « Mode enfant » de l'accueil, ou champ « Mode » du profil).
+
+- **Mode enfant** : interface simplifiée, très visuelle (gros boutons, emojis, mascotte) — histoires illustrées bilingues avec mots à toucher pour les entendre, jeux (« Écoute et trouve », « Quel est le mot ? », Memory, thèmes), imagier par catégorie, étoiles et album d'autocollants. Le contenu est dans `course/kids.js` (mots, histoires, autocollants) et réutilise le vocabulaire de chaque langue.
+- **Retour au mode adulte** protégé par une petite multiplication (« espace des parents »), pour qu'un enfant ne puisse pas en sortir seul.
+
 ## Liquid Glass (iOS 27)
 
 Toutes les surfaces flottantes (barres, onglets, fenêtres, menus,

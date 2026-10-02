@@ -225,7 +225,7 @@ function stub(code, page) {
 <link rel="stylesheet" href="/design-system/liquid-glass.css">
 <link rel="stylesheet" href="/design-system/responsive.css">
 </head><body data-lang="${code}" data-page="${page}"><div id="app"></div>
-<script src="/course/i18n.js"></script><script src="/course/engine.js"></script>
+<script src="/course/i18n.js"></script><script src="/course/kids.js"></script><script src="/course/engine.js"></script>
 </body></html>`;
 }
 function writeAppPages() {

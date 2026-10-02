@@ -1549,6 +1549,7 @@
       '<button type="button" class="btn2" id="offline">📴 ' + esc(T("feat_offline")) + (locked("premium:offline") ? " 🔒" : "") + "</button>" +
       '<button type="button" class="btn2" id="export">⬇️ ' + esc(T("feat_export")) + (locked("premium:export") ? " 🔒" : "") + "</button>" +
       '</div><p class="muted small" id="offState" style="margin-top:var(--ig27-space-2)"></p></div>' +
+      '<div class="box kids-switch"><h2>👧 ' + esc(T("kids_title")) + '</h2><p class="muted small">' + esc(T("kids_lead")) + '</p><button type="button" class="bpr" id="toKids" style="margin-top:var(--ig27-space-3)">🧸 ' + esc(T("kids_go")) + "</button></div>" +
       '<div class="box"><h2>🫧 ' + esc(T("glass_title")) + '</h2><p class="muted small">' + esc(T("glass_lead")) + '</p><div class="lg-slider" style="margin-top:var(--ig27-space-3)"><div class="lg-preview" aria-hidden="true"><span class="lg-preview-chip lg-float">' + esc(T("glass_preview")) + '</span><span class="lg-preview-card lg-lite">' + esc(T("glass_card")) + '</span></div><label for="glassRange" class="small">' + esc(T("glass_label")) + '</label><input type="range" id="glassRange" min="0" max="100" step="5"><div class="lg-scale" aria-hidden="true"><span>' + esc(T("glass_clear")) + "</span><span>" + esc(T("glass_tinted")) + "</span></div></div></div>" +
       '<div class="box"><h2>🐱 ' + esc(T("outfit_title")) + '</h2><p class="muted small">' + esc(T("outfit_d")) + "</p>" + outfitPicker() + "</div>" +
       '<div class="box"><h2>🧭 ' + esc(T("place_title")) + '</h2><p class="muted small">' + esc(P.placement && !P.placement.skipped ? T("place_result", { level: P.placement.level }) : T("place_d")) + '</p><button type="button" class="btn2" id="placeRedo" style="margin-top:var(--ig27-space-3)">' + esc(T("place_redo")) + "</button></div>" +
@@ -1565,6 +1566,7 @@
     document.getElementById("goal").addEventListener("change", function (e) { P.settings.goal = +e.target.value; save(); });
     app.querySelectorAll("[data-set]").forEach(function (c) { c.addEventListener("change", function () { P.settings[c.getAttribute("data-set")] = c.checked; save(); }); });
     document.getElementById("placeRedo").addEventListener("click", placementFlow);
+    var tk = document.getElementById("toKids"); if (tk) tk.addEventListener("click", function () { setMode("kids"); });
     var gr = document.getElementById("glassRange"), G = window.PapoteGlass;
     if (gr && G) {
       var glabel = function (v) { return v + " % — " + (v <= 15 ? T("glass_clear") : v >= 75 ? T("glass_tinted") : T("glass_regular")); };
@@ -1675,10 +1677,316 @@
       var pb = document.getElementById("printCert"); if (pb) pb.addEventListener("click", function () { window.print(); });
     },
   };
+  // ================================================================== KIDS MODE
+  // A separate, simpler app for children (account setting "mode": "kids"):
+  // illustrated bilingual stories, picture games, a picture dictionary and a
+  // sticker album. Told in the child's language; the words of the language
+  // being learned are bubbles the child taps to hear. Content: course/kids.js.
+  // Grown-up actions (leave kids mode, settings, Premium) sit behind a small
+  // "ask a grown-up" sum.
+  var KIDS = false, KV = { view: "home" };
+  var KD = window.PAPOTE_KIDS || { WORDS: [], CATEGORIES: [], STORIES: [], STICKERS: [] };
+  function KT(fr, en) { return UI === "fr" ? fr : en; }
+  var KWORD = null; // cid -> { cid, emoji, t, base, cat }
+  function kidsWords() {
+    if (KWORD) return KWORD;
+    var byCid = {};
+    (C.words || []).forEach(function (w) {
+      var cid = w.cid || (/^c-/.test(w.id) ? w.id.slice(2) : "");
+      if (cid && !byCid[cid]) byCid[cid] = w;
+    });
+    KWORD = {};
+    KD.WORDS.forEach(function (k) {
+      var w = byCid[k[0]];
+      if (w && w.t) KWORD[k[0]] = { cid: k[0], emoji: k[1], t: w.t, r: w.r || "", base: UI === "fr" ? k[2] : k[3], cat: k[4] };
+    });
+    return KWORD;
+  }
+  function kidsList(cat) { var all = kidsWords(); return Object.keys(all).map(function (c) { return all[c]; }).filter(function (w) { return !cat || w.cat === cat; }); }
+  function kidsData() { P.kids = P.kids || { stars: 0, stories: {}, games: 0 }; return P.kids; }
+  function kidsStickers() { return Math.min(KD.STICKERS.length, Math.floor(kidsData().stars / 5)); }
+  function kidsAddStars(n) {
+    var k = kidsData(), before = kidsStickers();
+    k.stars += n; save();
+    var after = kidsStickers();
+    if (after > before) setTimeout(function () { kidsCelebrate(KD.STICKERS[after - 1], KT("Nouvel autocollant !", "New sticker!")); }, 500);
+  }
+  // Narration in the child's language (device voice), target words in the course voice.
+  function kidsSayBase(text) {
+    if (!("speechSynthesis" in window) || !text) return;
+    try {
+      speechSynthesis.cancel();
+      var u = new SpeechSynthesisUtterance(text);
+      u.lang = BASE === "fr" ? "fr-FR" : "en-GB"; u.rate = 0.92; u.pitch = 1.1;
+      var v = speechSynthesis.getVoices().filter(function (x) { return x.lang.toLowerCase().indexOf(BASE) === 0; })[0]; if (v) u.voice = v;
+      speechSynthesis.speak(u);
+    } catch (e) {}
+  }
+  function kidsBubble(w) {
+    return '<button type="button" class="kw" data-say="' + esc(w.t) + '" aria-label="' + esc(w.t + " — " + w.base) + '"><span class="kw-e" aria-hidden="true">' + w.emoji + "</span>" + tgt(w.t) + "</button>";
+  }
+  function kidsShell(inner, back) {
+    var k = kidsData();
+    return '<div class="kids-app">' +
+      '<header class="kids-top">' +
+        (back ? '<button type="button" class="kids-round" data-kv="' + back + '" aria-label="' + esc(KT("Retour", "Back")) + '">⬅️</button>' : '<span class="kids-flag" aria-hidden="true">' + esc(C.flag) + "</span>") +
+        '<span class="kids-stars" aria-label="' + esc(k.stars + " " + KT("étoiles", "stars")) + '">⭐ ' + k.stars + "</span>" +
+        '<button type="button" class="kids-round" id="kidsGrown" aria-label="' + esc(KT("Espace des parents", "Grown-ups")) + '">🔒</button>' +
+      "</header><main class=\"kids-main\">" + inner + "</main></div>";
+  }
+  function kidsTile(view, emoji, label, color, extra) {
+    return '<button type="button" class="kids-tile" data-kv="' + view + '" style="--kc:' + color + '"><span class="kt-e" aria-hidden="true">' + emoji + '</span><span class="kt-l">' + esc(label) + "</span>" + (extra || "") + "</button>";
+  }
+  var KVIEWS = {
+    home: function () {
+      var name = ME.name ? ", " + esc(ME.name) : "";
+      return kidsShell('<div class="kids-hello">' + (masc("wave", 120, "kids-masc") || '<span class="kids-big">🐱</span>') +
+        '<h1>' + KT("Coucou" + name + " !", "Hi" + name + "!") + "</h1><p>" + esc(KT("Que veux-tu faire aujourd'hui ?", "What do you want to do today?")) + "</p></div>" +
+        '<div class="kids-grid">' +
+          kidsTile("stories", "📖", KT("Histoires", "Stories"), "#ff9f0a") +
+          kidsTile("games", "🎮", KT("Jeux", "Games"), "#34c759") +
+          kidsTile("words", "🖼️", KT("Imagier", "Picture words"), "#0a84ff") +
+          kidsTile("stickers", "🌟", KT("Mes autocollants", "My stickers"), "#af52de", '<span class="kt-badge">' + kidsStickers() + "/" + KD.STICKERS.length + "</span>") +
+        "</div>");
+    },
+    stories: function () {
+      var k = kidsData();
+      var cards = KD.STORIES.filter(kidsStoryOk).map(function (s) {
+        return '<button type="button" class="kids-story" data-kv="story:' + s.id + '" style="--kc:' + s.color + '"><span class="ks-cover" aria-hidden="true">' + s.cover + '</span><span class="ks-title">' + esc(KT(s.title[0], s.title[1])) + "</span>" + (k.stories[s.id] ? '<span class="ks-done" aria-label="' + esc(KT("lue", "read")) + '">✅</span>' : "") + "</button>";
+      }).join("");
+      return kidsShell("<h1 class=\"kids-h\">📖 " + esc(KT("Les histoires", "Stories")) + "</h1><div class=\"kids-stories\">" + (cards || "<p>" + esc(KT("Bientôt des histoires dans cette langue !", "Stories coming soon in this language!")) + "</p>") + "</div>", "home");
+    },
+    games: function () {
+      return kidsShell("<h1 class=\"kids-h\">🎮 " + esc(KT("Les jeux", "Games")) + "</h1><div class=\"kids-grid\">" +
+        kidsTile("game:listen", "👂", KT("Écoute et trouve", "Listen and find"), "#ff375f") +
+        kidsTile("game:word", "🔤", KT("Quel est le mot ?", "Which word?"), "#5e5ce6") +
+        kidsTile("game:memory", "🃏", KT("Memory", "Memory"), "#ff9f0a") +
+        kidsTile("game:cat", "🐾", KT("Choisis un thème", "Pick a theme"), "#30b0c7") + "</div>", "home");
+    },
+    words: function () {
+      var cats = KD.CATEGORIES.filter(function (c) { return kidsList(c[0]).length >= 3; });
+      return kidsShell("<h1 class=\"kids-h\">🖼️ " + esc(KT("L'imagier", "Picture words")) + "</h1><div class=\"kids-cats\">" + cats.map(function (c) {
+        return '<button type="button" class="kids-cat" data-kv="cat:' + c[0] + '"><span aria-hidden="true">' + c[1] + "</span>" + esc(KT(c[2], c[3])) + "</button>";
+      }).join("") + "</div>", "home");
+    },
+    stickers: function () {
+      var n = kidsStickers(), k = kidsData(), next = 5 - (k.stars % 5);
+      return kidsShell("<h1 class=\"kids-h\">🌟 " + esc(KT("Mes autocollants", "My stickers")) + "</h1>" +
+        '<p class="kids-p">' + esc(n < KD.STICKERS.length ? KT("Encore " + next + " étoile" + (next > 1 ? "s" : "") + " pour le prochain !", next + " more star" + (next > 1 ? "s" : "") + " for the next one!") : KT("Tu as tous les autocollants. Bravo !", "You have every sticker. Well done!")) + "</p>" +
+        '<div class="kids-album">' + KD.STICKERS.map(function (s, i) { return '<span class="kids-sticker' + (i < n ? " on" : "") + '" aria-label="' + (i < n ? s : esc(KT("à gagner", "to win"))) + '">' + (i < n ? s : "❔") + "</span>"; }).join("") + "</div>", "home");
+    },
+  };
+  function kidsStoryOk(s) {
+    var all = kidsWords(), slots = [];
+    s.pages.forEach(function (p) { p[1].replace(/\{(\w+)\}/g, function (m, c) { slots.push(c); return m; }); });
+    return slots.filter(function (c) { return all[c]; }).length >= Math.ceil(slots.length * 0.75);
+  }
+  function kidsText(raw) {
+    var all = kidsWords(), base = raw;
+    var html = esc(raw).replace(/\{(\w+)\}/g, function (m, c) {
+      var w = all[c]; if (w) return kidsBubble(w);
+      var k = KD.WORDS.filter(function (x) { return x[0] === c; })[0];
+      return k ? "<b>" + esc(UI === "fr" ? k[2] : k[3]) + "</b>" : "";
+    });
+    var spoken = base.replace(/\{(\w+)\}/g, function (m, c) { var k = KD.WORDS.filter(function (x) { return x[0] === c; })[0]; return k ? (UI === "fr" ? k[2] : k[3]) : ""; });
+    return { html: html, spoken: spoken };
+  }
+  function kidsStory(id) {
+    var s = KD.STORIES.filter(function (x) { return x.id === id; })[0]; if (!s) { kidsGo("stories"); return; }
+    var i = 0;
+    var paint = function () {
+      var p = s.pages[i], tx = kidsText(KT(p[1], p[2]));
+      app.innerHTML = kidsShell('<div class="kids-page" style="--kc:' + s.color + '">' +
+        '<div class="kids-dots" aria-label="' + (i + 1) + "/" + s.pages.length + '">' + s.pages.map(function (x, j) { return '<i class="' + (j <= i ? "on" : "") + '"></i>'; }).join("") + "</div>" +
+        '<div class="kids-scene" aria-hidden="true">' + p[0] + "</div>" +
+        '<p class="kids-text">' + tx.html + "</p>" +
+        '<div class="kids-nav"><button type="button" class="kids-btn ghost" id="kPrev"' + (i ? "" : " disabled") + ' aria-label="' + esc(KT("Page d'avant", "Previous page")) + '">◀️</button>' +
+        '<button type="button" class="kids-btn" id="kRead">🔊 ' + esc(KT("Écouter", "Listen")) + "</button>" +
+        '<button type="button" class="kids-btn" id="kNext">' + (i < s.pages.length - 1 ? "▶️" : "🎉 " + esc(KT("Le quiz !", "Quiz time!"))) + "</button></div>" +
+        '<p class="kids-hint">' + esc(KT("Touche les mots en couleur pour les entendre !", "Tap the coloured words to hear them!")) + "</p></div>", "stories");
+      document.getElementById("kRead").addEventListener("click", function () { kidsSayBase(tx.spoken); });
+      document.getElementById("kPrev").addEventListener("click", function () { if (i) { i--; paint(); } });
+      document.getElementById("kNext").addEventListener("click", function () {
+        if (i < s.pages.length - 1) { i++; paint(); }
+        else kidsQuiz(s.quiz.filter(function (c) { return kidsWords()[c]; }), function (stars) {
+          var k = kidsData(); if (!k.stories[s.id]) { k.stories[s.id] = Date.now(); stars += 2; }
+          track("kids_story_done"); return stars;
+        }, "stories");
+      });
+      if (P.settings.autoplay) kidsSayBase(tx.spoken);
+    };
+    paint();
+  }
+  // Questions: listen (hear the word, pick the picture) or word (see the picture, pick the word).
+  function kidsQuiz(cids, onDone, back, kind) {
+    var all = kidsWords(), pool = Object.keys(all);
+    var qs = cids.map(function (c, n) { return { w: all[c], kind: kind || (n % 2 ? "word" : "listen") }; });
+    var qi = 0, stars = 0, tries = 0;
+    var paint = function () {
+      if (qi >= qs.length) {
+        var total = onDone ? onDone(stars) : stars; kidsAddStars(total);
+        app.innerHTML = kidsShell('<div class="kids-end">' + mascOr("excited", "🎉", 150) + "<h1>" + esc(KT("Bravo !", "Well done!")) + '</h1><p class="kids-earned">' + "⭐".repeat(Math.min(total, 10)) + "</p><p>" + esc(KT("Tu as gagné " + total + " étoile" + (total > 1 ? "s" : "") + " !", "You won " + total + " star" + (total > 1 ? "s" : "") + "!")) + '</p><div class="kids-nav"><button type="button" class="kids-btn" data-kv="' + back + '">' + esc(KT("Encore !", "Again!")) + '</button><button type="button" class="kids-btn ghost" data-kv="home">🏠</button></div></div>', back);
+        return;
+      }
+      var q = qs[qi], others = shuffle(pool.filter(function (c) { return c !== q.w.cid && all[c].cat === q.w.cat; })).slice(0, 2);
+      if (others.length < 2) others = others.concat(shuffle(pool.filter(function (c) { return c !== q.w.cid && others.indexOf(c) < 0; })).slice(0, 2 - others.length));
+      var opts = shuffle([q.w.cid].concat(others)).map(function (c) { return all[c]; });
+      tries = 0;
+      var prompt = q.kind === "listen"
+        ? '<button type="button" class="kids-listen" data-say="' + esc(q.w.t) + '" aria-label="' + esc(KT("Écouter le mot", "Hear the word")) + '">🔊</button><p class="kids-q">' + esc(KT("Écoute… Où est-ce ?", "Listen… Where is it?")) + "</p>"
+        : '<div class="kids-scene" aria-hidden="true">' + q.w.emoji + '</div><p class="kids-q">' + esc(KT("Comment on dit ?", "How do you say it?")) + "</p>";
+      app.innerHTML = kidsShell('<div class="kids-game"><div class="kids-dots">' + qs.map(function (x, j) { return '<i class="' + (j < qi ? "on" : j === qi ? "cur" : "") + '"></i>'; }).join("") + "</div>" + prompt +
+        '<div class="kids-opts ' + q.kind + '">' + opts.map(function (o) {
+          return '<button type="button" class="kids-opt" data-c="' + o.cid + '"' + (q.kind === "word" ? ' data-say="' + esc(o.t) + '"' : ' aria-label="' + esc(o.base) + '"') + ">" + (q.kind === "listen" ? '<span class="ko-e">' + o.emoji + "</span>" : tgt(o.t)) + "</button>";
+        }).join("") + '</div><div class="kids-fb" id="kFb" role="status"></div></div>', back);
+      if (q.kind === "listen") setTimeout(function () { TTS.speak(q.w.t); }, 250);
+      app.querySelectorAll(".kids-opt").forEach(function (b) {
+        b.addEventListener("click", function () {
+          var ok = b.getAttribute("data-c") === q.w.cid, fb = document.getElementById("kFb");
+          if (ok) {
+            if (!tries) stars++;
+            b.classList.add("good"); app.querySelectorAll(".kids-opt").forEach(function (x) { x.disabled = true; });
+            fb.innerHTML = (masc("happy", 64, "masc-inline") || "😺") + "<b>" + esc(pick([KT("Super !", "Great!"), KT("Bravo !", "Well done!"), KT("Génial !", "Awesome!"), KT("Oui !", "Yes!")], 1)[0]) + "</b> " + esc(q.w.emoji + " " + q.w.t + " = " + q.w.base);
+            if (q.kind === "word") TTS.speak(q.w.t);
+            kidsConfetti(b);
+            setTimeout(function () { qi++; paint(); }, 1500);
+          } else {
+            tries++; b.classList.add("bad"); b.disabled = true;
+            fb.innerHTML = (masc("thinking", 64, "masc-inline") || "🤔") + "<b>" + esc(KT("Presque ! Essaie encore.", "Almost! Try again.")) + "</b>";
+            if (q.kind === "listen") setTimeout(function () { TTS.speak(q.w.t); }, 400);
+          }
+        });
+      });
+    };
+    paint();
+  }
+  function kidsMemory(cat) {
+    var words = shuffle(kidsList(cat)).slice(0, 6);
+    if (words.length < 3) words = shuffle(kidsList()).slice(0, 6);
+    var cards = shuffle(words.map(function (w) { return { c: w.cid, f: "e" }; }).concat(words.map(function (w) { return { c: w.cid, f: "t" }; })));
+    var open = [], found = 0, moves = 0, all = kidsWords();
+    app.innerHTML = kidsShell("<h1 class=\"kids-h\">🃏 " + esc(KT("Retrouve les paires !", "Find the pairs!")) + '</h1><div class="kids-memory">' + cards.map(function (k, i) {
+      var w = all[k.c];
+      return '<button type="button" class="km-card" data-i="' + i + '" aria-label="' + esc(KT("Carte", "Card") + " " + (i + 1)) + '"><span class="km-back" aria-hidden="true">❓</span><span class="km-front">' + (k.f === "e" ? '<span class="ko-e">' + w.emoji + "</span>" : tgt(w.t)) + "</span></button>";
+    }).join("") + '</div><div class="kids-fb" id="kFb" role="status"></div>', "games");
+    app.querySelectorAll(".km-card").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var i = +b.getAttribute("data-i"), k = cards[i];
+        if (b.classList.contains("open") || open.length === 2) return;
+        b.classList.add("open"); open.push({ b: b, k: k });
+        TTS.speak(all[k.c].t);
+        if (open.length < 2) return;
+        moves++;
+        var a = open[0], z = open[1];
+        if (a.k.c === z.k.c) {
+          a.b.classList.add("found"); z.b.classList.add("found"); a.b.disabled = z.b.disabled = true; open = []; found++;
+          kidsConfetti(z.b);
+          if (found === words.length) {
+            var stars = moves <= words.length + 3 ? 3 : moves <= words.length * 2 ? 2 : 1;
+            setTimeout(function () { kidsAddStars(stars); kidsCelebrate("🏆", KT("Toutes les paires ! +" + stars + " ⭐", "All the pairs! +" + stars + " ⭐")); kidsGo("games"); }, 900);
+          }
+        } else setTimeout(function () { a.b.classList.remove("open"); z.b.classList.remove("open"); open = []; }, 1000);
+      });
+    });
+  }
+  function kidsCategory(cat) {
+    var c = KD.CATEGORIES.filter(function (x) { return x[0] === cat; })[0];
+    app.innerHTML = kidsShell("<h1 class=\"kids-h\">" + (c ? c[1] + " " + esc(KT(c[2], c[3])) : "") + '</h1><div class="kids-cards">' + kidsList(cat).map(function (w) {
+      return '<button type="button" class="kids-card" data-say="' + esc(w.t) + '"><span class="kc-e" aria-hidden="true">' + w.emoji + '</span><span class="kc-t">' + tgt(w.t) + '</span><span class="kc-b">' + esc(w.base) + "</span></button>";
+    }).join("") + '</div><div class="kids-nav"><button type="button" class="kids-btn" id="kPlay">🎮 ' + esc(KT("Jouer avec ces mots", "Play with these words")) + "</button></div>", "words");
+    document.getElementById("kPlay").addEventListener("click", function () { kidsQuiz(shuffle(kidsList(cat)).slice(0, 6).map(function (w) { return w.cid; }), null, "words"); });
+  }
+  function kidsCatPicker() {
+    var cats = KD.CATEGORIES.filter(function (c) { return kidsList(c[0]).length >= 4; });
+    app.innerHTML = kidsShell("<h1 class=\"kids-h\">🐾 " + esc(KT("Choisis un thème", "Pick a theme")) + '</h1><div class="kids-cats">' + cats.map(function (c) {
+      return '<button type="button" class="kids-cat" data-kv="play:' + c[0] + '"><span aria-hidden="true">' + c[1] + "</span>" + esc(KT(c[2], c[3])) + "</button>";
+    }).join("") + "</div>", "games");
+  }
+  function kidsConfetti(anchor) {
+    if (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    var r = anchor.getBoundingClientRect(), box = document.createElement("div");
+    box.className = "kids-confetti"; box.style.left = (r.left + r.width / 2) + "px"; box.style.top = (r.top + r.height / 2) + "px";
+    box.innerHTML = ["⭐", "✨", "🎉", "💛", "🌟", "✨"].map(function (e, i) { return '<i style="--a:' + (i * 60) + 'deg">' + e + "</i>"; }).join("");
+    body.appendChild(box); setTimeout(function () { box.remove(); }, 1100);
+  }
+  // This page lives in an iframe as tall as its content: a fixed overlay
+  // centred in it can sit far below the screen. Pin it to the slice of the
+  // frame the user actually sees.
+  function kidsInView(el, center) {
+    try {
+      var fe = window.frameElement; if (!fe) return;
+      var r = fe.getBoundingClientRect(), vh = window.parent.innerHeight;
+      var top = Math.max(0, -r.top), h = Math.min(vh, r.bottom) - Math.max(0, r.top);
+      if (h <= 0) return;
+      if (center) { el.style.top = (top + h * 0.4) + "px"; return; }
+      el.style.top = top + "px"; el.style.bottom = "auto"; el.style.height = h + "px";
+    } catch (e) {}
+  }
+  function kidsCelebrate(emoji, text) {
+    var el = document.createElement("div");
+    el.className = "kids-pop"; el.setAttribute("role", "status"); kidsInView(el, true);
+    el.innerHTML = '<span class="kp-e" aria-hidden="true">' + emoji + '</span><span class="kp-t">' + esc(text) + "</span>";
+    body.appendChild(el); setTimeout(function () { el.remove(); }, 2600);
+  }
+  // "Ask a grown-up": a sum a young child can't do yet, then the grown-up menu.
+  function kidsGrownUp() {
+    var a = 6 + Math.floor(Math.random() * 7), b = 7 + Math.floor(Math.random() * 6), ans = a * b;
+    var opts = shuffle([ans, ans + a, ans - b, ans + 1]);
+    var box = document.createElement("div");
+    box.className = "kids-gate"; box.setAttribute("role", "dialog"); box.setAttribute("aria-modal", "true"); box.setAttribute("aria-label", KT("Espace des parents", "Grown-ups"));
+    box.innerHTML = '<div class="kg-card lg-float"><h2>🔒 ' + esc(KT("Pour les grands", "For grown-ups")) + "</h2><p>" + esc(KT("Combien font " + a + " × " + b + " ?", "What is " + a + " × " + b + "?")) + '</p><div class="kg-opts">' +
+      opts.map(function (o) { return '<button type="button" class="kids-btn ghost" data-a="' + o + '">' + o + "</button>"; }).join("") +
+      '</div><button type="button" class="kids-btn ghost" id="kgClose">' + esc(KT("Fermer", "Close")) + "</button></div>";
+    kidsInView(box);
+    body.appendChild(box);
+    box.querySelector("[data-a]").focus({ preventScroll: true });
+    var close = function () { box.remove(); };
+    box.querySelector("#kgClose").addEventListener("click", close);
+    box.querySelectorAll("[data-a]").forEach(function (b) { b.addEventListener("click", function () {
+      if (+b.getAttribute("data-a") !== ans) { b.disabled = true; return; }
+      box.querySelector(".kg-card").innerHTML = "<h2>👋 " + esc(KT("Espace des parents", "Grown-ups")) + '</h2><div class="kg-menu">' +
+        '<button type="button" class="kids-btn" id="kgAdult">🧑 ' + esc(KT("Passer en mode adulte", "Switch to adult mode")) + "</button>" +
+        '<button type="button" class="kids-btn ghost" id="kgProfile">⚙️ ' + esc(KT("Réglages du compte", "Account settings")) + "</button>" +
+        (ACCESS.premium ? "" : '<button type="button" class="kids-btn ghost" id="kgPremium">★ Premium</button>') +
+        '<button type="button" class="kids-btn ghost" id="kgClose2">' + esc(KT("Retour", "Back")) + "</button></div>";
+      box.querySelector("#kgAdult").addEventListener("click", function () { setMode("adult"); close(); });
+      box.querySelector("#kgProfile").addEventListener("click", function () { goTop("/profile"); });
+      var pm = box.querySelector("#kgPremium"); if (pm) pm.addEventListener("click", function () { goTop("/subscribe"); });
+      box.querySelector("#kgClose2").addEventListener("click", close);
+    }); });
+  }
+  // Saves the mode on the account, applies it here and in the app frame.
+  function setMode(mode) {
+    KIDS = mode === "kids"; ME.mode = mode;
+    body.classList.toggle("kids", KIDS); document.documentElement.classList.toggle("kids", KIDS);
+    try { TOP.__COURSE_CACHE[LANG].me.mode = mode; } catch (e) {}
+    try { window.parent.postMessage({ kidsMode: KIDS }, window.parent.location.origin); } catch (e) {}
+    fetch("/api/profile", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ mode: mode }) }).catch(function () {});
+    KV = { view: "home" }; render();
+  }
+  window.__setMode = setMode;
+  function kidsGo(view) { KV = { view: view }; renderKids(); try { window.scrollTo(0, 0); } catch (e) {} }
+  function renderKids() {
+    var v = KV.view;
+    if (/^story:/.test(v)) return kidsStory(v.slice(6));
+    if (/^cat:/.test(v)) return kidsCategory(v.slice(4));
+    if (/^play:/.test(v)) return kidsQuiz(shuffle(kidsList(v.slice(5))).slice(0, 6).map(function (w) { return w.cid; }), null, "games");
+    if (v === "game:listen" || v === "game:word") return kidsQuiz(shuffle(kidsList()).slice(0, 6).map(function (w) { return w.cid; }), null, "games", v.slice(5));
+    if (v === "game:memory") return kidsMemory("");
+    if (v === "game:cat") return kidsCatPicker();
+    app.innerHTML = (KVIEWS[v] || KVIEWS.home)();
+  }
+  document.addEventListener("click", function (e) {
+    if (!KIDS) return;
+    var g = e.target.closest("#kidsGrown"); if (g) { e.preventDefault(); kidsGrownUp(); return; }
+    var k = e.target.closest("[data-kv]"); if (k) { e.preventDefault(); kidsGo(k.getAttribute("data-kv")); }
+  });
+
   function render() {
     // fresh #app (drops listeners bound by the previous page)
     var fresh = app.cloneNode(false); app.parentNode.replaceChild(fresh, app); app = fresh;
     QUIZ = null;
+    if (KIDS) { setQuizMode(false); document.title = "Papote · " + langName(LANG); renderKids(); return; }
     var L = levelOf(PAGE), fn = L ? function () { return PAGES.level(L); } : PAGES[PAGE];
     var mod = MODULES.filter(function (m) { return m.id === PAGE; })[0];
     if (!fn || (mod && !available(mod))) { PAGE = "hub"; fn = PAGES.hub; }
@@ -1702,6 +2010,8 @@
     }).then(function (j) { try { (TOP.__COURSE_CACHE = TOP.__COURSE_CACHE || {})[LANG] = j; } catch (e) {} return j; });
     courseP.then(function (j) {
       C = j.course; ACCESS = j.access; ME = j.me;
+      KIDS = ME.mode === "kids"; KWORD = null;
+      body.classList.toggle("kids", KIDS); document.documentElement.classList.toggle("kids", KIDS);
       AUDIO = {};
       (C.words || []).concat(C.phrases || []).forEach(function (w) { if (w.a) AUDIO[w.t] = w.a; });
       if (j.brand) BRAND = j.brand;

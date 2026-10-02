@@ -308,6 +308,8 @@ async function initDb() {
 
   // GDPR: deleting an account removes its ideas and progress; invoices are kept
   // for accounting but detached from the (deleted) account.
+  // Learning mode: "adult" (full app) or "kids" (stories, picture games, simpler UI).
+  await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS mode TEXT NOT NULL DEFAULT 'adult';`);
   await pool.query(`ALTER TABLE payments ALTER COLUMN user_id DROP NOT NULL;`);
   // Invoice snapshot (kept after account deletion) and continuous numbering.
   await pool.query(`ALTER TABLE payments ADD COLUMN IF NOT EXISTS customer_email TEXT;`);
@@ -1178,7 +1180,7 @@ app.get("/api/me", async (req, res) => {
   if (!req.userId) return res.status(401).json({ authenticated: false });
   try {
     const result = await pool.query(
-      "SELECT id, email, name, subscribed, is_admin, lang_order, base_lang, email_verified, reminder_enabled, reminder_hour, reminder_tz, premium_until FROM users WHERE id = $1",
+      "SELECT id, email, name, subscribed, is_admin, lang_order, base_lang, email_verified, reminder_enabled, reminder_hour, reminder_tz, premium_until, mode FROM users WHERE id = $1",
       [req.userId]
     );
     const user = result.rows[0];
@@ -1200,6 +1202,7 @@ app.get("/api/me", async (req, res) => {
       isAdmin: user.is_admin,
       langOrder,
       baseLang: user.base_lang || "fr",
+      mode: user.mode === "kids" ? "kids" : "adult",
       emailVerified: user.email_verified,
       reminder: { enabled: user.reminder_enabled, hour: user.reminder_hour, tz: user.reminder_tz },
       premiumUntil: user.premium_until && new Date(user.premium_until) > new Date() ? user.premium_until : null,
@@ -1244,7 +1247,11 @@ app.put("/api/profile", async (req, res) => {
   if (baseLang !== undefined && !hasOwn(LANG_META, baseLang)) {
     return res.status(400).json({ error: "Langue de base inconnue." });
   }
+  if (body.mode !== undefined && body.mode !== "adult" && body.mode !== "kids") {
+    return res.status(400).json({ error: "Mode inconnu." });
+  }
   try {
+    if (body.mode !== undefined) await pool.query("UPDATE users SET mode = $1 WHERE id = $2", [body.mode, req.userId]);
     if (name !== undefined && baseLang !== undefined) {
       await pool.query("UPDATE users SET name = $1, base_lang = $2 WHERE id = $3", [name || null, baseLang, req.userId]);
     } else if (name !== undefined) {
@@ -1358,7 +1365,7 @@ function hasPremium(u) {
 // ---- Course engine API --------------------------------------------------------
 // Access for one account: `features[key] === true` means LOCKED for this account.
 async function accessFor(userId) {
-  const u = await pool.query("SELECT id, name, subscribed, is_admin, base_lang, premium_until FROM users WHERE id = $1", [userId]);
+  const u = await pool.query("SELECT id, name, subscribed, is_admin, base_lang, premium_until, mode FROM users WHERE id = $1", [userId]);
   const user = u.rows[0];
   if (!user) return null;
   const unlocked = hasPremium(user);
@@ -1390,7 +1397,7 @@ app.get("/api/course/:lang", async (req, res) => {
     return res.json({
       course: data,
       access: { premium: access.unlocked, isAdmin: access.user.is_admin, features: access.features },
-      me: { name: access.user.name || "", baseLang: access.user.base_lang || "fr", id: access.user.id },
+      me: { name: access.user.name || "", baseLang: access.user.base_lang || "fr", id: access.user.id, mode: access.user.mode === "kids" ? "kids" : "adult" },
       brand: brandInfo(),
     });
   } catch (err) {
