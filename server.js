@@ -450,6 +450,17 @@ async function initDb() {
 const app = express();
 app.set("trust proxy", 1);
 
+// One address for the site: when APP_URL is set (e.g. https://pappote.fr),
+// pages opened on another host (www., pappote.com, the onrender.com address)
+// are redirected there. Webhooks and the health check are never redirected
+// (Stripe and Render call them on the old address too), nor non-GET requests.
+const CANONICAL_HOST = process.env.APP_URL ? new URL(APP_URL).hostname : "";
+app.use((req, res, next) => {
+  if (!CANONICAL_HOST || req.hostname === CANONICAL_HOST || req.hostname === "localhost" || req.hostname === "127.0.0.1") return next();
+  if ((req.method !== "GET" && req.method !== "HEAD") || req.path.startsWith("/api/webhooks/") || req.path === "/healthz") return next();
+  return res.redirect(301, APP_URL + req.originalUrl);
+});
+
 // Express 4 does not catch errors thrown by async handlers: an unexpected
 // database error would become an unhandled rejection and crash the process.
 // Every async route handler is wrapped so errors reach the JSON error handler.
