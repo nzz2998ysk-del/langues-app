@@ -138,6 +138,16 @@ Stripe), la personne qui l'a invitée reçoit `REFERRAL_DAYS` jours de Premium
 nœud, fleur, casquette, toque, couronne) se débloquent avec les XP de chaque
 langue ; des tenues dessinées en HD demanderont des illustrations dédiées.
 
+## Test de niveau
+
+Proposé à l'ouverture d'une langue (et à refaire depuis le profil du cours). C'est un vrai test adaptatif de 10 à 15 minutes :
+
+- **Blocs de 10 questions par niveau** mêlant les compétences : sens d'un mot, « comment dit-on… », écoute seule (sans texte), mot en contexte (phrase à compléter), compréhension de phrases, conjugaison, lecture d'un texte, et à partir de l'A2 des réponses **à écrire** (alphabet latin ; synonymes acceptés, accents et article facultatifs, une faute de frappe tolérée sur les mots longs).
+- **Mauvaises réponses proches** de la bonne (même thème, même nature de mot, orthographe voisine) ; mots traduits dans la langue de l'apprenant en priorité.
+- **Aucune correction affichée pendant le test** ; « Je ne sais pas » compte comme une erreur, pour décourager le hasard.
+- **Escalier adaptatif** : on commence en A2, on monte après un bloc réussi (≥ 70 %), on descend après un échec, jusqu'à encadrer le niveau (C1/C2 réservés au Premium).
+- **Résultat** : niveau acquis, niveau que la leçon du jour va travailler, scores par niveau et par compétence (enregistrés dans `progress.placement`).
+
 ## Mode enfant / mode adulte
 
 Chaque compte a un mode (`users.mode` : `adult` par défaut, ou `kids`), renvoyé par `/api/me` et `/api/course/:lang`, modifiable via `PUT /api/profile {mode}` (bouton « Mode enfant » de l'accueil, ou champ « Mode » du profil).

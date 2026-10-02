@@ -1281,7 +1281,7 @@
       '<div class="speaking-pill" id="speakPill" role="status"><div class="wave" aria-hidden="true"><span></span><span></span><span></span></div><span class="sp-tx">' + esc(T("speaking")) + "</span></div>";
   }
   // ------------------------------------------------------------------ guided path
-  // Placement test (adaptive, ~2 min) + "today's lesson" that mixes due reviews,
+  // Placement test (adaptive, see placementFlow) + "today's lesson" that mixes due reviews,
   // a few new words at the suggested level and a short quiz.
   function openLevels() {
     return LEVELS.filter(function (l) { return !(C.locked && C.locked.levels.indexOf(l) >= 0) && C.words.filter(function (w) { return w.level === l && wg(w); }).length >= 8; });
@@ -1355,56 +1355,236 @@
     };
     review();
   }
-  function placementFlow() {
-    var lv = openLevels(), PER = 5, idx = Math.min(1, lv.length - 1), passed = {}, tried = {};
-    var L, qs, k, ok;
-    var result = function (level) {
-      var beyond = level === lv[lv.length - 1] && passed[level] && C.locked && C.locked.levels.length;
-      P.placement = { level: level, at: Date.now() }; save(); track("placement_done");
-      app.innerHTML = quizShellLesson(1, 2, '<div class="complete"><div class="big">' + mascOr("excited", "🧭") + "</div><h2>" + esc(T("place_result", { level: level })) + '</h2><p class="muted">' + esc(T("place_result_d")) + "</p>" +
-        (beyond ? '<p class="small">' + esc(T("place_beyond")) + "</p>" : "") + '<div class="row" style="justify-content:center;margin-top:var(--ig27-space-5)"><button type="button" class="bpr" id="placeGo">☀️ ' + esc(T("daily_title")) + "</button></div></div>");
-      document.getElementById("placeGo").addEventListener("click", dailyFlow);
-      document.getElementById("placeGo").focus();
-    };
-    var nextLevel = function () {
-      tried[L] = true; passed[L] = ok >= PER - 1;
-      if (passed[L]) {
-        if (idx + 1 < lv.length && !tried[lv[idx + 1]]) { idx++; return startLevel(); }
-        return result(lv[Math.min(idx + 1, lv.length - 1)]);
+  // A real level test. Each level tested is a block of 10 questions mixing
+  // skills: meaning and recall of words, listening (audio only), words in
+  // context, phrase and text comprehension, conjugation and, from B1, typed
+  // answers. Wrong options are chosen to be close to the answer (same theme,
+  // same part of speech, similar spelling), and answers are not revealed
+  // during the test. Blocks go up after a pass (>= 70 %) and down after a
+  // fail until the level is bracketed. Result: the last level passed, the
+  // level to work on next, and a score per level and per skill.
+  var PT_PER = 10, PT_PASS = 0.7;
+  var PT_SKILLS = ["vocab", "listen", "grammar", "reading", "writing"];
+  function ptWordsAt(L) {
+    var list = C.words.filter(function (w) {
+      var g = wg(w);
+      return w.level === L && g && w.t && w.t.length <= 32 && g.length <= 60 && norm(g) !== norm(w.t);
+    });
+    // Prefer words translated into the learner's own language.
+    var own = list.filter(function (w) { return glLang(w.g) === BASE; });
+    return own.length >= 40 ? own : list;
+  }
+  // Close candidates first: same theme / part of speech, similar spelling.
+  function ptNear(w, list, key, n) {
+    var k0 = norm(key(w)), g0 = norm(wg(w)), t0 = norm(w.t);
+    var words0 = g0.split(" ").filter(function (x) { return x.length >= 4; });
+    var cand = list.length > 500 ? shuffle(list).slice(0, 500) : list;
+    var scored = [];
+    cand.forEach(function (x) {
+      if (x === w) return;
+      var k = norm(key(x)), gx = norm(wg(x)), tx = norm(x.t);
+      if (!k || k === k0 || tx === t0 || gx === g0) return;
+      // Avoid near-synonyms that would make two options correct.
+      if (words0.some(function (y) { return gx.split(" ").indexOf(y) >= 0; })) return;
+      var s = Math.random() * 1.5;
+      if (w.pos && x.pos === w.pos) s += 2;
+      if (w.theme && x.theme === w.theme) s += 2;
+      if (Math.abs(k.length - k0.length) <= 2) s += 1;
+      if (k.slice(0, 2) === k0.slice(0, 2)) s += 1.5;
+      if (k.length < 24 && k0.length < 24 && lev(k, k0) <= Math.max(2, Math.floor(k0.length / 3))) s += 2;
+      scored.push([s, x]);
+    });
+    scored.sort(function (a, b) { return b[0] - a[0]; });
+    var out = [], seenK = {}; seenK[k0] = 1;
+    scored.forEach(function (p) { var k = norm(key(p[1])); if (out.length < n && !seenK[k]) { seenK[k] = 1; out.push(p[1]); } });
+    return out;
+  }
+  function ptLatin() { return C.dir !== "rtl" && !/^(ja|zh|ko|ru|uk|el|hi|ar|he|tlh)$/.test(LANG); }
+  var PT_BUILD = {
+    meaning: function (L, ctx) {
+      var w = ctx.next(); if (!w) return null;
+      var near = ptNear(w, ctx.pool, wg, 3); if (near.length < 3) return null;
+      return { skill: "vocab", kind: T("place_meaning_q"), html: '<div class="quiz-q">' + tgt(w.t) + "</div>", answer: wg(w), opts: shuffle([wg(w)].concat(near.map(wg))) };
+    },
+    recall: function (L, ctx) {
+      var w = ctx.next(); if (!w) return null;
+      var tf = function (x) { return x.t; };
+      var near = ptNear(w, ctx.pool, tf, 3); if (near.length < 3) return null;
+      return { skill: "vocab", kind: T("place_recall_q"), html: '<div class="quiz-q">' + esc(wg(w)) + "</div>", answer: w.t, optsT: true, opts: shuffle([w.t].concat(near.map(tf))) };
+    },
+    listen: function (L, ctx) {
+      var w = ctx.next(function (x) { return x.t.split(" ").length <= 3; }); if (!w) return null;
+      var near = ptNear(w, ctx.pool, wg, 3); if (near.length < 3) return null;
+      return { skill: "listen", kind: T("place_listen_q"), audio: w.t, html: '<div class="quiz-q"><button type="button" class="bpr" data-say="' + esc(w.t) + '">🔊 ' + esc(T("listen")) + "</button></div>", answer: wg(w), opts: shuffle([wg(w)].concat(near.map(wg))) };
+    },
+    context: function (L, ctx) {
+      // An example sentence with the word blanked out, or a cloze item.
+      var cl = (C.cloze || []).filter(function (c) { return c.level === L && !ctx.used["c" + c.id]; });
+      var ws = ctx.pool.filter(function (x) { return x.ex && x.ex.t && !ctx.used[x.id] && x.ex.t.toLowerCase().indexOf(x.t.toLowerCase()) >= 0 && x.t.length >= 3; });
+      var tf = function (x) { return x.t; };
+      if (ws.length && (!cl.length || Math.random() < 0.6)) {
+        var w = ws[Math.floor(Math.random() * ws.length)]; ctx.used[w.id] = 1;
+        var i = w.ex.t.toLowerCase().indexOf(w.t.toLowerCase()), ans = w.ex.t.substr(i, w.t.length);
+        var near = ptNear(w, ctx.pool, tf, 3); if (near.length < 3) return null;
+        return { skill: "grammar", kind: T("place_ctx_q"), html: '<div class="quiz-q">' + tgt(w.ex.t.slice(0, i) + "_____" + w.ex.t.slice(i + w.t.length)) + "</div>" + (gl(w.ex.g) ? '<div class="quiz-sub">' + esc(gl(w.ex.g)) + "</div>" : ""), answer: ans, optsT: true, opts: shuffle([ans].concat(near.map(tf))) };
       }
-      if (idx > 0 && !tried[lv[idx - 1]]) { idx--; return startLevel(); }
-      return result(L);
+      if (!cl.length) return null;
+      var c = cl[Math.floor(Math.random() * cl.length)]; ctx.used["c" + c.id] = 1;
+      var others = shuffle((C.cloze || []).map(function (x) { return x.a; }).filter(function (a) { return a !== c.a; }));
+      var opts = [c.a]; others.forEach(function (a) { if (opts.length < 4 && opts.indexOf(a) < 0) opts.push(a); });
+      if (opts.length < 4) return null;
+      return { skill: "grammar", kind: T("place_ctx_q"), html: '<div class="quiz-q">' + tgt(c.t) + "</div>", answer: c.a, optsT: true, opts: shuffle(opts) };
+    },
+    phrase: function (L, ctx) {
+      var all = (C.phrases || []).filter(function (p) { return gl(p.g); });
+      var ps = all.filter(function (p) { return p.level === L && !ctx.used[p.id]; });
+      if (!ps.length || all.length < 4) return null;
+      var p = ps[Math.floor(Math.random() * ps.length)]; ctx.used[p.id] = 1;
+      var others = shuffle(all.filter(function (x) { return x !== p && gl(x.g) !== gl(p.g); })).sort(function (a, b) { return (b.level === L) - (a.level === L) || (b.theme === p.theme) - (a.theme === p.theme); }).slice(0, 3);
+      return { skill: "reading", kind: T("place_phrase_q"), html: '<div class="quiz-q">' + tgt(p.t) + "</div>", answer: gl(p.g), opts: shuffle([gl(p.g)].concat(others.map(function (x) { return gl(x.g); }))) };
+    },
+    conj: function (L, ctx) {
+      // Present tense = A1, the next two tenses = A2, later ones = B1.
+      var cj = C.conj, items = [];
+      if (!cj || !cj.verbs) return null;
+      cj.verbs.forEach(function (v) {
+        Object.keys(v.forms || {}).forEach(function (tid) {
+          var ti = (cj.tenses || []).map(function (x) { return x.id; }).indexOf(tid);
+          var lvl = ti <= 0 ? "A1" : ti <= 2 ? "A2" : "B1";
+          if (LEVELS.indexOf(v.level) > LEVELS.indexOf(lvl)) lvl = v.level;
+          if (lvl === L) (v.forms[tid] || []).forEach(function (f) { if (f.t) items.push([v, tid, f]); });
+        });
+      });
+      items = items.filter(function (it) { return !ctx.used["v" + it[0].t + it[1] + it[2].p]; });
+      if (!items.length) return null;
+      var it = items[Math.floor(Math.random() * items.length)], v = it[0], tid = it[1], f = it[2];
+      ctx.used["v" + v.t + tid + f.p] = 1;
+      var opts = [f.t];
+      shuffle([].concat.apply([], Object.keys(v.forms).map(function (k) { return v.forms[k]; }))).forEach(function (x) { if (opts.length < 4 && x.t && opts.indexOf(x.t) < 0) opts.push(x.t); });
+      if (opts.length < 4) return null;
+      var tense = (cj.tenses || []).filter(function (x) { return x.id === tid; })[0];
+      return { skill: "grammar", kind: T("place_conj_q", { verb: v.t, tense: gl(tense) }), html: '<div class="quiz-q">' + tgt((f.p ? f.p + " " : "") + "_____") + '</div><div class="quiz-sub">' + esc(v.t + " · " + gl(v.g)) + "</div>", answer: f.t, optsT: true, opts: shuffle(opts) };
+    },
+    reading: function (L, ctx) {
+      var rs = (C.readings || []).filter(function (r) { return r.level === L && r.q && r.q.length && !ctx.used["r" + r.id]; });
+      if (!rs.length) return null;
+      var r = rs[Math.floor(Math.random() * rs.length)]; ctx.used["r" + r.id] = 1;
+      var q = r.q[Math.floor(Math.random() * r.q.length)];
+      if (!q.opts || q.opts.length < 2) return null;
+      return { skill: "reading", kind: T("place_read_q"), html: '<div class="place-read">' + (r.title ? "<b>" + tgt(gl(r.title)) + "</b><br>" : "") + tgt(r.t) + '</div><div class="quiz-q">' + tgt(gl(q.q)) + "</div>", answer: q.opts[q.a], optsT: true, opts: q.opts.slice() };
+    },
+    typed: function (L, ctx) {
+      if (!ptLatin()) return null;
+      var w = ctx.next(function (x) { return x.t.split(" ").length <= 2 && x.t.length >= 3; }); if (!w) return null;
+      // Any word with the same translation is a right answer too.
+      var g0 = norm(wg(w)), alts = C.words.filter(function (x) { return x.t && norm(wg(x)) === g0; }).map(function (x) { return x.t; });
+      return { skill: "writing", kind: T("place_type_q", { lang: C.name }), html: '<div class="quiz-q">' + esc(wg(w)) + "</div>", answer: w.t, alts: alts, typed: true };
+    },
+  };
+  var PT_PLAN = {
+    A1: ["meaning", "meaning", "recall", "recall", "listen", "listen", "phrase", "conj", "context", "reading"],
+    A2: ["meaning", "recall", "recall", "listen", "listen", "phrase", "conj", "context", "typed", "reading"],
+    B1: ["meaning", "recall", "recall", "listen", "phrase", "conj", "context", "typed", "typed", "reading"],
+    B2: ["meaning", "meaning", "recall", "recall", "listen", "phrase", "context", "typed", "typed", "reading"],
+    C1: ["meaning", "meaning", "recall", "recall", "listen", "phrase", "context", "typed", "typed", "reading"],
+    C2: ["meaning", "meaning", "recall", "recall", "listen", "phrase", "context", "typed", "typed", "reading"],
+  };
+  function ptBlock(L) {
+    var pool = ptWordsAt(L), order = shuffle(pool), used = {};
+    var ctx = { pool: pool, used: used, next: function (f) {
+      for (var i = 0; i < order.length; i++) { var w = order[i]; if (!used[w.id] && (!f || f(w))) { used[w.id] = 1; return w; } }
+      return null;
+    } };
+    var qs = [], plan = PT_PLAN[L] || PT_PLAN.B1, fill = ["recall", "meaning"];
+    plan.forEach(function (kind, n) {
+      var q = PT_BUILD[kind](L, ctx);
+      for (var t = 0; !q && t < 4; t++) q = PT_BUILD[fill[(n + t) % 2]](L, ctx);
+      if (q) qs.push(q);
+    });
+    // Reading last (it is the longest), everything else mixed.
+    var rd = qs.filter(function (q) { return q.html.indexOf("place-read") >= 0; });
+    return shuffle(qs.filter(function (q) { return rd.indexOf(q) < 0; })).concat(rd);
+  }
+  function ptTypedOk(input, answer) {
+    var a = norm(input), b = norm(answer);
+    if (!a) return false;
+    if (a === b) return true;
+    // Leading article optional ("el perro" / "perro"), one typo allowed on long words.
+    var parts = b.split(" ");
+    if (parts.length > 1 && parts[0].length <= 3 && parts.slice(1).join(" ") === a) return true;
+    return b.length >= 7 && lev(a, b) <= 1;
+  }
+  function placementFlow() {
+    var lv = openLevels();
+    if (!lv.length) return;
+    var idx = Math.min(1, lv.length - 1), part = 0, res = {}, skills = {}, L, qs, k, ok;
+    PT_SKILLS.forEach(function (s) { skills[s] = [0, 0]; });
+    var finish = function () {
+      var passed = lv.filter(function (l) { return res[l] && res[l].pass; });
+      // Acquired = highest passed level with no failed level below it.
+      var acquired = null;
+      for (var i = 0; i < lv.length; i++) { var r = res[lv[i]]; if (r && !r.pass) break; if (r && r.pass) acquired = lv[i]; }
+      var work = acquired ? lv[Math.min(lv.indexOf(acquired) + 1, lv.length - 1)] : lv[0];
+      var beyond = acquired === lv[lv.length - 1] && C.locked && C.locked.levels.length;
+      var scores = {}; Object.keys(res).forEach(function (l) { scores[l] = Math.round(100 * res[l].ok / res[l].n); });
+      var sk = {}; PT_SKILLS.forEach(function (s) { if (skills[s][1]) sk[s] = Math.round(100 * skills[s][0] / skills[s][1]); });
+      P.placement = { level: work, acquired: acquired, at: Date.now(), scores: scores, skills: sk, v: 2 }; save(); track("placement_done");
+      var bar = function (label, pct, extra) { return '<div class="place-bar"><span class="pb-l">' + label + '</span><span class="pb-t"><i style="width:' + pct + '%"></i></span><span class="pb-v">' + pct + " %" + (extra || "") + "</span></div>"; };
+      var partial = res[work] && !res[work].pass && scores[work] >= 50 ? '<p class="small">' + esc(T("place_partial", { level: work, pct: scores[work] })) + "</p>" : "";
+      app.innerHTML = quizShellLesson(1, 1, '<div class="complete place-result"><div class="big">' + mascOr("excited", "🧭") + "</div>" +
+        "<h2>" + esc(acquired ? T("place_acquired", { level: acquired }) : T("place_none")) + "</h2>" +
+        '<p class="muted">' + esc(T("place_work", { level: work })) + "</p>" + partial + (beyond ? '<p class="small">' + esc(T("place_beyond")) + "</p>" : "") +
+        '<div class="box place-box"><h3>' + esc(T("place_by_level")) + "</h3>" + lv.filter(function (l) { return res[l]; }).map(function (l) { return bar(lvBadge(l), scores[l], res[l].pass ? " ✓" : ""); }).join("") + "</div>" +
+        '<div class="box place-box"><h3>' + esc(T("place_by_skill")) + "</h3>" + PT_SKILLS.filter(function (s) { return sk[s] !== undefined; }).map(function (s) { return bar(esc(T("place_sk_" + s)), sk[s]); }).join("") + "</div>" +
+        '<div class="row" style="justify-content:center;margin-top:var(--ig27-space-5)"><button type="button" class="bpr" id="placeGo">☀️ ' + esc(T("daily_title")) + '</button><button type="button" class="btn2" id="placeBack">' + esc(T("back")) + "</button></div></div>");
+      document.getElementById("placeGo").addEventListener("click", dailyFlow);
+      document.getElementById("placeBack").addEventListener("click", function () { QUIZ = null; render(); });
+      document.getElementById("placeGo").focus({ preventScroll: true });
+    };
+    var nextBlock = function () {
+      var pass = ok / qs.length >= PT_PASS;
+      res[L] = { ok: ok, n: qs.length, pass: pass };
+      var up = lv[idx + 1], down = lv[idx - 1];
+      if (pass && up && !res[up]) { idx++; return startBlock(); }
+      if (!pass && down && !res[down]) { idx--; return startBlock(); }
+      finish();
     };
     var paint = function () {
-      if (k >= qs.length) return nextLevel();
-      var q = qs[k];
-      app.innerHTML = quizShellLesson(k, qs.length, '<div class="quiz-card"><div class="quiz-kind">' + esc(T("place_q", { level: L, i: k + 1, n: qs.length })) + "</div>" +
-        (q.mode === "mcq" ? '<div class="quiz-q">' + tgt(q.prompt) + snd(q.audio) + "</div>" : '<div class="quiz-q">' + esc(q.prompt) + "</div>") + '<div class="quiz-sub"></div>' +
-        '<div class="quiz-opts">' + q.opts.map(function (o, n) { return '<button type="button" class="quiz-opt' + (q.optsT ? " t" : "") + '" data-opt="' + n + '">' + esc(o) + "</button>"; }).join("") + "</div>" +
-        '<div class="row" style="justify-content:center;margin-top:var(--ig27-space-3)"><button type="button" class="btn2" id="dunno">' + esc(T("dont_know")) + "</button></div></div>");
-      var done = false;
-      var answer = function (val) {
+      if (k >= qs.length) return nextBlock();
+      var q = qs[k], done = false;
+      var body = q.typed
+        ? '<form class="place-typed" id="ptForm" autocomplete="off"><input type="text" id="ptIn" class="ans t" lang="' + esc(LANG) + '" autocapitalize="off" spellcheck="false" placeholder="' + esc(T("place_type_ph")) + '" aria-label="' + esc(T("place_type_ph")) + '">' + keyboard() + '<button type="submit" class="bpr wide">' + esc(T("place_check")) + "</button></form>"
+        : '<div class="quiz-opts">' + q.opts.map(function (o, n) { return '<button type="button" class="quiz-opt' + (q.optsT ? " t" : "") + '" data-opt="' + n + '">' + esc(o) + "</button>"; }).join("") + "</div>";
+      app.innerHTML = quizShellLesson(k, qs.length, '<div class="quiz-card"><div class="quiz-kind">' + esc(T("place_q2", { part: part, i: k + 1, n: qs.length })) + " · " + esc(q.kind) + "</div>" + q.html + body +
+        '<div class="row" style="justify-content:center;margin-top:var(--ig27-space-3)"><button type="button" class="btn2" id="dunno">' + esc(T("dont_know")) + "</button></div>" +
+        (k === 0 && part === 1 ? '<p class="muted small" style="text-align:center">' + esc(T("place_note")) + "</p>" : "") + "</div>");
+      var answer = function (good, el) {
         if (done) return; done = true;
-        if (val === q.answer) ok++;
-        app.querySelectorAll("[data-opt]").forEach(function (x) { x.disabled = true; if (q.opts[+x.getAttribute("data-opt")] === q.answer) x.classList.add("correct"); else if (q.opts[+x.getAttribute("data-opt")] === val) x.classList.add("wrong"); });
-        setTimeout(function () { k++; paint(); }, 650);
+        if (good) ok++;
+        skills[q.skill][1]++; if (good) skills[q.skill][0]++;
+        // No right/wrong reveal during a level test: just show the choice.
+        app.querySelectorAll("[data-opt],#ptIn,#dunno").forEach(function (x) { x.disabled = true; });
+        if (el) el.classList.add("picked");
+        setTimeout(function () { k++; paint(); }, 380);
       };
-      app.querySelectorAll("[data-opt]").forEach(function (b) { b.addEventListener("click", function () { answer(q.opts[+b.getAttribute("data-opt")]); }); });
-      document.getElementById("dunno").addEventListener("click", function () { answer(null); });
+      app.querySelectorAll("[data-opt]").forEach(function (b) { b.addEventListener("click", function () { answer(q.opts[+b.getAttribute("data-opt")] === q.answer, b); }); });
+      document.getElementById("dunno").addEventListener("click", function () { answer(false); });
+      var fm = document.getElementById("ptForm");
+      if (fm) {
+        var inp = document.getElementById("ptIn");
+        app.querySelectorAll("[data-key]").forEach(function (kb) { kb.addEventListener("click", function () { inp.value += kb.getAttribute("data-key"); inp.focus(); }); });
+        fm.addEventListener("submit", function (e) { e.preventDefault(); if (!inp.value.trim()) { inp.focus(); return; } answer((q.alts || [q.answer]).some(function (a) { return ptTypedOk(inp.value, a); }), inp); });
+        inp.focus();
+      }
+      if (q.audio) setTimeout(function () { TTS.speak(q.audio); }, 250);
     };
-    var startLevel = function () {
-      L = lv[idx]; k = 0; ok = 0;
-      var lw = C.words.filter(function (w) { return w.level === L && wg(w); });
-      var picked = pick(lw, PER);
-      qs = picked.map(function (w, n) {
-        var tf = function (x) { return x.t; };
-        return n % 2 ? { mode: "reverse", prompt: wg(w), answer: w.t, optsT: true, opts: shuffle([w.t].concat(distractors(w, lw, tf, 3).map(tf))) }
-          : { mode: "mcq", prompt: w.t, audio: w.t, answer: wg(w), opts: shuffle([wg(w)].concat(distractors(w, lw, wg, 3).map(wg))) };
-      });
+    var startBlock = function () {
+      L = lv[idx]; k = 0; ok = 0; part++;
+      qs = ptBlock(L);
+      if (qs.length < 4) return finish(); // not enough content at this level
       paint();
     };
-    if (!lv.length) return;
-    startLevel();
+    startBlock();
   }
   document.addEventListener("click", function (e) { if (e.target.id === "quitL") { e.stopImmediatePropagation(); e.preventDefault(); QUIZ = null; render(); } }, true);
 
